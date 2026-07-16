@@ -1,0 +1,50 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: voice_meetings
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d voice_meetings"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - voice_meetings_postgres:/var/lib/postgresql/data
+
+  livekit:
+    image: livekit/livekit-server:v1.13.1
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml
+    environment:
+      LIVEKIT_CONFIG: |
+        port: 7880
+        log_level: info
+        rtc:
+          tcp_port: 7881
+          udp_port: 7882
+          use_external_ip: false
+          node_ip: ${LIVEKIT_NODE_IP:-192.168.0.195}
+        keys:
+          "${LIVEKIT_API_KEY}": "${LIVEKIT_API_SECRET}"
+    ports:
+      - "7881:7881/tcp"
+      - "7882:7882/udp"
+
+  livekit-proxy:
+    image: nginx:1.28-alpine
+    restart: unless-stopped
+    depends_on:
+      - livekit
+    ports:
+      - "7880:7880/tcp"
+    volumes:
+      - ./docker/livekit/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certificates/voicemeet-lan-dev.crt:/etc/nginx/certs/livekit.crt:ro
+      - ./certificates/voicemeet-lan-dev.key:/etc/nginx/certs/livekit.key:ro
+
+volumes:
+  voice_meetings_postgres:

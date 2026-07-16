@@ -1,0 +1,32 @@
+{
+  "name": "@voice/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "dev:lan": "tsx watch src/server.ts",
+    "livekit:check": "node scripts/check-livekit.mjs",
+    "livekit:diagnose": "node scripts/diagnose-livekit.mjs",
+    "build": "tsup src/server.ts --format esm --out-dir dist --sourcemap --clean",
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/**/*.test.ts",
+    "db:migrate": "tsx src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@voice/shared": "workspace:*",
+    "fastify": "^5.4.0",
+    "livekit-server-sdk": "^2.17.0",
+    "pg": "^8.16.3",
+    "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "@types/pg": "^8.15.4",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}
