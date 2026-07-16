@@ -1,4 +1,4 @@
-#Syncora
+# Syncora
 
 Current foundation of the voice-translation meeting platform: host accounts, secure server-side sessions, owned meetings, invitation email delivery, protected host entry, and passwordless guest pre-join links.
 
