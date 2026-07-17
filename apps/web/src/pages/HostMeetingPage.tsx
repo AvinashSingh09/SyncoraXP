@@ -44,6 +44,7 @@ export function HostMeetingPage() {
         session={session}
         choices={choices}
         meetingId={result.meeting.id}
+        meeting={result.meeting}
         onLeave={() => setSession(null)}
       />
     );
@@ -68,7 +69,7 @@ export function HostMeetingPage() {
       <header className="topbar"><Brand /><span className="step-pill">Host access</span></header>
       <section className="host-room-card">
         {error ? (
-          <><p className="eyebrow">Unavailable</p><h1>{error}</h1><Link className="button ghost inline-button" to="/">Back to meetings</Link></>
+          <><p className="eyebrow">Unavailable</p><h1>{error}</h1><Link className="button ghost inline-button" to="/webinar-service">Back to meetings</Link></>
         ) : <p>Verifying host access...</p>}
       </section>
     </main>

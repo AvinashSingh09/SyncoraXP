@@ -12,6 +12,7 @@
   "dependencies": {
     "@livekit/components-react": "^2.9.23",
     "@livekit/components-styles": "^1.2.0",
+    "@phosphor-icons/react": "^2.1.10",
     "@voice/shared": "workspace:*",
     "livekit-client": "^2.20.1",
     "react": "^19.1.0",

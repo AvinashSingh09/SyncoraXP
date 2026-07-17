@@ -16,3 +16,5 @@ certificates/*.srl
 .pnpm-store/
 .agents/
 
+SESSION_HANDOFF_2026-07-16.md
+
