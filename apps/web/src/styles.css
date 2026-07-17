@@ -289,3 +289,216 @@ textarea { resize: vertical; }
   .room-header-waiting-toggle { gap: 6px; height: 36px; padding: 0 6px 0 9px; }
   .room-header-waiting-toggle .waiting-toggle-label { display: none; }
 }
+
+/* Control Bar & Participants Panel */
+.lk-control-bar-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #131e31;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0 12px;
+}
+
+.lk-control-bar-container .lk-control-bar {
+  border-top: none;
+  background: transparent;
+}
+
+.participants-toggle-button {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  color: #c9d3e6;
+  background: transparent;
+  border: none;
+  font-size: 12px;
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s;
+  cursor: pointer;
+}
+
+.participants-toggle-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.participants-toggle-button.is-active {
+  background: rgba(82, 100, 232, 0.25);
+  color: #ffffff;
+}
+
+.participants-toggle-top {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.participants-count-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.chevron-icon {
+  transition: transform 0.2s ease;
+}
+
+.chevron-icon.open {
+  transform: rotate(180deg);
+}
+
+.participants-toggle-label {
+  font-size: 11px;
+  line-height: 1;
+}
+
+.participants-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(var(--meeting-side-panel-width), 340px);
+  background: var(--meeting-surface);
+  border-left: 1px solid var(--meeting-border);
+  height: 100%;
+  color: var(--meeting-text);
+  z-index: 20;
+}
+
+.participants-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--meeting-border);
+}
+
+.participants-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font: 750 16px "Manrope", sans-serif;
+}
+
+.participants-total-badge {
+  display: grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.participants-close-btn {
+  background: transparent;
+  border: none;
+  color: var(--meeting-muted);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.participants-close-btn:hover {
+  color: #ffffff;
+}
+
+.participants-list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.participant-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: background 0.15s;
+}
+
+.participant-row:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.participant-avatar {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--primary);
+  color: #ffffff;
+  font: 700 14px "Manrope", sans-serif;
+  flex-shrink: 0;
+}
+
+.participant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.participant-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #f7f9fd;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.participant-name .local-tag {
+  color: var(--meeting-muted);
+  font-size: 11px;
+}
+
+.participant-media-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #aab5ca;
+}
+
+.status-icon.on {
+  color: #2dad7c;
+}
+
+.status-icon.off {
+  color: #e55a5a;
+}
+
+.participants-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--meeting-border);
+  color: var(--meeting-muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+.participants-footer strong {
+  color: #ffffff;
+}

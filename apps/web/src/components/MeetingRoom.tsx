@@ -1,6 +1,5 @@
 import {
   LiveKitRoom,
-  VideoConference,
   type LocalUserChoices,
 } from "@livekit/components-react";
 import { useCallback, useState } from "react";
@@ -8,6 +7,7 @@ import type { RoomSessionResponse } from "@voice/shared";
 import { VideoPresets, type RoomOptions } from "livekit-client";
 import { Brand } from "./Brand";
 import { HostAdmissionPanel } from "./HostAdmissionPanel";
+import { CustomVideoConference } from "./CustomVideoConference";
 
 const roomOptions: RoomOptions = {
   // Rooms are limited to a few active cameras, so prefer the highest remote layer
@@ -82,7 +82,10 @@ export function MeetingRoom({ meetingTitle, session, choices, meetingId, onLeave
           onDisconnected={onLeave}
           onError={(error) => console.error("LiveKit room error", error)}
         >
-          <VideoConference />
+          <CustomVideoConference
+            isWaitingRoomOpen={waitingRoomOpen}
+            onCloseWaitingRoom={() => setWaitingRoomOpen(false)}
+          />
         </LiveKitRoom>
         {session.role === "host" && meetingId && (
           <HostAdmissionPanel
