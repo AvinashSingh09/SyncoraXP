@@ -24,7 +24,7 @@ const EnvironmentSchema = z
     ZEPTOMAIL_API_URL: z.url().default("https://api.zeptomail.in/v1.1/email"),
     ZEPTOMAIL_TOKEN: z.string().optional(),
     ZEPTOMAIL_FROM_ADDRESS: z.string().optional(),
-    ZEPTOMAIL_FROM_NAME: z.string().default("VoiceMeet"),
+    ZEPTOMAIL_FROM_NAME: z.string().default("SyncoraXP"),
   })
   .superRefine((environment, context) => {
     if (environment.NODE_ENV === "production" && environment.DATABASE_MODE === "memory") {
