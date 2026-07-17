@@ -12,7 +12,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) return <Navigate to="/" replace />;
+  if (!loading && user) return <Navigate to="/webinar-service" replace />;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -21,7 +21,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
     try {
       if (mode === "register") await register({ name, email, password });
       else await login({ email, password });
-      navigate("/");
+      navigate("/webinar-service");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Authentication failed");
     } finally {
@@ -50,7 +50,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
             {submitting ? "Please wait..." : mode === "register" ? "Create account" : "Sign in"}
           </button>
           <p className="auth-switch">
-            {mode === "register" ? "Already have a host account?" : "New to VoiceMeet?"}{" "}
+            {mode === "register" ? "Already have a host account?" : "New to SyncoraXP?"}{" "}
             <Link to={mode === "register" ? "/login" : "/register"}>{mode === "register" ? "Sign in" : "Create one"}</Link>
           </p>
         </form>

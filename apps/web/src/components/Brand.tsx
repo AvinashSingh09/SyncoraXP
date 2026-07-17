@@ -2,13 +2,11 @@ import { Link } from "react-router-dom";
 
 export function Brand() {
   return (
-    <Link className="brand" to="/" aria-label="VoiceMeet home">
-      <span className="brand-mark" aria-hidden="true">
-        <span />
-        <span />
-        <span />
+    <Link className="brand" to="/" aria-label="SyncoraXP home">
+      <span className="brand-logo" aria-hidden="true">
+        <img src="/SyncoraXP_Logo.png" alt="" />
       </span>
-      <span>VoiceMeet</span>
+      <span>SyncoraXP</span>
     </Link>
   );
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { HostAdmissionRequest } from "@voice/shared";
+import { X } from "@phosphor-icons/react";
 import { decideAdmission, getPendingAdmissions } from "../api";
 
 interface HostAdmissionPanelProps {
@@ -66,7 +67,7 @@ export function HostAdmissionPanel({
         <aside className="host-admission-panel" aria-label="Waiting room guests">
           <div className="admission-panel-heading">
             <div><strong>Waiting room</strong><small>Only admitted guests receive room access.</small></div>
-            <button type="button" aria-label="Close waiting room" onClick={() => onOpenChange(false)}>×</button>
+            <button type="button" aria-label="Close waiting room" onClick={() => onOpenChange(false)}><X size={19} weight="bold" /></button>
           </div>
           {error && <p className="admission-error" role="alert">{error}</p>}
           {requests.length === 0 ? (
