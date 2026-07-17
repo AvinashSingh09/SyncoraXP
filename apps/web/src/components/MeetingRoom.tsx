@@ -1,6 +1,5 @@
 import {
   LiveKitRoom,
-  VideoConference,
   type LocalUserChoices,
 } from "@livekit/components-react";
 import { useCallback, useState } from "react";
@@ -9,6 +8,7 @@ import { Info, Users } from "@phosphor-icons/react";
 import { VideoPresets, type RoomOptions } from "livekit-client";
 import { Brand } from "./Brand";
 import { HostAdmissionPanel } from "./HostAdmissionPanel";
+import { CustomVideoConference } from "./CustomVideoConference";
 import { MeetingInfoPanel } from "./MeetingInfoPanel";
 
 const roomOptions: RoomOptions = {
@@ -95,7 +95,10 @@ export function MeetingRoom({ meetingTitle, session, choices, meetingId, meeting
           onDisconnected={onLeave}
           onError={(error) => console.error("LiveKit room error", error)}
         >
-          <VideoConference />
+          <CustomVideoConference
+            isWaitingRoomOpen={activeHostPanel === "waiting"}
+            onCloseWaitingRoom={() => setActiveHostPanel((curr) => (curr === "waiting" ? null : curr))}
+          />
         </LiveKitRoom>
         {session.role === "host" && meetingId && (
           <div className={`host-side-panel-slot ${activeHostPanel ? "open" : "closed"}`}>
