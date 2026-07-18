@@ -35,6 +35,7 @@ if (config.EMAIL_MODE === "zeptomail") {
     token: config.ZEPTOMAIL_TOKEN!,
     fromAddress: config.ZEPTOMAIL_FROM_ADDRESS!,
     fromName: config.ZEPTOMAIL_FROM_NAME,
+    demoReceiverEmail: config.ZEPTOMAIL_DEMO_RECEIVER,
   });
 }
 

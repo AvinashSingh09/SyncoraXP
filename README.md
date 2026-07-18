@@ -34,6 +34,12 @@ This local credential implementation sits behind an application auth boundary. A
 
 The default `EMAIL_MODE=console` prints invitation links in the API terminal and marks them as simulated.
 
+## Unified backend
+
+pps/api is the only backend process. It serves the core meeting API at /api, the virtual-events API at /ve-api, uploads under /ve-api/uploads, and Socket.IO at /socket.io on port 3000. The Vite dev server proxies both API namespaces and Socket.IO to that same Fastify process; pps/ve-api no longer exists.
+
+Virtual-events authentication requires JWT_SECRET; image generation additionally uses GEMINI_API_KEY when the photobooth feature is enabled.
+
 For a disposable preview without PostgreSQL, set `DATABASE_MODE=memory`. This mode loses all meetings when the API restarts and is rejected when `NODE_ENV=production`.
 
 ## LAN HTTPS testing
