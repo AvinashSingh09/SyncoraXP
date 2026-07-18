@@ -4,8 +4,8 @@
   "version": "0.1.0",
   "packageManager": "pnpm@11.9.0",
   "scripts": {
-    "dev": "pnpm --parallel --filter @voice/api --filter @voice/web dev",
-    "dev:lan": "pnpm --parallel --filter @voice/api --filter @voice/web dev:lan",
+    "dev": "pnpm --parallel --filter @voice/api --filter @voice/web --filter @voice/ve-api dev",
+    "dev:lan": "pnpm --parallel --filter @voice/api --filter @voice/web --filter @voice/ve-api dev:lan",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test"
