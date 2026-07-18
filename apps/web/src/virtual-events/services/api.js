@@ -43,14 +43,43 @@ const preloadImage = (url) => {
     img.src = url;
 };
 
+const oldAssets = [
+  'lobby-bg.png', 'expo-bg.jpg', 'lounge-bg.jpg', 'lounge-bg.png',
+  'meeting-room-bg.png', 'round-tables-bg.jpg', 'default-booth-bg.png',
+  'hero-illustration.png', 'icons.svg', 'favicon.svg'
+];
+
+const fixConfigValueString = (valueStr) => {
+  if (typeof valueStr !== 'string') return valueStr;
+  let result = valueStr;
+  oldAssets.forEach(asset => {
+    const target = '/' + asset;
+    const replacement = '/virtual-events-assets/' + asset;
+    // Replace all occurrences of /asset but NOT /virtual-events-assets/asset
+    if (result.includes(target)) {
+      // Regex replace to avoid double prefixing
+      const regex = new RegExp('(?<!/virtual-events-assets)/' + asset.replace('.', '\\.'), 'g');
+      result = result.replace(regex, replacement);
+    }
+  });
+  return result;
+};
+
 export const configService = {
-    getFreshConfig: (key) => api.get(`/config/${key}`),
+    getFreshConfig: (key) => api.get(`/config/${key}`).then(res => {
+        if (res.data && res.data.value) {
+            res.data.value = fixConfigValueString(res.data.value);
+        }
+        return res;
+    }),
     getConfig: (key) => {
         const cacheKey = `config_${key}`;
         const cached = sessionStorage.getItem(cacheKey);
         if (cached) {
             try {
-                return Promise.resolve({ data: JSON.parse(cached) });
+                const parsed = JSON.parse(cached);
+                if (parsed.value) parsed.value = fixConfigValueString(parsed.value);
+                return Promise.resolve({ data: parsed });
             } catch (e) {
                 sessionStorage.removeItem(cacheKey);
             }
@@ -59,6 +88,7 @@ export const configService = {
         if (!configCache[key]) {
             configCache[key] = api.get(`/config/${key}`).then(res => {
                 if (res.data) {
+                    if (res.data.value) res.data.value = fixConfigValueString(res.data.value);
                     sessionStorage.setItem(cacheKey, JSON.stringify(res.data));
                 }
                 return res;
@@ -90,7 +120,14 @@ export const configService = {
             console.warn('Preload failed for', key, e);
         }
     },
-    getConfigsBulk: (keys) => api.get(`/config/bulk/keys?keys=${keys.join(',')}`),
+    getConfigsBulk: (keys) => api.get(`/config/bulk/keys?keys=${keys.join(',')}`).then(res => {
+        if (res.data && Array.isArray(res.data)) {
+            res.data.forEach(item => {
+                if (item.value) item.value = fixConfigValueString(item.value);
+            });
+        }
+        return res;
+    }),
     setConfig: (key, value) => {
         delete configCache[key];
         sessionStorage.removeItem(`config_${key}`);
