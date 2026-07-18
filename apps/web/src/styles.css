@@ -4398,7 +4398,7 @@ textarea {
 }
 
 /* Virtual events platform */
-.virtual-events-page { min-height: 100vh; overflow: hidden; color: #fff; background: radial-gradient(circle at 83% 38%, rgba(90, 108, 255, .44), transparent 22%), radial-gradient(circle at 9% 77%, rgba(123, 37, 255, .32), transparent 26%), linear-gradient(145deg, #07122e 3%, #1a0870 57%, #5d0df2 100%); }
+.virtual-events-page { min-height: 100vh; overflow: hidden; padding-top: 70px; color: #fff; background: radial-gradient(circle at 83% 38%, rgba(90, 108, 255, .44), transparent 22%), radial-gradient(circle at 9% 77%, rgba(123, 37, 255, .32), transparent 26%), linear-gradient(145deg, #07122e 3%, #1a0870 57%, #5d0df2 100%); }
 .virtual-events-header { width: min(1260px, calc(100% - 48px)); min-height: 88px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 28px; margin: 0 auto; }
 .virtual-events-brand { display: inline-flex; align-items: center; justify-self: start; gap: 10px; color: #fff; font: 800 21px "Manrope", sans-serif; letter-spacing: -.045em; text-decoration: none; }
 .virtual-events-brand img { width: 39px; height: 39px; object-fit: contain; filter: brightness(1.25) saturate(.85); }

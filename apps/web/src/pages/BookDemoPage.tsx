@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { CaretDown, CheckCircle } from "@phosphor-icons/react";
+import { Link } from "react-router-dom";
+import { CheckCircle } from "@phosphor-icons/react";
+import { MarketingHeader } from "../components/MarketingHeader";
 
 const COUNTRY_CODES = [
   { code: "IN", dial: "+91", flag: "🇮🇳" },
@@ -27,7 +28,6 @@ const CATEGORIES = [
 ];
 
 export function BookDemoPage() {
-  const navigate = useNavigate();
   const formRef = useRef<HTMLDivElement>(null);
 
   const [form, setForm] = useState({
@@ -213,7 +213,7 @@ export function BookDemoPage() {
   };
 
   return (
-    <div style={{
+    <div className="landing-page book-demo-page" style={{
       minHeight: "100vh",
       display: "flex",
       flexDirection: "column",
@@ -222,38 +222,14 @@ export function BookDemoPage() {
       color: "#fff",
       overflowX: "hidden",
     }}>
-      {/* ── CLIENT NAVBAR (Preserved exactly) ── */}
-      <header className="virtual-events-header" style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-        <Link className="virtual-events-brand" to="/virtual-events-platform" aria-label="SyncoraXP home">
-          <img src="/SyncoraXP_Logo.png" alt="" />
-          <span>SyncoraXP</span>
-        </Link>
-        <nav className="virtual-events-nav" aria-label="Virtual events navigation">
-          <Link to="/virtual-events-platform#platform" style={{ color: "rgba(255,255,255,0.88)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "5px" }}>
-            Platform <CaretDown size={14} weight="bold" />
-          </Link>
-          <Link to="/virtual-events-platform#capabilities" style={{ color: "rgba(255,255,255,0.88)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "5px" }}>
-            Solutions <CaretDown size={14} weight="bold" />
-          </Link>
-          <Link to="/virtual-events-platform#experience" style={{ color: "rgba(255,255,255,0.88)", textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "5px" }}>
-            Resources <CaretDown size={14} weight="bold" />
-          </Link>
-        </nav>
-        <button
-          className="virtual-events-demo"
-          onClick={scrollToForm}
-          type="button"
-        >
-          Book a demo
-        </button>
-      </header>
+      <MarketingHeader />
 
       {/* ── MAIN CONTENT (Split Column Layout matching Reference Image) ── */}
       <main style={{
         flex: 1,
         width: "min(1260px, calc(100% - 48px))",
         margin: "0 auto",
-        padding: "60px 0 80px",
+        padding: "130px 0 80px",
         display: "grid",
         gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
         gap: "48px",

@@ -1,7 +1,6 @@
 import {
   ArrowRight,
   Broadcast,
-  CaretDown,
   ChartLineUp,
   ChatCircleDots,
   CheckCircle,
@@ -9,7 +8,8 @@ import {
   UsersThree,
   VideoCamera,
 } from "@phosphor-icons/react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { MarketingHeader } from "../components/MarketingHeader";
 
 const eventArtwork = "/virtual-events/syncoraxp-virtual-events-hero.png";
 const hostArtwork = "/virtual-events/host-live-v1.png";
@@ -27,28 +27,9 @@ function EventPhoto({ className, alt, src = eventArtwork }: { className: string;
 }
 
 export function VirtualEventsPage() {
-  const navigate = useNavigate();
-
   return (
-    <main className="virtual-events-page">
-      <header className="virtual-events-header">
-        <Link className="virtual-events-brand" to="/" aria-label="SyncoraXP home">
-          <img src="/SyncoraXP_Logo.png" alt="" />
-          <span>SyncoraXP</span>
-        </Link>
-        <nav className="virtual-events-nav" aria-label="Virtual events navigation">
-          <a href="#platform">Platform <CaretDown size={14} weight="bold" /></a>
-          <a href="#capabilities">Solutions <CaretDown size={14} weight="bold" /></a>
-          <a href="#experience">Resources <CaretDown size={14} weight="bold" /></a>
-        </nav>
-        <button
-          className="virtual-events-demo"
-          onClick={() => navigate("/virtual-events-platform/book-demo")}
-          type="button"
-        >
-          Book a demo
-        </button>
-      </header>
+    <main className="landing-page virtual-events-page">
+      <MarketingHeader />
 
       <section className="virtual-events-hero" id="platform" aria-labelledby="virtual-events-title">
         <p className="virtual-events-kicker"><span /> Your virtual events, elevated</p>
