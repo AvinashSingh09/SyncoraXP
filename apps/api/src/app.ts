@@ -7,8 +7,8 @@ import type { AuthService } from "./auth/auth-service";
 import { registerAuthRoutes } from "./routes/auth-routes";
 import type { RoomTokenIssuer } from "./livekit/room-token-issuer";
 import { registerMeetingRoutes } from "./routes/meeting-routes";
-import { registerDemoRoutes } from "./routes/demo-routes";
 import virtualEventsModule from "./virtual-events/index.cjs";
+import { registerDemoRoutes } from "./routes/demo-routes";
 
 const { registerVirtualEvents } = virtualEventsModule as { registerVirtualEvents: (app: ReturnType<typeof Fastify>) => Promise<void> };
 interface BuildAppDependencies {
@@ -29,11 +29,10 @@ export async function buildApp(dependencies: BuildAppDependencies) {
   app.get("/api/health", async () => ({ status: "ok" }));
   await registerAuthRoutes(app, dependencies);
   await registerMeetingRoutes(app, dependencies);
-  await registerDemoRoutes(app, dependencies);
-
   if (dependencies.config.NODE_ENV !== "test") {
     await registerVirtualEvents(app);
   }
+  await registerDemoRoutes(app, dependencies);
 
   app.setErrorHandler((error, _request, reply) => {
     app.log.error(error);
