@@ -1,8 +1,7 @@
-require('dotenv').config();
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
 const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '../../../.env') });
+const express = require('express');
+const cors = require('cors');
 const authRoutes = require('./routes/auth.routes');
 const configRoutes = require('./routes/config.routes');
 const sessionRoutes = require('./routes/session.routes');
@@ -395,18 +394,18 @@ app.use('/api/photobooth', photoboothRoutes);
 // Error Handling Middleware
 app.use(errorMiddleware);
 
-const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/mern_auth';
+const PORT = process.env.VE_PORT || 5000;
+const { initDb } = require('./utils/db');
 
-mongoose.connect(MONGODB_URI)
+initDb()
     .then(() => {
-        console.log('Connected to MongoDB');
         server.listen(PORT, () => {
-            console.log(`Server is running on port ${PORT}`);
+            console.log(`Server is running on port ${PORT} (PostgreSQL)`);
         });
     })
     .catch((error) => {
-        console.error('MongoDB connection error:', error);
+        console.error('PostgreSQL initialization error:', error);
+        process.exit(1);
     });
 
 module.exports = server;

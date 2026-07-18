@@ -6,7 +6,16 @@ exports.seedMockMessages = async () => {
     try {
         const count = await Message.countDocuments();
         if (count === 0) {
-            const defaultUser = await User.findOne() || { _id: new require('mongoose').Types.ObjectId() };
+            let defaultUser = await User.findOne();
+            if (!defaultUser) {
+                defaultUser = new User({
+                    firstName: 'Default',
+                    lastName: 'User',
+                    email: 'default@virtualevent.com',
+                    password: 'defaultpassword123'
+                });
+                await defaultUser.save();
+            }
             const mockMessages = [
                 {
                     sender: defaultUser._id,
