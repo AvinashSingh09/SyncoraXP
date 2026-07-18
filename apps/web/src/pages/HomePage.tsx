@@ -204,7 +204,9 @@ export function HomePage() {
                     <time>{meetingTime(meeting)}</time>
                     <span className="agenda-line" aria-hidden="true" />
                     <div><strong>{meeting.title}</strong><small>{meeting.description || "Hosted by you"}</small></div>
-                    <Link className="button agenda-open" to={`/meetings/${meeting.id}/host`}>Open room <ArrowRight size={16} weight="bold" /></Link>
+                    {meeting.status !== "ended" && (
+                      <Link className="button agenda-open" to={`/meetings/${meeting.id}/host`}>Open room <ArrowRight size={16} weight="bold" /></Link>
+                    )}
                   </article>
                 ))}
               </div>
@@ -242,16 +244,20 @@ export function HomePage() {
                 <article className="meeting-list-row" key={meeting.id} role="listitem">
                   <div className="meeting-list-content">
                     <div className="meeting-list-title-line">
-                      <Link to={`/meetings/${meeting.id}/host`}>{meeting.title}</Link>
+                      {meeting.status === "ended"
+                        ? <strong>{meeting.title}</strong>
+                        : <Link to={`/meetings/${meeting.id}/host`}>{meeting.title}</Link>}
                       <span className={`meeting-status ${meeting.status}`}>{meeting.status}</span>
                     </div>
                     <span>{meetingDate(meeting)}</span>
                     <small>Host: {user?.name ?? meeting.organizerName}</small>
                   </div>
                   <div className="meeting-list-actions">
-                    <Link className="button meeting-list-open" to={`/meetings/${meeting.id}/host`}>
-                      Open room <ArrowRight size={15} weight="bold" />
-                    </Link>
+                    {meeting.status !== "ended" && (
+                      <Link className="button meeting-list-open" to={`/meetings/${meeting.id}/host`}>
+                        Open room <ArrowRight size={15} weight="bold" />
+                      </Link>
+                    )}
                     <button className="meeting-more-button" type="button" aria-label={`Delete ${meeting.title}`} title="Delete meeting" disabled={deletingMeetingId === meeting.id} onClick={() => void removeMeeting(meeting)}>
                       {deletingMeetingId === meeting.id ? <span className="meeting-action-progress">Deleting</span> : <><DotsThree size={22} weight="bold" /><Trash size={15} weight="bold" /></>}
                     </button>

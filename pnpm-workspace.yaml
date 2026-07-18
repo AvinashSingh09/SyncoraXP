@@ -3,9 +3,11 @@ packages:
   - packages/*
 
 allowBuilds:
+  '@google/genai': false
   bcrypt: true
   core-js: true
   esbuild: true
   mongodb-memory-server: true
+  protobufjs: false
 
 verifyDepsBeforeRun: false

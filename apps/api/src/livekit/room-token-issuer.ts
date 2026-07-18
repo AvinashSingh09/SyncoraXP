@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { AccessToken, TrackSource } from "livekit-server-sdk";
+import { AccessToken, RoomServiceClient, TrackSource } from "livekit-server-sdk";
 
 export interface RoomTokenRequest {
   roomName: string;
@@ -18,6 +18,7 @@ export interface IssuedRoomToken {
 export interface RoomTokenIssuer {
   isConfigured(): boolean;
   issue(request: RoomTokenRequest): Promise<IssuedRoomToken>;
+  endRoom(roomName: string): Promise<void>;
 }
 
 export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
@@ -69,5 +70,16 @@ export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
       participantToken: await token.toJwt(),
       participantIdentity,
     };
+  }
+
+  async endRoom(roomName: string): Promise<void> {
+    if (!this.config.serverUrl || !this.config.apiKey || !this.config.apiSecret) {
+      throw new Error("LiveKit is not configured");
+    }
+    const serviceUrl = this.config.serverUrl
+      .replace(/^wss:/, "https:")
+      .replace(/^ws:/, "http:");
+    const rooms = new RoomServiceClient(serviceUrl, this.config.apiKey, this.config.apiSecret);
+    await rooms.deleteRoom(roomName);
   }
 }

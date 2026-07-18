@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export * from "./translation";
+
 const trimmedEmail = z
   .string()
   .trim()
@@ -84,6 +86,7 @@ export interface PublicMeetingResponse {
 export interface HostMeetingResponse {
   meeting: MeetingSummary;
   role: "host";
+  settings: MeetingSettings;
 }
 
 export interface MyMeetingsResponse {
@@ -119,6 +122,25 @@ export interface HostAdmissionListResponse {
   requests: HostAdmissionRequest[];
 }
 
+export interface MeetingSettings {
+  isLocked: boolean;
+  waitingRoomEnabled: boolean;
+}
+
+export const UpdateMeetingSettingsInputSchema = z.object({
+  isLocked: z.boolean().optional(),
+  waitingRoomEnabled: z.boolean().optional(),
+}).refine(
+  (settings) => settings.isLocked !== undefined || settings.waitingRoomEnabled !== undefined,
+  "Choose at least one setting to update",
+);
+
+export type UpdateMeetingSettingsInput = z.infer<typeof UpdateMeetingSettingsInputSchema>;
+
+export interface MeetingSettingsResponse {
+  settings: MeetingSettings;
+}
+
 export const AdmissionDecisionInputSchema = z.object({
   decision: z.enum(["admitted", "denied"]),
 });
@@ -132,7 +154,9 @@ export type GuestRoomSessionInput = z.infer<typeof GuestRoomSessionInputSchema>;
 export interface RoomSessionResponse {
   serverUrl: string;
   participantToken: string;
+  meetingId: string;
   roomName: string;
   participantIdentity: string;
   role: "host" | "guest";
+  translation: import("./translation").MeetingTranslationSettings;
 }

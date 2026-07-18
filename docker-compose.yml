@@ -31,6 +31,9 @@ services:
         keys:
           "${LIVEKIT_API_KEY}": "${LIVEKIT_API_SECRET}"
     ports:
+      # Loopback-only signaling for native server-side workers. Browsers continue
+      # to use the TLS proxy on 7880.
+      - "127.0.0.1:7883:7880/tcp"
       - "7881:7881/tcp"
       - "7882:7882/udp"
 

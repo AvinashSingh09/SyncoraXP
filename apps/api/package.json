@@ -1,37 +1,39 @@
 {
-    "name":  "@voice/api",
-    "private":  true,
-    "version":  "0.1.0",
-    "type":  "module",
-    "scripts":  {
-                    "dev":  "tsx watch src/server.ts",
-                    "dev:lan":  "tsx watch src/server.ts",
-                    "livekit:check":  "node scripts/check-livekit.mjs",
-                    "livekit:diagnose":  "node scripts/diagnose-livekit.mjs",
-                    "build":  "tsup src/server.ts --format esm --out-dir dist --sourcemap --clean",
-                    "start":  "node dist/server.js",
-                    "typecheck":  "tsc --noEmit",
-                    "test":  "tsx --test test/meeting-routes.test.ts test/room-token-issuer.test.ts",
-                    "db:migrate":  "tsx src/db/migrate.ts"
-                },
-    "dependencies":  {
-                         "@fastify/cors":  "^11.0.1",
-                         "@voice/shared":  "workspace:*",
-                         "fastify":  "^5.4.0",
-                         "livekit-server-sdk":  "^2.17.0",
-                         "pg":  "^8.16.3",
-                         "zod":  "^4.0.5",
-                         "@google/generative-ai":  "^0.24.1",
-                         "bcrypt":  "^6.0.0",
-                         "jsonwebtoken":  "^9.0.3",
-                         "socket.io":  "^4.8.3",
-                         "ws":  "^8.21.0"
-                     },
-    "devDependencies":  {
-                            "@types/node":  "^24.0.10",
-                            "@types/pg":  "^8.15.4",
-                            "tsup":  "^8.5.0",
-                            "tsx":  "^4.20.3",
-                            "typescript":  "^5.8.3"
-                        }
+  "name": "@voice/api",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node scripts/run-with-local-ca.mjs tsx watch src/server.ts",
+    "dev:lan": "node scripts/run-with-local-ca.mjs tsx watch src/server.ts",
+    "livekit:check": "node scripts/run-with-local-ca.mjs node scripts/check-livekit.mjs",
+    "livekit:diagnose": "node scripts/run-with-local-ca.mjs node scripts/diagnose-livekit.mjs",
+    "translation:diagnose": "node scripts/diagnose-translation.mjs",
+    "translation:retry": "node scripts/diagnose-translation.mjs --retry-stalled",
+    "build": "tsup src/server.ts --format esm --out-dir dist --sourcemap --clean",
+    "start": "node scripts/run-with-local-ca.mjs node dist/server.js",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/**/*.test.ts",
+    "db:migrate": "tsx src/db/migrate.ts"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.0.1",
+    "@google/generative-ai": "^0.24.1",
+    "@voice/shared": "workspace:*",
+    "bcrypt": "^6.0.0",
+    "fastify": "^5.4.0",
+    "jsonwebtoken": "^9.0.3",
+    "livekit-server-sdk": "^2.17.0",
+    "pg": "^8.16.3",
+    "socket.io": "^4.8.3",
+    "ws": "^8.21.0",
+    "zod": "^4.0.5"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "@types/pg": "^8.15.4",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
 }

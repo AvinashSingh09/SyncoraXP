@@ -12,14 +12,19 @@ import { MemoryAuthRepository } from "./auth/memory-auth-repository";
 import { PostgresAuthRepository } from "./auth/postgres-auth-repository";
 import type { AuthRepository } from "./auth/auth-repository";
 import { LiveKitRoomTokenIssuer } from "./livekit/room-token-issuer";
+import type { TranslationRepository } from "./translation/translation-repository";
+import { MemoryTranslationRepository } from "./translation/memory-translation-repository";
+import { PostgresTranslationRepository } from "./translation/postgres-translation-repository";
 
 const config = loadConfig();
 const pool = new Pool({ connectionString: config.DATABASE_URL, max: 10 });
 let repository: MeetingRepository = new PostgresMeetingRepository(pool);
 let authRepository: AuthRepository = new PostgresAuthRepository(pool);
+let translations: TranslationRepository = new PostgresTranslationRepository(pool);
 if (config.DATABASE_MODE === "memory") {
   repository = new MemoryMeetingRepository();
   authRepository = new MemoryAuthRepository();
+  translations = new MemoryTranslationRepository();
 }
 const auth = new AuthService(authRepository, config.SESSION_DAYS);
 const roomTokens = new LiveKitRoomTokenIssuer({
@@ -39,7 +44,7 @@ if (config.EMAIL_MODE === "zeptomail") {
   });
 }
 
-const app = await buildApp({ config, repository, mailer, auth, roomTokens });
+const app = await buildApp({ config, repository, mailer, auth, roomTokens, translations });
 
 const shutdown = async () => {
   await app.close();

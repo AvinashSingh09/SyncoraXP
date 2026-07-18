@@ -11,6 +11,8 @@ export interface StoredMeeting {
   createdBy: string | null;
   scheduledFor: Date | null;
   status: "scheduled" | "active" | "ended";
+  isLocked: boolean;
+  waitingRoomEnabled: boolean;
   createdAt: Date;
 }
 
@@ -61,6 +63,12 @@ export interface MeetingRepository {
   updateInvitationDelivery(invitationId: string, update: DeliveryUpdate): Promise<void>;
   findByJoinCode(joinCode: string): Promise<StoredMeeting | null>;
   findByIdForHost(meetingId: string, userId: string): Promise<StoredMeeting | null>;
+  updateSettingsForHost(
+    meetingId: string,
+    userId: string,
+    settings: { isLocked?: boolean; waitingRoomEnabled?: boolean },
+  ): Promise<StoredMeeting | null>;
+  endForHost(meetingId: string, userId: string): Promise<StoredMeeting | null>;
   listByOwner(userId: string): Promise<StoredMeeting[]>;
   deleteByOwner(meetingId: string, userId: string): Promise<boolean>;
   createAdmissionRequest(record: {
@@ -68,6 +76,7 @@ export interface MeetingRepository {
     meetingId: string;
     displayName: string;
     tokenHash: string;
+    status?: AdmissionStatus;
   }): Promise<StoredAdmissionRequest>;
   findAdmissionRequest(
     meetingId: string,
