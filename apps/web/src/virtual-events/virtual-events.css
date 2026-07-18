@@ -1,0 +1,57 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap');
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --ve-background: #f8fafc;
+    --ve-foreground: #0f172a;
+    --ve-primary: #3b82f6;
+    --ve-primary-foreground: #ffffff;
+    --ve-glass-bg: rgba(255, 255, 255, 0.7);
+    --ve-glass-border: rgba(255, 255, 255, 0.3);
+  }
+
+  .ve-dark {
+    --ve-background: #0f172a;
+    --ve-foreground: #f8fafc;
+    --ve-primary: #60a5fa;
+    --ve-primary-foreground: #0f172a;
+    --ve-glass-bg: rgba(15, 23, 42, 0.7);
+    --ve-glass-border: rgba(255, 255, 255, 0.1);
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: var(--ve-glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--ve-glass-border);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .ve-dark .glass {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  @keyframes floatUp {
+    0% { transform: translateY(20px) scale(0.5); opacity: 0; }
+    15% { transform: translateY(0px) scale(1.2); opacity: 1; }
+    25% { transform: translateY(-20px) scale(1); opacity: 1; }
+    80% { transform: translateY(-120px) scale(1); opacity: 1; }
+    100% { transform: translateY(-150px) scale(1); opacity: 0; }
+  }
+
+  .animate-float-up {
+    animation: floatUp 4s ease-out forwards;
+  }
+}

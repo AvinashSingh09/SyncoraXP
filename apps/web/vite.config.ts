@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 const lanCertificatePath = fileURLToPath(
   new URL("../../certificates/voicemeet-lan-dev.pfx", import.meta.url),
@@ -16,7 +17,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react()],
+    plugins: [react(), tailwindcss()],
     build: {
       // The lazy-loaded LiveKit media SDK is intentionally isolated from the initial application bundle.
       chunkSizeWarningLimit: 700,
@@ -31,7 +32,20 @@ export default defineConfig(({ mode }) => {
           }
         : undefined,
       proxy: {
+        // SyncoraXP API
         "/api": "http://localhost:3000",
+        // Virtual Events Platform API
+        "/ve-api": {
+          target: "http://localhost:5000",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/ve-api/, "/api"),
+        },
+        // Virtual Events Socket.IO
+        "/socket.io": {
+          target: "http://localhost:5000",
+          ws: true,
+          changeOrigin: true,
+        },
       },
     },
   };
