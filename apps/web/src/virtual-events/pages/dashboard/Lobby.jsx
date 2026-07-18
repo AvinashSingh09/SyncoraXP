@@ -5,6 +5,15 @@ import { FiX, FiInfo, FiCalendar, FiMapPin, FiClock, FiSend, FiUser, FiMessageSq
 
 const Lobby = () => {
     const navigate = useNavigate();
+    const navigateTo = (path) => {
+        let target = path;
+        if (target.startsWith('/dashboard')) {
+            target = `/virtual-events-platform/app${target}`;
+        } else if (target.startsWith('dashboard')) {
+            target = `/virtual-events-platform/app/${target}`;
+        }
+        navigate(target);
+    };
     const { layoutConfigs } = useOutletContext();
     const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
     const [lobbyConfig, setLobbyConfig] = useState(() => {
@@ -157,7 +166,7 @@ const Lobby = () => {
                                     } else if (point.targetPage) {
                                         setIsZooming(point);
                                         setTimeout(() => {
-                                            navigate(point.targetPage);
+                                            navigateTo(point.targetPage);
                                         }, 850);
                                     }
                                 }}

@@ -6,7 +6,7 @@ import { buildApp } from "../src/app";
 import { AuthService } from "../src/auth/auth-service";
 import { MemoryAuthRepository } from "../src/auth/memory-auth-repository";
 import { MemoryMeetingRepository } from "../src/db/memory-meeting-repository";
-import type { InvitationMailer, InvitationMessage } from "../src/email/invitation-mailer";
+import type { InvitationMailer, InvitationMessage, DemoMessage } from "../src/email/invitation-mailer";
 import type {
   RoomTokenIssuer,
   RoomTokenRequest,
@@ -14,8 +14,13 @@ import type {
 
 class FakeMailer implements InvitationMailer {
   messages: InvitationMessage[] = [];
+  demoRequests: DemoMessage[] = [];
   async sendInvitation(message: InvitationMessage) {
     this.messages.push(message);
+    return { status: "sent" as const, providerRequestId: randomUUID() };
+  }
+  async sendDemoRequest(message: DemoMessage) {
+    this.demoRequests.push(message);
     return { status: "sent" as const, providerRequestId: randomUUID() };
   }
 }
@@ -60,7 +65,7 @@ async function setup(liveKitConfigured = true) {
   const mailer = new FakeMailer();
   const roomTokens = new FakeRoomTokenIssuer(liveKitConfigured);
   const auth = new AuthService(authRepository, 7);
-  const app = await buildApp({ config, repository, mailer, auth, roomTokens });
+  const app = await buildApp({ config: config as any, repository, mailer, auth, roomTokens });
   return { app, mailer, roomTokens };
 }
 
@@ -396,4 +401,54 @@ test("returns actionable setup guidance when LiveKit is not configured", async (
   });
   assert.equal(response.statusCode, 503);
   assert.match(response.json().error, /LIVEKIT_URL/);
+});
+
+test("handles book a demo request successfully", async (t) => {
+  const { app, mailer } = await setup();
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/demo",
+    payload: {
+      fullName: "Jane Doe",
+      workEmail: "jane@example.com",
+      phone: "1234567890",
+      countryCode: "+91",
+      city: "Bangalore",
+      company: "Acme Corp",
+      category: "SaaS / Technology",
+      message: "Please show me a demo",
+    },
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().success, true);
+  
+  // Ensure the mailer received it
+  const fakeMailer = mailer as FakeMailer;
+  assert.equal(fakeMailer.demoRequests.length, 1);
+  assert.equal(fakeMailer.demoRequests[0]?.fullName, "Jane Doe");
+  assert.equal(fakeMailer.demoRequests[0]?.workEmail, "jane@example.com");
+});
+
+test("rejects malformed demo request", async (t) => {
+  const { app } = await setup();
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/demo",
+    payload: {
+      fullName: "J",
+      workEmail: "not-an-email",
+      phone: "1",
+      countryCode: "+91",
+      city: "",
+      company: "",
+      category: "",
+    },
+  });
+
+  assert.equal(response.statusCode, 400);
 });

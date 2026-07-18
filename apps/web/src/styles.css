@@ -446,7 +446,7 @@ textarea { resize: vertical; }
 .virtual-events-nav { display: flex; align-items: center; gap: 35px; }
 .virtual-events-nav a { display: inline-flex; align-items: center; gap: 5px; color: rgba(255,255,255,.88); font-size: 14px; font-weight: 700; text-decoration: none; transition: color .16s ease; }
 .virtual-events-nav a:hover { color: #fff; }
-.virtual-events-demo { justify-self: end; padding: 13px 20px; border-radius: 10px; color: #fff; background: #5464ef; box-shadow: 0 12px 28px rgba(4, 3, 48, .26); font-size: 14px; font-weight: 800; text-decoration: none; transition: transform .16s ease, background .16s ease; }
+.virtual-events-demo { justify-self: end; padding: 13px 20px; border-radius: 10px; color: #fff; background: #5464ef; box-shadow: 0 12px 28px rgba(4, 3, 48, .26); font-size: 14px; font-weight: 800; text-decoration: none; transition: transform .16s ease, background .16s ease; cursor: pointer; border: none; }
 .virtual-events-demo:hover, .virtual-events-primary:hover { transform: translateY(-2px); background: #6775ff; }
 .virtual-events-hero { width: min(1260px, calc(100% - 48px)); display: flex; flex-direction: column; align-items: center; margin: 0 auto; padding: 71px 0 92px; text-align: center; }
 .virtual-events-kicker { display: inline-flex; align-items: center; gap: 9px; margin: 0 0 18px; color: rgba(255,255,255,.88); font-size: 13px; font-weight: 800; }

@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { FiSearch, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiShoppingBag, FiTrash2, FiDownload, FiEye, FiX } from 'react-icons/fi';
+import { FiSearch, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiInbox, FiTrash2, FiDownload, FiEye, FiX } from 'react-icons/fi';
 import { FaTrophy } from 'react-icons/fa';
 import { MdHome, MdStorefront, MdEventSeat, MdMeetingRoom, MdGroup, MdPeople, MdVideogameAsset, MdAssignment } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
@@ -346,8 +346,8 @@ const DashboardLayout = () => {
                                     key={tab.name}
                                     to={tab.path}
                                     className={({ isActive }) =>
-                                        `flex flex-col items-center justify-center min-w-[82px] h-[56px] gap-1.5 px-2 transition-all duration-200 rounded-2xl shrink-0 group ${isActive
-                                            ? 'bg-gradient-to-b from-[#eef2ff] to-[#dde8ff] text-[#295ce8]'
+                                        `flex flex-col items-center justify-center min-w-[82px] h-[56px] gap-1.5 px-2 transition-all duration-200 rounded-2xl shrink-0 group outline-none focus:outline-none ${isActive
+                                            ? 'bg-[#eef2ff] text-[#295ce8]'
                                             : 'text-gray-400 hover:text-[#295ce8] hover:bg-[#f0f5ff]'
                                         }`
                                     }
@@ -454,7 +454,7 @@ const DashboardLayout = () => {
                         className="relative w-10 h-10 flex items-center justify-center rounded-xl bg-gray-50 hover:bg-blue-50 text-gray-500 hover:text-[#295ce8] transition-all duration-200 hover:shadow-sm cursor-pointer border border-transparent hover:border-blue-100"
                         title="My Bag"
                     >
-                        <FiShoppingBag className="w-[22px] h-[22px]" />
+                        <FiInbox className="w-[22px] h-[22px]" />
                         {bagItems.length > 0 && (
                             <span className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 text-white text-[9px] font-extrabold rounded-full border-2 border-white flex items-center justify-center shadow">
                                 {bagItems.length}

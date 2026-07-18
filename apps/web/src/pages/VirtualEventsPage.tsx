@@ -9,7 +9,7 @@ import {
   UsersThree,
   VideoCamera,
 } from "@phosphor-icons/react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const eventArtwork = "/virtual-events/syncoraxp-virtual-events-hero.png";
 const hostArtwork = "/virtual-events/host-live-v1.png";
@@ -27,6 +27,8 @@ function EventPhoto({ className, alt, src = eventArtwork }: { className: string;
 }
 
 export function VirtualEventsPage() {
+  const navigate = useNavigate();
+
   return (
     <main className="virtual-events-page">
       <header className="virtual-events-header">
@@ -39,7 +41,13 @@ export function VirtualEventsPage() {
           <a href="#capabilities">Solutions <CaretDown size={14} weight="bold" /></a>
           <a href="#experience">Resources <CaretDown size={14} weight="bold" /></a>
         </nav>
-        <a className="virtual-events-demo" href="mailto:hello@syncoraxp.com?subject=Virtual%20events%20demo">Book a demo</a>
+        <button
+          className="virtual-events-demo"
+          onClick={() => navigate("/virtual-events-platform/book-demo")}
+          type="button"
+        >
+          Book a demo
+        </button>
       </header>
 
       <section className="virtual-events-hero" id="platform" aria-labelledby="virtual-events-title">

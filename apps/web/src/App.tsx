@@ -10,6 +10,7 @@ const HostMeetingPage = lazy(() => import("./pages/HostMeetingPage").then((modul
 const AuthPage = lazy(() => import("./pages/AuthPage").then((module) => ({ default: module.AuthPage })));
 const VirtualEventsPage = lazy(() => import("./pages/VirtualEventsPage").then((module) => ({ default: module.VirtualEventsPage })));
 const VirtualEventsApp = lazy(() => import("./virtual-events/VirtualEventsApp"));
+const BookDemoPage = lazy(() => import("./pages/BookDemoPage").then((m) => ({ default: m.BookDemoPage })));
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -27,6 +28,7 @@ export function App() {
             <Route path="/login" element={<AuthPage mode="login" />} />
             <Route path="/register" element={<AuthPage mode="register" />} />
             <Route path="/virtual-events-platform" element={<VirtualEventsPage />} />
+            <Route path="/virtual-events-platform/book-demo" element={<BookDemoPage />} />
             <Route path="/virtual-events-platform/app/*" element={<VirtualEventsApp />} />
             <Route path="/webinar-service" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
             <Route path="/meetings/new" element={<ProtectedRoute><CreateMeetingPage /></ProtectedRoute>} />
