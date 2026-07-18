@@ -6,6 +6,15 @@ import { configService } from '../../services/api';
 const Hall = () => {
     const { hallId } = useParams();
     const navigate = useNavigate();
+    const navigateTo = (path) => {
+        let target = path;
+        if (target.startsWith('/dashboard')) {
+            target = `/virtual-events-platform/app${target}`;
+        } else if (target.startsWith('dashboard')) {
+            target = `/virtual-events-platform/app/${target}`;
+        }
+        navigate(target);
+    };
     const { layoutConfigs } = useOutletContext();
 
     const halls = ['A', 'B', 'C'];
@@ -179,7 +188,7 @@ const Hall = () => {
                                     } else {
                                         setIsZooming(point);
                                         setTimeout(() => {
-                                            navigate(point.targetPage);
+                                            navigateTo(point.targetPage);
                                         }, 850);
                                     }
                                 }
@@ -211,7 +220,7 @@ const Hall = () => {
                                     } else {
                                         setIsZooming(point);
                                         setTimeout(() => {
-                                            navigate(point.targetPage);
+                                            navigateTo(point.targetPage);
                                         }, 850);
                                     }
                                 }

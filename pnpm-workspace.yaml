@@ -3,7 +3,9 @@ packages:
   - packages/*
 
 allowBuilds:
-  core-js: set this to true or false
+  bcrypt: true
+  core-js: true
   esbuild: true
+  mongodb-memory-server: true
 
 verifyDepsBeforeRun: false

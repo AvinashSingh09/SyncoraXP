@@ -11,6 +11,15 @@ const Booth = () => {
     const { hallId, boothId } = useParams();
     const { user, updateUser } = useAuth();
     const navigate = useNavigate();
+    const navigateTo = (path) => {
+        let target = path;
+        if (target.startsWith('/dashboard')) {
+            target = `/virtual-events-platform/app${target}`;
+        } else if (target.startsWith('dashboard')) {
+            target = `/virtual-events-platform/app/${target}`;
+        }
+        navigate(target);
+    };
 
     // Fetch booth-specific config from the DB
     const [bgImage, setBgImage] = useState('');
@@ -282,7 +291,7 @@ const Booth = () => {
                                                  } else if (point.targetPage.startsWith('http')) {
                                                      window.open(point.targetPage, '_blank');
                                                  } else {
-                                                     navigate(point.targetPage);
+                                                     navigateTo(point.targetPage);
                                                  }
                                              }
                                          }}

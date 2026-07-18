@@ -25,6 +25,7 @@ const EnvironmentSchema = z
     ZEPTOMAIL_TOKEN: z.string().optional(),
     ZEPTOMAIL_FROM_ADDRESS: z.string().optional(),
     ZEPTOMAIL_FROM_NAME: z.string().default("SyncoraXP"),
+    ZEPTOMAIL_DEMO_RECEIVER: z.string().email().default("pictureofevent360@gmail.com"),
   })
   .superRefine((environment, context) => {
     if (environment.NODE_ENV === "production" && environment.DATABASE_MODE === "memory") {

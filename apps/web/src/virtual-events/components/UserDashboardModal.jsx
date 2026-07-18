@@ -5,6 +5,15 @@ import { configService } from '../services/api';
 
 const UserDashboardModal = ({ user, onClose }) => {
     const navigate = useNavigate();
+    const navigateTo = (path) => {
+        let target = path;
+        if (target.startsWith('/dashboard')) {
+            target = `/virtual-events-platform/app${target}`;
+        } else if (target.startsWith('dashboard')) {
+            target = `/virtual-events-platform/app/${target}`;
+        }
+        navigate(target);
+    };
     const [activeTab, setActiveTab] = useState('quests'); // 'quests', 'badges', 'profile'
     const [booths, setBooths] = useState([]);
     const [loadingBooths, setLoadingBooths] = useState(false);
@@ -248,7 +257,7 @@ const UserDashboardModal = ({ user, onClose }) => {
                                                     <button
                                                         onClick={() => {
                                                             onClose();
-                                                            navigate(booth.targetPage);
+                                                            navigateTo(booth.targetPage);
                                                         }}
                                                         className="text-[10px] font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 shrink-0 bg-blue-50 hover:bg-blue-100 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer"
                                                     >
