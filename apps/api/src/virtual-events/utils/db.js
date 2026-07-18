@@ -13,7 +13,7 @@ const query = (text, params) => pool.query(text, params);
 const initDb = async () => {
   try {
     console.log('Initializing PostgreSQL database for Virtual Events...');
-    const sqlPath = path.resolve(__dirname, '../../../../database/migrations/004_create_virtual_events_tables.sql');
+    const sqlPath = path.resolve(__dirname, '../../../../../database/migrations/004_create_virtual_events_tables.sql');
     
     if (fs.existsSync(sqlPath)) {
       const sql = fs.readFileSync(sqlPath, 'utf8');

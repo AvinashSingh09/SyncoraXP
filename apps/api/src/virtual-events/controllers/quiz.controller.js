@@ -69,7 +69,7 @@ exports.submitAnswer = async (req, res) => {
         });
 
         // Add answer to selected option
-        const targetOption = quiz.options.id(optionId);
+        const targetOption = quiz.options.find((option) => String(option._id || option.id) === String(optionId));
         if (!targetOption) {
             return res.status(404).json({ message: 'Option not found' });
         }

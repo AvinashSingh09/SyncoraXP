@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const api = axios.create({
-    // Routes through Vite proxy: /ve-api → http://localhost:5000/api
-    baseURL: import.meta.env.VITE_VE_API_URL ? `${import.meta.env.VITE_VE_API_URL}/api` : `/ve-api`,
+    // Virtual Events routes are provided by the main Fastify service.
+    baseURL: import.meta.env.VITE_VE_API_URL ? `${import.meta.env.VITE_VE_API_URL}/ve-api` : `/ve-api`,
 });
 
 api.interceptors.request.use((config) => {

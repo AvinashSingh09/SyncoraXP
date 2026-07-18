@@ -2,9 +2,6 @@ const chatService = require('../services/chat.service');
 const User = require('../models/user.model');
 const Message = require('../models/message.model');
 
-// Seed on startup/require
-chatService.seedMockMessages();
-
 exports.getRooms = async (req, res) => {
     try {
         const roomsData = await chatService.getRoomsData();

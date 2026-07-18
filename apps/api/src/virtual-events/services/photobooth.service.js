@@ -109,7 +109,7 @@ const processCaricature = async (userId, base64Image, style) => {
     }
 
     // 1. Save source image locally
-    const uploadDir = path.join(__dirname, '../../temp_uploads');
+    const uploadDir = path.join(__dirname, '../../../temp_uploads');
     if (!fs.existsSync(uploadDir)) {
         fs.mkdirSync(uploadDir, { recursive: true });
     }
@@ -175,7 +175,7 @@ const processCaricature = async (userId, base64Image, style) => {
                     const resultFilename = `result_${crypto.randomUUID()}.png`;
                     const resultPath = path.join(uploadDir, resultFilename);
                     fs.writeFileSync(resultPath, Buffer.from(resultBase64, 'base64'));
-                    resultUrl = `http://localhost:5000/temp_uploads/${resultFilename}`;
+                    resultUrl = `/ve-api/temp_uploads/${resultFilename}`;
 
                     try {
                         cloudinaryResultUrl = await uploadToCloudinary(resultBase64, 'png');
@@ -194,7 +194,7 @@ const processCaricature = async (userId, base64Image, style) => {
     // 4. Save Session to Database
     const session = new PhotoboothSession({
         userId,
-        sourceImage: `http://localhost:5000/temp_uploads/${sourceFilename}`,
+        sourceImage: `/ve-api/temp_uploads/${sourceFilename}`,
         resultImage: cloudinaryResultUrl || resultUrl,
         style
     });

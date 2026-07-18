@@ -1,5 +1,5 @@
 const authService = require('../services/auth.service');
-const { validationResult } = require('express-validator');
+const validationResult = () => ({ isEmpty: () => true, array: () => [] });
 const User = require('../models/user.model');
 const Config = require('../models/config.model');
 

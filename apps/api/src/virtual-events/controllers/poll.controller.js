@@ -64,7 +64,7 @@ exports.votePoll = async (req, res) => {
         });
 
         // Add vote to the new option
-        const targetOption = poll.options.id(optionId);
+        const targetOption = poll.options.find((option) => String(option._id || option.id) === String(optionId));
         if (!targetOption) {
             return res.status(404).json({ message: 'Option not found' });
         }

@@ -34,15 +34,11 @@ export default defineConfig(({ mode }) => {
       proxy: {
         // SyncoraXP API
         "/api": "http://localhost:3000",
-        // Virtual Events Platform API
-        "/ve-api": {
-          target: "http://localhost:5000",
-          changeOrigin: true,
-          rewrite: (path) => path.replace(/^\/ve-api/, "/api"),
-        },
-        // Virtual Events Socket.IO
+        // Virtual Events Platform routes are served by the same Fastify process.
+        "/ve-api": "http://localhost:3000",
+        // Virtual Events Socket.IO is served by that same process.
         "/socket.io": {
-          target: "http://localhost:5000",
+          target: "http://localhost:3000",
           ws: true,
           changeOrigin: true,
         },
