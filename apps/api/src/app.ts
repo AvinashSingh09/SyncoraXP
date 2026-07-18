@@ -19,7 +19,10 @@ interface BuildAppDependencies {
 }
 
 export async function buildApp(dependencies: BuildAppDependencies) {
-  const app = Fastify({ logger: dependencies.config.NODE_ENV !== "test" });
+  const app = Fastify({
+    logger: dependencies.config.NODE_ENV !== "test",
+    bodyLimit: 52428800, // 50MB limit for uploading base64 images
+  });
   await app.register(cors, {
     origin: dependencies.config.CORS_ORIGIN.split(",").map((origin) => origin.trim()),
     credentials: true,

@@ -78,6 +78,7 @@ function VERoutes() {
         <Route path="expo-hall" element={<ExpoHall />} />
         <Route path="expo-hall/:hallId" element={<Hall />} />
         <Route path="expo-hall/:hallId/booth/:boothId" element={<Booth />} />
+        <Route path="expo-hall/:hallId/:boothId" element={<Booth />} />
         <Route path="auditorium" element={<Auditorium />} />
         <Route path="lounge" element={<Lounge />} />
         <Route path="round-tables" element={<RoundTables />} />

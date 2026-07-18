@@ -409,7 +409,7 @@ const AdminExpoHall = () => {
                                 onMouseLeave={handleMouseUp}
                             >
                                 <img
-                                src={bgImage}
+                                src={bgImage || undefined}
                                 alt="Hall Preview"
                                 className="w-full h-auto pointer-events-none block"
                             />
