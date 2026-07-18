@@ -19,6 +19,8 @@ interface MeetingRow {
   created_by: string | null;
   scheduled_for: Date | null;
   status: StoredMeeting["status"];
+  is_locked: boolean;
+  waiting_room_enabled: boolean;
   created_at: Date;
 }
 
@@ -54,6 +56,8 @@ function mapMeeting(row: MeetingRow): StoredMeeting {
     createdBy: row.created_by,
     scheduledFor: row.scheduled_for,
     status: row.status,
+    isLocked: row.is_locked,
+    waitingRoomEnabled: row.waiting_room_enabled,
     createdAt: row.created_at,
   };
 }
@@ -182,6 +186,90 @@ export class PostgresMeetingRepository implements MeetingRepository {
     return result.rows[0] ? mapMeeting(result.rows[0]) : null;
   }
 
+  async updateSettingsForHost(
+    meetingId: string,
+    userId: string,
+    settings: { isLocked?: boolean; waitingRoomEnabled?: boolean },
+  ): Promise<StoredMeeting | null> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const result = await client.query<MeetingRow>(
+        `UPDATE meetings
+         SET is_locked = COALESCE($3, is_locked),
+             waiting_room_enabled = COALESCE($4, waiting_room_enabled),
+             updated_at = now()
+         WHERE id = $1
+           AND EXISTS (
+             SELECT 1 FROM meeting_members
+             WHERE meeting_id = meetings.id
+               AND user_id = $2
+               AND role IN ('host', 'moderator')
+           )
+         RETURNING *`,
+        [meetingId, userId, settings.isLocked ?? null, settings.waitingRoomEnabled ?? null],
+      );
+      const row = result.rows[0];
+      if (!row) {
+        await client.query("ROLLBACK");
+        return null;
+      }
+      if (settings.waitingRoomEnabled === false) {
+        await client.query(
+          `UPDATE meeting_admission_requests
+           SET status = 'admitted', decided_at = now(), updated_at = now()
+           WHERE meeting_id = $1 AND status = 'pending'`,
+          [meetingId],
+        );
+      }
+      await client.query("COMMIT");
+      return mapMeeting(row);
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async endForHost(meetingId: string, userId: string): Promise<StoredMeeting | null> {
+    const client = await this.pool.connect();
+    try {
+      await client.query("BEGIN");
+      const result = await client.query<MeetingRow>(
+        `UPDATE meetings
+         SET status = 'ended', updated_at = now()
+         WHERE id = $1
+           AND EXISTS (
+             SELECT 1 FROM meeting_members
+             WHERE meeting_id = meetings.id
+               AND user_id = $2
+               AND role IN ('host', 'moderator')
+           )
+         RETURNING *`,
+        [meetingId, userId],
+      );
+      const row = result.rows[0];
+      if (!row) {
+        await client.query("ROLLBACK");
+        return null;
+      }
+      await client.query(
+        `UPDATE meeting_admission_requests
+         SET status = 'denied', decided_at = now(), updated_at = now()
+         WHERE meeting_id = $1 AND status = 'pending'`,
+        [meetingId],
+      );
+      await client.query("COMMIT");
+      return mapMeeting(row);
+    } catch (error) {
+      await client.query("ROLLBACK");
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
   async listByOwner(userId: string): Promise<StoredMeeting[]> {
     const result = await this.pool.query<MeetingRow>(
       `SELECT meetings.*
@@ -208,12 +296,17 @@ export class PostgresMeetingRepository implements MeetingRepository {
     meetingId: string;
     displayName: string;
     tokenHash: string;
+    status?: StoredAdmissionRequest["status"];
   }): Promise<StoredAdmissionRequest> {
     const result = await this.pool.query<AdmissionRow>(
-      `INSERT INTO meeting_admission_requests (id, meeting_id, display_name, token_hash)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO meeting_admission_requests
+        (id, meeting_id, display_name, token_hash, status, decided_at)
+       VALUES (
+         $1, $2, $3, $4, $5::varchar(20),
+         CASE WHEN $5::varchar(20) = 'admitted' THEN now() ELSE NULL END
+       )
        RETURNING *`,
-      [record.id, record.meetingId, record.displayName, record.tokenHash],
+      [record.id, record.meetingId, record.displayName, record.tokenHash, record.status ?? "pending"],
     );
     const row = result.rows[0];
     if (!row) throw new Error("Admission request insert did not return a row");

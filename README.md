@@ -1,6 +1,6 @@
 # Syncora
 
-Current foundation of the voice-translation meeting platform: host accounts, secure server-side sessions, owned meetings, invitation email delivery, protected host entry, and passwordless guest pre-join links.
+Current foundation of the voice-translation meeting platform: host accounts, secure server-side sessions, owned meetings, invitation email delivery, protected host entry, passwordless guest pre-join links, and an initial realtime interpretation pipeline.
 
 ## Stack
 
@@ -9,7 +9,7 @@ Current foundation of the voice-translation meeting platform: host accounts, sec
 - PostgreSQL
 - ZeptoMail REST API, with local console simulation
 
-The base LiveKit meeting room is implemented. Translation remains a later milestone.
+The LiveKit meeting room includes host-controlled realtime interpretation into Hindi, Bengali, Marathi, Tamil, and Telugu.
 
 ## Host and guest access
 
@@ -88,6 +88,7 @@ The LAN development stack self-hosts LiveKit Server through Docker. Its signalin
 
 ```env
 LIVEKIT_URL=wss://192.168.0.195:7880
+LIVEKIT_WORKER_URL=ws://127.0.0.1:7883
 LIVEKIT_NODE_IP=192.168.0.195
 LIVEKIT_API_KEY=your-local-api-key
 LIVEKIT_API_SECRET=your-random-local-api-secret
@@ -100,7 +101,7 @@ docker compose up -d postgres livekit livekit-proxy
 pnpm dev:lan
 ```
 
-The Docker stack exposes signaling on `7880/tcp`, ICE fallback on `7881/tcp`, and WebRTC media on `7882/udp`. Allow these three ports on the Windows private-network firewall if another LAN device cannot connect. Restart the API after changing `.env`. The secret is read only by Docker and the Node.js backend and must never be exposed through Vite variables or committed to source control.
+The Docker stack exposes browser signaling on `7880/tcp`, ICE fallback on `7881/tcp`, and WebRTC media on `7882/udp`. It also binds direct signaling to `127.0.0.1:7883` for native server-side workers; that insecure WebSocket is loopback-only and must not be exposed to the LAN. Allow the three public meeting ports on the Windows private-network firewall if another LAN device cannot connect. Restart the API and translation worker after changing `.env`. The secret is read only by Docker and the Node.js backend and must never be exposed through Vite variables or committed to source control.
 
 This single-node configuration is intended for development and LAN testing. A public production deployment still needs a public domain, publicly trusted TLS, TURN, monitoring, backups, and usually Redis. LiveKit Cloud credentials can still be used by replacing the three `LIVEKIT_*` connection values.
 
@@ -113,6 +114,31 @@ The application issues short-lived, room-scoped tokens:
 - LiveKit creates the media room lazily when the first participant connects.
 
 The React room includes camera and microphone preview, device selection, participant video layout, remote audio, mute/camera controls, screen sharing, chat, leave, and rejoin. When credentials are absent, the pre-join page remains available and the session endpoint returns an actionable setup message.
+
+## Realtime interpretation
+
+The host can enable interpretation from **Host tools**. Guests then choose Original audio, Hindi, Bengali, Marathi, Tamil, or Telugu from the meeting toolbar. The worker creates translation sessions only for languages that currently have listeners, publishes one LiveKit audio track per active language, and restores the original speaker audio whenever a selected translation track is not ready.
+
+Local development defaults to `TRANSLATION_PROVIDER=fake`. This delayed passthrough mode validates the worker, LiveKit track routing, language selection, and fallback behavior without spending API credits. To use the OpenAI Realtime translation model, keep the API key server-side and set:
+
+```env
+TRANSLATION_PROVIDER=openai
+OPENAI_API_KEY=your_server_side_openai_api_key
+OPENAI_REALTIME_TRANSLATION_MODEL=gpt-realtime-translate
+```
+
+To test Gemini Live Translate instead, add its server-side key and select Gemini from Host tools while interpretation is stopped:
+
+```env
+TRANSLATION_PROVIDER=gemini
+GEMINI_API_KEY=your_server_side_gemini_api_key
+GEMINI_LIVE_TRANSLATION_MODEL=gemini-3.5-live-translate-preview
+GEMINI_ECHO_TARGET_LANGUAGE=true
+```
+
+Use `pnpm --filter @voice/translation-worker gemini:check` to verify that the configured Gemini account can open a Marathi Live Translation session without joining a meeting. The `TRANSLATION_PROVIDER` value chooses fake versus real media processing; in real mode, each meeting run uses the provider selected by the host.
+
+Run the schema migration before starting the worker. `pnpm dev` starts the API, web app, and translation worker together; `pnpm dev:translation` starts only the worker. The initial worker implementation processes one meeting translation run per process, so production deployments should run multiple supervised worker instances.
 
 Camera publishing uses a quality-first profile for rooms with up to three active cameras. It requests the camera's best available resolution up to 1080p at 30 fps, with 720p and 360p simulcast fallbacks. Remote cameras request their highest available layer instead of being downscaled based on tile size, while dynacast avoids encoding layers that nobody requests. Actual quality still depends on the publishing device, Wi-Fi signal, CPU, packet loss, and synchronized system clocks.
 
@@ -138,5 +164,7 @@ pnpm test
 - `POST /api/join/:joinCode/admissions` creates a private guest waiting-room request.
 - `GET /api/join/:joinCode/admissions/:admissionId` lets that guest check its own status.
 - `POST /api/join/:joinCode/session` creates a non-admin LiveKit guest token only after admission.
+- `GET /api/meetings/:id/translation` returns host-visible interpretation settings and runtime state.
+- `PATCH /api/meetings/:id/translation` enables, disables, or configures host interpretation.
 - `GET /api/health` provides a basic service health response.
 - `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, and `GET /api/auth/me` manage host sessions.

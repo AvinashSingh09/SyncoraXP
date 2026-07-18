@@ -1,5 +1,7 @@
 import { RoomEvent, Track } from "livekit-client";
 import * as React from "react";
+import { ShieldCheck, SignOut, WarningCircle } from "@phosphor-icons/react";
+import type { MeetingTranslationSettings } from "@voice/shared";
 import type {
   MessageFormatter,
   MessageEncoder,
@@ -11,6 +13,7 @@ import type {
 import {
   CarouselLayout,
   ConnectionStateToast,
+  DisconnectButton,
   FocusLayout,
   FocusLayoutContainer,
   GridLayout,
@@ -25,14 +28,24 @@ import {
   useParticipants,
   isTrackReference,
 } from "@livekit/components-react";
+import { InterpretationControl } from "./interpretation/InterpretationControl";
 
 export interface CustomVideoConferenceProps extends React.HTMLAttributes<HTMLDivElement> {
   chatMessageFormatter?: MessageFormatter;
   chatMessageEncoder?: MessageEncoder;
   chatMessageDecoder?: MessageDecoder;
   SettingsComponent?: React.ComponentType;
-  isWaitingRoomOpen?: boolean;
-  onCloseWaitingRoom?: () => void;
+  showHostTools?: boolean;
+  isHostToolsOpen?: boolean;
+  isHostPanelOpen?: boolean;
+  onToggleHostTools?: () => void;
+  onCloseHostPanel?: () => void;
+  onEndMeeting?: () => void;
+  isEndingMeeting?: boolean;
+  endMeetingError?: string;
+  meetingId: string;
+  participantRole: "host" | "guest";
+  translationSettings: MeetingTranslationSettings;
 }
 
 function isEqualTrackRef(a?: TrackReferenceOrPlaceholder, b?: TrackReferenceOrPlaceholder): boolean {
@@ -49,8 +62,17 @@ export function CustomVideoConference({
   chatMessageDecoder,
   chatMessageEncoder,
   SettingsComponent,
-  isWaitingRoomOpen,
-  onCloseWaitingRoom,
+  showHostTools,
+  isHostToolsOpen,
+  isHostPanelOpen,
+  onToggleHostTools,
+  onCloseHostPanel,
+  onEndMeeting,
+  isEndingMeeting,
+  endMeetingError,
+  meetingId,
+  participantRole,
+  translationSettings,
   ...props
 }: CustomVideoConferenceProps) {
   const [widgetState, setWidgetState] = React.useState<WidgetState>({
@@ -60,25 +82,32 @@ export function CustomVideoConference({
   });
 
   const [showParticipants, setShowParticipants] = React.useState(false);
+  const [showEndMeetingConfirmation, setShowEndMeetingConfirmation] = React.useState(false);
   const participants = useParticipants();
+  const visibleParticipants = participants.filter(
+    (participant) => participant.attributes.role !== "translator" && participant.attributes.hidden !== "true",
+  );
 
   const lastAutoFocusedScreenShareTrack = React.useRef<TrackReferenceOrPlaceholder | null>(null);
 
-  const tracks = useTracks(
+  const allTracks = useTracks(
     [
       { source: Track.Source.Camera, withPlaceholder: true },
       { source: Track.Source.ScreenShare, withPlaceholder: false },
     ],
     { updateOnlyOn: [RoomEvent.ActiveSpeakersChanged], onlySubscribed: false }
   );
+  const tracks = allTracks.filter(
+    (track) => track.participant.attributes.role !== "translator" && track.participant.attributes.hidden !== "true",
+  );
 
-  const widgetUpdate = (state: WidgetState) => {
+  const widgetUpdate = React.useCallback((state: WidgetState) => {
     setWidgetState(state);
     if (state.showChat) {
       setShowParticipants(false);
-      onCloseWaitingRoom?.();
+      onCloseHostPanel?.();
     }
-  };
+  }, [onCloseHostPanel]);
 
   const layoutContext = useCreateLayoutContext();
 
@@ -89,13 +118,13 @@ export function CustomVideoConference({
   const focusTrack = usePinnedTracks(layoutContext)?.[0];
   const carouselTracks = tracks.filter((track) => !isEqualTrackRef(track, focusTrack));
 
-  // When waiting room opens externally, close chat and participants
+  // Host side panels, chat, and participants are mutually exclusive.
   React.useEffect(() => {
-    if (isWaitingRoomOpen) {
+    if (isHostPanelOpen) {
       setShowParticipants(false);
       layoutContext.widget.dispatch?.({ msg: "hide_chat" });
     }
-  }, [isWaitingRoomOpen, layoutContext.widget]);
+  }, [isHostPanelOpen]);
 
   React.useEffect(() => {
     const firstScreenShare = screenShareTracks[0];
@@ -140,11 +169,11 @@ export function CustomVideoConference({
       const next = !prev;
       if (next) {
         layoutContext.widget.dispatch?.({ msg: "hide_chat" });
-        onCloseWaitingRoom?.();
+        onCloseHostPanel?.();
       }
       return next;
     });
-  }, [layoutContext.widget, onCloseWaitingRoom]);
+  }, [layoutContext.widget, onCloseHostPanel]);
 
   return (
     <div className="lk-video-conference" {...props}>
@@ -170,29 +199,139 @@ export function CustomVideoConference({
             </div>
           )}
           <div className="lk-control-bar-container">
-            <ControlBar controls={{ chat: true, settings: !!SettingsComponent }} />
-            <button
-              type="button"
-              className={`lk-button participants-toggle-button ${showParticipants ? "is-active" : ""}`}
-              onClick={toggleParticipants}
-              aria-pressed={showParticipants}
-            >
-              <div className="participants-toggle-top">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-                  <circle cx="9" cy="7" r="4" />
-                  <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-                </svg>
-                <span className="participants-count-badge">{participants.length}</span>
-                <svg className={`chevron-icon ${showParticipants ? "open" : ""}`} viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="18 15 12 9 6 15" />
-                </svg>
-              </div>
-              <span className="participants-toggle-label">Participants</span>
-            </button>
+            <ControlBar
+              className="meeting-device-controls"
+              variation="minimal"
+              controls={{
+                microphone: true,
+                camera: true,
+                screenShare: false,
+                chat: false,
+                settings: false,
+                leave: false,
+              }}
+            />
+            <div className="meeting-centered-controls">
+              <ControlBar
+                className="meeting-action-controls"
+                controls={{
+                  microphone: false,
+                  camera: false,
+                  screenShare: true,
+                  chat: true,
+                  settings: !!SettingsComponent,
+                  leave: false,
+                }}
+              />
+              <InterpretationControl
+                meetingId={meetingId}
+                settings={translationSettings}
+                showControl={participantRole === "guest"}
+              />
+              <button
+                type="button"
+                className={`lk-button participants-toggle-button ${showParticipants ? "is-active" : ""}`}
+                onClick={toggleParticipants}
+                aria-pressed={showParticipants}
+              >
+                <div className="participants-toggle-top">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                  </svg>
+                  <span className="participants-count-badge">{visibleParticipants.length}</span>
+                  <svg className={`chevron-icon ${showParticipants ? "open" : ""}`} viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="18 15 12 9 6 15" />
+                  </svg>
+                </div>
+                <span className="participants-toggle-label">Participants</span>
+              </button>
+              {showHostTools && (
+                <button
+                  type="button"
+                  className={`lk-button host-tools-toggle-button ${isHostToolsOpen ? "is-active" : ""}`}
+                  onClick={onToggleHostTools}
+                  aria-pressed={isHostToolsOpen}
+                >
+                  <ShieldCheck size={18} weight="bold" />
+                  <span>Host tools</span>
+                </button>
+              )}
+            </div>
+            {showHostTools && (
+              <button
+                type="button"
+                className="lk-button host-end-meeting-button"
+                disabled={isEndingMeeting}
+                onClick={() => setShowEndMeetingConfirmation(true)}
+              >
+                <SignOut size={18} weight="bold" />
+                <span>{isEndingMeeting ? "Ending..." : "End meeting"}</span>
+              </button>
+            )}
+            {!showHostTools && (
+              <DisconnectButton className="lk-button guest-leave-button">
+                <SignOut size={18} weight="bold" />
+                <span>Leave</span>
+              </DisconnectButton>
+            )}
           </div>
+          {endMeetingError && <div className="meeting-action-error" role="alert">{endMeetingError}</div>}
         </div>
+        {showEndMeetingConfirmation && (
+          <div
+            className="end-meeting-modal-backdrop"
+            onMouseDown={(event) => {
+              if (event.currentTarget === event.target && !isEndingMeeting) {
+                setShowEndMeetingConfirmation(false);
+              }
+            }}
+          >
+            <section
+              className="end-meeting-modal"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="end-meeting-title"
+              aria-describedby="end-meeting-description"
+              onKeyDown={(event) => {
+                if (event.key === "Escape" && !isEndingMeeting) {
+                  setShowEndMeetingConfirmation(false);
+                }
+              }}
+            >
+              <span className="end-meeting-modal-icon" aria-hidden="true">
+                <WarningCircle size={28} weight="fill" />
+              </span>
+              <div className="end-meeting-modal-copy">
+                <h2 id="end-meeting-title">End meeting for everyone?</h2>
+
+              </div>
+              {endMeetingError && <p className="end-meeting-modal-error" role="alert">{endMeetingError}</p>}
+              <div className="end-meeting-modal-actions">
+                <button
+                  type="button"
+                  className="end-meeting-cancel-button"
+                  disabled={isEndingMeeting}
+                  onClick={() => setShowEndMeetingConfirmation(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="end-meeting-confirm-button"
+                  disabled={isEndingMeeting}
+                  onClick={onEndMeeting}
+                  autoFocus
+                >
+                  <SignOut size={17} weight="bold" />
+                  {isEndingMeeting ? "Ending meeting..." : "End meeting"}
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
         <Chat
           style={{ display: widgetState.showChat ? "grid" : "none" }}
           messageFormatter={chatMessageFormatter}
@@ -206,7 +345,7 @@ export function CustomVideoConference({
           <div className="participants-panel-header">
             <div className="participants-title">
               <strong>Participants</strong>
-              <span className="participants-total-badge">{participants.length}</span>
+              <span className="participants-total-badge">{visibleParticipants.length}</span>
             </div>
             <button
               type="button"
@@ -218,7 +357,7 @@ export function CustomVideoConference({
             </button>
           </div>
           <ul className="participants-list">
-            {participants.map((p) => {
+            {visibleParticipants.map((p) => {
               const isMicOn = p.isMicrophoneEnabled;
               const isCamOn = p.isCameraEnabled;
               const initial = (p.name || p.identity || "?").charAt(0).toUpperCase();
@@ -275,7 +414,7 @@ export function CustomVideoConference({
             })}
           </ul>
           <div className="participants-footer">
-            <span>Total Joined: <strong>{participants.length}</strong></span>
+            <span>Total Joined: <strong>{visibleParticipants.length}</strong></span>
           </div>
         </aside>
         {SettingsComponent && (

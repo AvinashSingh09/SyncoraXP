@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import type { HostMeetingResponse, RoomSessionResponse } from "@voice/shared";
 import type { LocalUserChoices } from "@livekit/components-react";
-import { Link, useParams } from "react-router-dom";
-import { createHostRoomSession, getHostMeeting } from "../api";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { createHostRoomSession, endMeeting, getHostMeeting } from "../api";
 import { useAuth } from "../auth/AuthContext";
 import { MeetingRoom } from "../components/MeetingRoom";
 import { RoomPreJoin } from "../components/RoomPreJoin";
@@ -10,6 +10,7 @@ import { Brand } from "../components/Brand";
 
 export function HostMeetingPage() {
   const { meetingId = "" } = useParams();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const [result, setResult] = useState<HostMeetingResponse | null>(null);
   const [session, setSession] = useState<RoomSessionResponse | null>(null);
@@ -45,7 +46,12 @@ export function HostMeetingPage() {
         choices={choices}
         meetingId={result.meeting.id}
         meeting={result.meeting}
-        onLeave={() => setSession(null)}
+        initialHostSettings={result.settings}
+        onLeave={() => navigate("/webinar-service", { replace: true })}
+        onEndMeeting={async () => {
+          await endMeeting(meetingId);
+          navigate("/webinar-service", { replace: true });
+        }}
       />
     );
   }

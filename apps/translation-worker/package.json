@@ -1,0 +1,33 @@
+{
+  "name": "@voice/translation-worker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node ../api/scripts/run-with-local-ca.mjs tsx watch src/main.ts",
+    "dev:lan": "node ../api/scripts/run-with-local-ca.mjs tsx watch src/main.ts",
+    "build": "tsup --config tsup.config.ts",
+    "start": "node ../api/scripts/run-with-local-ca.mjs node dist/main.js",
+    "openai:check": "tsx scripts/check-openai.ts",
+    "gemini:check": "tsx scripts/check-gemini.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "tsx --test test/**/*.test.ts"
+  },
+  "dependencies": {
+    "@google/genai": "^2.12.0",
+    "@livekit/rtc-node": "0.13.31",
+    "@voice/shared": "workspace:*",
+    "livekit-server-sdk": "^2.17.0",
+    "pg": "^8.22.0",
+    "ws": "^8.21.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.10",
+    "@types/pg": "^8.20.0",
+    "@types/ws": "^8.18.1",
+    "tsup": "^8.5.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  }
+}

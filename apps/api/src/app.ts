@@ -9,6 +9,8 @@ import type { RoomTokenIssuer } from "./livekit/room-token-issuer";
 import { registerMeetingRoutes } from "./routes/meeting-routes";
 import virtualEventsModule from "./virtual-events/index.cjs";
 import { registerDemoRoutes } from "./routes/demo-routes";
+import { registerTranslationRoutes } from "./routes/translation-routes";
+import type { TranslationRepository } from "./translation/translation-repository";
 
 const { registerVirtualEvents } = virtualEventsModule as { registerVirtualEvents: (app: ReturnType<typeof Fastify>) => Promise<void> };
 interface BuildAppDependencies {
@@ -17,6 +19,7 @@ interface BuildAppDependencies {
   mailer: InvitationMailer;
   auth: AuthService;
   roomTokens: RoomTokenIssuer;
+  translations: TranslationRepository;
 }
 
 export async function buildApp(dependencies: BuildAppDependencies) {
@@ -36,6 +39,7 @@ export async function buildApp(dependencies: BuildAppDependencies) {
     await registerVirtualEvents(app);
   }
   await registerDemoRoutes(app, dependencies);
+  await registerTranslationRoutes(app, dependencies);
 
   app.setErrorHandler((error, _request, reply) => {
     app.log.error(error);

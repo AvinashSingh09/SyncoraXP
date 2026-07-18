@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { GuestAdmissionResponse, PublicMeetingResponse, RoomSessionResponse } from "@voice/shared";
 import type { LocalUserChoices } from "@livekit/components-react";
+import { DisconnectReason } from "livekit-client";
 import { useParams } from "react-router-dom";
 import {
   createGuestRoomSession,
@@ -94,13 +95,20 @@ export function JoinMeetingPage() {
     setError("");
   };
 
+  const leaveMeeting = (reason?: DisconnectReason) => {
+    resetToPreJoin();
+    if (reason === DisconnectReason.ROOM_DELETED) {
+      setError("The host ended this meeting.");
+    }
+  };
+
   if (meeting && session && choices) {
     return (
       <MeetingRoom
         meetingTitle={meeting.title}
         session={session}
         choices={choices}
-        onLeave={resetToPreJoin}
+        onLeave={leaveMeeting}
       />
     );
   }

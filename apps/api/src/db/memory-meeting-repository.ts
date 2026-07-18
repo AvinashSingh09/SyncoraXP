@@ -25,6 +25,8 @@ export class MemoryMeetingRepository implements MeetingRepository {
       createdBy: record.creator.id,
       scheduledFor: record.input.scheduledFor ? new Date(record.input.scheduledFor) : null,
       status: "scheduled",
+      isLocked: false,
+      waitingRoomEnabled: true,
       createdAt: new Date(),
     };
     this.meetings.set(meeting.joinCode, meeting);
@@ -60,6 +62,41 @@ export class MemoryMeetingRepository implements MeetingRepository {
     return meeting?.createdBy === userId ? meeting : null;
   }
 
+  async updateSettingsForHost(
+    meetingId: string,
+    userId: string,
+    settings: { isLocked?: boolean; waitingRoomEnabled?: boolean },
+  ): Promise<StoredMeeting | null> {
+    const meeting = this.meetingsById.get(meetingId);
+    if (!meeting || meeting.createdBy !== userId) return null;
+    if (settings.isLocked !== undefined) meeting.isLocked = settings.isLocked;
+    if (settings.waitingRoomEnabled !== undefined) {
+      meeting.waitingRoomEnabled = settings.waitingRoomEnabled;
+      if (!settings.waitingRoomEnabled) {
+        for (const admission of this.admissions.values()) {
+          if (admission.meetingId === meetingId && admission.status === "pending") {
+            admission.status = "admitted";
+            admission.decidedAt = new Date();
+          }
+        }
+      }
+    }
+    return meeting;
+  }
+
+  async endForHost(meetingId: string, userId: string): Promise<StoredMeeting | null> {
+    const meeting = this.meetingsById.get(meetingId);
+    if (!meeting || meeting.createdBy !== userId) return null;
+    meeting.status = "ended";
+    for (const admission of this.admissions.values()) {
+      if (admission.meetingId === meetingId && admission.status === "pending") {
+        admission.status = "denied";
+        admission.decidedAt = new Date();
+      }
+    }
+    return meeting;
+  }
+
   async listByOwner(userId: string): Promise<StoredMeeting[]> {
     return [...this.meetingsById.values()]
       .filter((meeting) => meeting.createdBy === userId)
@@ -85,12 +122,13 @@ export class MemoryMeetingRepository implements MeetingRepository {
     meetingId: string;
     displayName: string;
     tokenHash: string;
+    status?: StoredAdmissionRequest["status"];
   }): Promise<StoredAdmissionRequest> {
     const admission: StoredAdmissionRequest = {
       ...record,
-      status: "pending",
+      status: record.status ?? "pending",
       requestedAt: new Date(),
-      decidedAt: null,
+      decidedAt: record.status === "admitted" ? new Date() : null,
     };
     this.admissions.set(admission.id, admission);
     return admission;
