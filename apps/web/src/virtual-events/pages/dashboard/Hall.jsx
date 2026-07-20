@@ -112,7 +112,7 @@ const Hall = () => {
             </div>
 
             {/* 3D World Wrapper */}
-            <div 
+            <div
                 className="absolute inset-0 transition-all duration-1000 ease-in-out"
                 style={isZooming ? {
                     transformOrigin: `${isZooming.left}% ${isZooming.top}%`,
@@ -127,121 +127,121 @@ const Hall = () => {
                 {/* Interactive Areas (Points & Posters) */}
                 <div className="absolute inset-0 z-10 pointer-events-none">
                     {/* Posters */}
-                {hallConfig.posters && hallConfig.posters.map(poster => (
-                    <div
-                        key={poster.id}
-                        className={`absolute bg-black/20 flex items-center justify-center overflow-hidden z-10 shadow-2xl ${poster.type !== 'youtube' && poster.imageUrl ? 'pointer-events-auto cursor-pointer hover:scale-105 transition-transform duration-200' : 'pointer-events-auto'}`}
-                        style={{
-                            top: `${poster.top}%`,
-                            left: `${poster.left}%`,
-                            width: `${poster.width}%`,
-                            height: `${poster.height}%`,
-                            transform: 'translate(-50%, -50%)',
-                            backgroundColor: poster.type === 'youtube' ? '#000' : 'transparent'
-                        }}
-                        onClick={() => poster.type !== 'youtube' && poster.imageUrl && setActivePosterUrl(poster.imageUrl)}
-                    >
-                        {poster.type === 'youtube' && poster.videoUrl && (
-                            <iframe
-                                src={poster.videoUrl}
-                                className="w-full h-full border-0 pointer-events-auto"
-                                title="YouTube Video"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            />
-                        )}
-                        {poster.type !== 'youtube' && poster.imageUrl && (
-                            <img 
-                                src={poster.imageUrl} 
-                                alt="Poster"
-                                className="w-full h-full object-cover pointer-events-none"
-                                style={{ imageRendering: 'high-quality' }}
-                            />
-                        )}
-                    </div>
-                ))}
-
-                {/* Points */}
-                {hallConfig.points && hallConfig.points.map(point => (
-                    <div
-                        key={point.id}
-                        className="absolute z-20"
-                        style={{
-                            top: `${point.top}%`,
-                            left: `${point.left}%`
-                        }}
-                    >
-                         {/* Connecting Stem Line */}
-                        <div className="absolute bottom-1 left-0 transform -translate-x-1/2 flex flex-col items-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-10"
-                            onMouseEnter={() => {
-                                if (point.targetPage) {
-                                    const match = point.targetPage.match(/\/booth\/(\w+)/);
-                                    if (match && match[1]) {
-                                        configService.preloadBooth(match[1]);
-                                    }
-                                }
+                    {hallConfig.posters && hallConfig.posters.map(poster => (
+                        <div
+                            key={poster.id}
+                            className={`absolute bg-black/20 flex items-center justify-center overflow-hidden z-10 shadow-2xl ${poster.type !== 'youtube' && poster.imageUrl ? 'pointer-events-auto cursor-pointer hover:scale-105 transition-transform duration-200' : 'pointer-events-auto'}`}
+                            style={{
+                                top: `${poster.top}%`,
+                                left: `${poster.left}%`,
+                                width: `${poster.width}%`,
+                                height: `${poster.height}%`,
+                                transform: 'translate(-50%, -50%)',
+                                backgroundColor: poster.type === 'youtube' ? '#000' : 'transparent'
                             }}
-                            onClick={() => {
-                                if (point.targetPage) {
-                                    if (point.targetPage.startsWith('http')) {
-                                        window.open(point.targetPage, '_blank');
-                                    } else {
-                                        setIsZooming(point);
-                                        setTimeout(() => {
-                                            navigateTo(point.targetPage);
-                                        }, 850);
-                                    }
-                                }
+                            onClick={() => poster.type !== 'youtube' && poster.imageUrl && setActivePosterUrl(poster.imageUrl)}
+                        >
+                            {poster.type === 'youtube' && poster.videoUrl && (
+                                <iframe
+                                    src={poster.videoUrl}
+                                    className="w-full h-full border-0 pointer-events-auto"
+                                    title="YouTube Video"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                />
+                            )}
+                            {poster.type !== 'youtube' && poster.imageUrl && (
+                                <img
+                                    src={poster.imageUrl}
+                                    alt="Poster"
+                                    className="w-full h-full object-cover pointer-events-none"
+                                    style={{ imageRendering: 'high-quality' }}
+                                />
+                            )}
+                        </div>
+                    ))}
+
+                    {/* Points */}
+                    {hallConfig.points && hallConfig.points.map(point => (
+                        <div
+                            key={point.id}
+                            className="absolute z-20"
+                            style={{
+                                top: `${point.top}%`,
+                                left: `${point.left}%`
                             }}
                         >
-                            <div className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-500/30 max-w-[150px] text-center hover:border-blue-400">
-                                <p className="text-[10px] font-semibold leading-tight whitespace-nowrap">
-                                     {point.text}
-                                </p>
+                            {/* Connecting Stem Line */}
+                            <div className="absolute bottom-1 left-0 transform -translate-x-1/2 flex flex-col items-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-10"
+                                onMouseEnter={() => {
+                                    if (point.targetPage) {
+                                        const match = point.targetPage.match(/\/booth\/(\w+)/);
+                                        if (match && match[1]) {
+                                            configService.preloadBooth(match[1]);
+                                        }
+                                    }
+                                }}
+                                onClick={() => {
+                                    if (point.targetPage) {
+                                        if (point.targetPage.startsWith('http')) {
+                                            window.open(point.targetPage, '_blank');
+                                        } else {
+                                            setIsZooming(point);
+                                            setTimeout(() => {
+                                                navigateTo(point.targetPage);
+                                            }, 850);
+                                        }
+                                    }
+                                }}
+                            >
+                                <div className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-500/30 max-w-[150px] text-center hover:border-blue-400">
+                                    <p className="text-[10px] font-semibold leading-tight whitespace-nowrap">
+                                        {point.text}
+                                    </p>
+                                </div>
+                                <div className="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-blue-400" />
                             </div>
-                            <div className="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-blue-400" />
-                        </div>
 
-                        {/* Pulsing Dot */}
-                        <div 
-                            className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center pointer-events-auto cursor-pointer z-20"
-                            onMouseEnter={() => {
-                                if (point.targetPage) {
-                                    const match = point.targetPage.match(/\/booth\/(\w+)/);
-                                    if (match && match[1]) {
-                                        configService.preloadBooth(match[1]);
+                            {/* Pulsing Dot */}
+                            <div
+                                className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center pointer-events-auto cursor-pointer z-20"
+                                onMouseEnter={() => {
+                                    if (point.targetPage) {
+                                        const match = point.targetPage.match(/\/booth\/(\w+)/);
+                                        if (match && match[1]) {
+                                            configService.preloadBooth(match[1]);
+                                        }
                                     }
-                                }
-                            }}
-                            onClick={() => {
-                                if (point.targetPage) {
-                                    if (point.targetPage.startsWith('http')) {
-                                        window.open(point.targetPage, '_blank');
-                                    } else {
-                                        setIsZooming(point);
-                                        setTimeout(() => {
-                                            navigateTo(point.targetPage);
-                                        }, 850);
+                                }}
+                                onClick={() => {
+                                    if (point.targetPage) {
+                                        if (point.targetPage.startsWith('http')) {
+                                            window.open(point.targetPage, '_blank');
+                                        } else {
+                                            setIsZooming(point);
+                                            setTimeout(() => {
+                                                navigateTo(point.targetPage);
+                                            }, 850);
+                                        }
                                     }
-                                }
-                            }}
-                        >
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border-2 border-white"></span>
+                                }}
+                            >
+                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border-2 border-white"></span>
+                            </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
 
-            {/* Background Image */}
-            <div className="absolute inset-0 w-full h-full z-0">
-                <img
-                    src={hallConfig.bgImage || "/virtual-events-assets/expo-bg.jpg"}
-                    alt={`Expo Hall ${hallId}`}
-                    className="w-full h-full object-cover object-center animate-fade-in"
-                />
-                <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
-            </div>
+                {/* Background Image */}
+                <div className="absolute inset-0 w-full h-full z-0">
+                    <img
+                        src={hallConfig.bgImage || "/virtual-events-assets/expo-bg.jpg"}
+                        alt={`Expo Hall ${hallId}`}
+                        className="w-full h-full object-cover object-center animate-fade-in"
+                    />
+                    <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
+                </div>
             </div>
 
             <style>{`
@@ -255,19 +255,19 @@ const Hall = () => {
             `}</style>
             {/* Poster Lightbox Modal */}
             {activePosterUrl && (
-                <div 
+                <div
                     className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm cursor-pointer"
                     onClick={() => setActivePosterUrl(null)}
                 >
                     <div className="relative max-w-4xl max-h-[90vh] bg-neutral-900 rounded-lg overflow-hidden border border-white/20 p-2">
-                        <button 
+                        <button
                             onClick={() => setActivePosterUrl(null)}
                             className="absolute top-4 right-4 p-2 rounded-full bg-black/60 hover:bg-black/85 transition-colors text-white z-10"
                         >
                             <FiX size={20} />
                         </button>
-                        <img 
-                            src={activePosterUrl} 
+                        <img
+                            src={activePosterUrl}
                             alt="Poster Full View"
                             className="max-w-full max-h-[85vh] object-contain rounded"
                         />
@@ -279,3 +279,5 @@ const Hall = () => {
 };
 
 export default Hall;
+
+

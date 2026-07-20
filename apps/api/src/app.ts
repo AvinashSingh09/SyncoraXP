@@ -36,7 +36,11 @@ export async function buildApp(dependencies: BuildAppDependencies) {
   await registerAuthRoutes(app, dependencies);
   await registerMeetingRoutes(app, dependencies);
   if (dependencies.config.NODE_ENV !== "test") {
-    await registerVirtualEvents(app);
+    try {
+      await registerVirtualEvents(app);
+    } catch (err) {
+      app.log.warn("Virtual Events DB init skipped (Postgres offline)");
+    }
   }
   await registerDemoRoutes(app, dependencies);
   await registerTranslationRoutes(app, dependencies);
