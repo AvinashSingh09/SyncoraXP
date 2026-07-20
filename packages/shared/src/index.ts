@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export * from "./translation.ts";
+export * from "./translation";
 
 const trimmedEmail = z
   .string()
@@ -158,5 +158,5 @@ export interface RoomSessionResponse {
   roomName: string;
   participantIdentity: string;
   role: "host" | "guest";
-  translation: import("./translation.ts").MeetingTranslationSettings;
+  translation: import("./translation").MeetingTranslationSettings;
 }
