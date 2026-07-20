@@ -2,37 +2,37 @@ import { useState, useEffect, useRef } from "react";
 import { X, CheckCircle, User, EnvelopeSimple, Phone, ShieldCheck, CaretDown } from "@phosphor-icons/react";
 
 const ALL_COUNTRIES = [
-  { code: "IN", name: "India", dial: "+91" },
-  { code: "US", name: "United States", dial: "+1" },
-  { code: "GB", name: "United Kingdom", dial: "+44" },
-  { code: "AE", name: "United Arab Emirates (UAE)", dial: "+971" },
-  { code: "SG", name: "Singapore", dial: "+65" },
-  { code: "AU", name: "Australia", dial: "+61" },
-  { code: "CA", name: "Canada", dial: "+1" },
-  { code: "DE", name: "Germany", dial: "+49" },
-  { code: "AC", name: "Ascension", dial: "+247" },
-  { code: "AD", name: "Andorra", dial: "+376" },
-  { code: "AF", name: "Afghanistan", dial: "+93" },
-  { code: "AG", name: "Antigua And Barbuda", dial: "+1268" },
-  { code: "AI", name: "Anguilla", dial: "+1264" },
-  { code: "AL", name: "Albania", dial: "+355" },
-  { code: "AM", name: "Armenia", dial: "+374" },
-  { code: "AO", name: "Angola", dial: "+244" },
-  { code: "AR", name: "Argentina", dial: "+54" },
-  { code: "AS", name: "American Samoa", dial: "+1684" },
-  { code: "AT", name: "Austria", dial: "+43" },
-  { code: "BR", name: "Brazil", dial: "+55" },
-  { code: "FR", name: "France", dial: "+33" },
-  { code: "IT", name: "Italy", dial: "+39" },
-  { code: "JP", name: "Japan", dial: "+81" },
-  { code: "NL", name: "Netherlands", dial: "+31" },
-  { code: "NZ", name: "New Zealand", dial: "+64" },
-  { code: "SA", name: "Saudi Arabia", dial: "+966" },
-  { code: "ZA", name: "South Africa", dial: "+27" },
-  { code: "ES", name: "Spain", dial: "+34" },
+  { code: "IN", name: "India", dial: "+91", min: 10, max: 10 },
+  { code: "US", name: "United States", dial: "+1", min: 10, max: 10 },
+  { code: "GB", name: "United Kingdom", dial: "+44", min: 10, max: 10 },
+  { code: "AE", name: "United Arab Emirates (UAE)", dial: "+971", min: 9, max: 9 },
+  { code: "SG", name: "Singapore", dial: "+65", min: 8, max: 8 },
+  { code: "AU", name: "Australia", dial: "+61", min: 9, max: 9 },
+  { code: "CA", name: "Canada", dial: "+1", min: 10, max: 10 },
+  { code: "DE", name: "Germany", dial: "+49", min: 10, max: 11 },
+  { code: "AC", name: "Ascension", dial: "+247", min: 6, max: 6 },
+  { code: "AD", name: "Andorra", dial: "+376", min: 6, max: 6 },
+  { code: "AF", name: "Afghanistan", dial: "+93", min: 9, max: 9 },
+  { code: "AG", name: "Antigua And Barbuda", dial: "+1268", min: 7, max: 7 },
+  { code: "AI", name: "Anguilla", dial: "+1264", min: 7, max: 7 },
+  { code: "AL", name: "Albania", dial: "+355", min: 9, max: 9 },
+  { code: "AM", name: "Armenia", dial: "+374", min: 8, max: 8 },
+  { code: "AO", name: "Angola", dial: "+244", min: 9, max: 9 },
+  { code: "AR", name: "Argentina", dial: "+54", min: 10, max: 10 },
+  { code: "AS", name: "American Samoa", dial: "+1684", min: 7, max: 7 },
+  { code: "AT", name: "Austria", dial: "+43", min: 10, max: 13 },
+  { code: "BR", name: "Brazil", dial: "+55", min: 10, max: 11 },
+  { code: "FR", name: "France", dial: "+33", min: 9, max: 9 },
+  { code: "IT", name: "Italy", dial: "+39", min: 10, max: 10 },
+  { code: "JP", name: "Japan", dial: "+81", min: 10, max: 10 },
+  { code: "NL", name: "Netherlands", dial: "+31", min: 9, max: 9 },
+  { code: "NZ", name: "New Zealand", dial: "+64", min: 8, max: 9 },
+  { code: "SA", name: "Saudi Arabia", dial: "+966", min: 9, max: 9 },
+  { code: "ZA", name: "South Africa", dial: "+27", min: 9, max: 9 },
+  { code: "ES", name: "Spain", dial: "+34", min: 9, max: 9 },
 ];
 
-const DEFAULT_COUNTRY = ALL_COUNTRIES[0] as { code: string; name: string; dial: string };
+const DEFAULT_COUNTRY = ALL_COUNTRIES[0] as { code: string; name: string; dial: string; min: number; max: number };
 
 const DELAY_SEQUENCE = [5000, 15000, 30000];
 
@@ -49,6 +49,11 @@ export function RequestCallbackModal() {
     countryCode: "+91",
     phone: "",
   });
+  const [errors, setErrors] = useState({
+    fullName: "",
+    workEmail: "",
+    phone: "",
+  });
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -63,6 +68,47 @@ export function RequestCallbackModal() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const validateField = (fieldName: "fullName" | "workEmail" | "phone", value?: string) => {
+    const val = value !== undefined ? value : form[fieldName];
+    setErrors((prev) => {
+      const nextErrors = { ...prev };
+      if (fieldName === "fullName") {
+        if (!val.trim()) {
+          nextErrors.fullName = "Full name is required";
+        } else if (val.length > 60) {
+          nextErrors.fullName = "Name cannot exceed 60 characters";
+        } else {
+          nextErrors.fullName = "";
+        }
+      }
+      if (fieldName === "workEmail") {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!val.trim()) {
+          nextErrors.workEmail = "Work email is required";
+        } else if (!emailRegex.test(val.trim())) {
+          nextErrors.workEmail = "Please enter a valid work email";
+        } else {
+          nextErrors.workEmail = "";
+        }
+      }
+      if (fieldName === "phone") {
+        const phoneDigits = val.replace(/[^0-9]/g, "");
+        if (!val.trim()) {
+          nextErrors.phone = "Phone number is required";
+        } else if (phoneDigits.length < selectedCountry.min || phoneDigits.length > selectedCountry.max) {
+          if (selectedCountry.min === selectedCountry.max) {
+            nextErrors.phone = `Phone number must be exactly ${selectedCountry.min} digits for ${selectedCountry.name}`;
+          } else {
+            nextErrors.phone = `Phone number must be between ${selectedCountry.min} and ${selectedCountry.max} digits for ${selectedCountry.name}`;
+          }
+        } else {
+          nextErrors.phone = "";
+        }
+      }
+      return nextErrors;
+    });
+  };
 
   useEffect(() => {
     // If user has already submitted the form, do not pop up again
@@ -88,6 +134,7 @@ export function RequestCallbackModal() {
     setIsOpen(false);
     setDropdownOpen(false);
     setDelayIndex((prev) => prev + 1);
+    setErrors({ fullName: "", workEmail: "", phone: "" });
     setTimeout(() => {
       setSubmitted(false);
     }, 400);
@@ -98,22 +145,57 @@ export function RequestCallbackModal() {
   ) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
+    validateField(name as any, value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
 
+    const newErrors = {
+      fullName: "",
+      workEmail: "",
+      phone: "",
+    };
+
+    let isValid = true;
+
+    // Full Name validation
     if (!form.fullName.trim()) {
-      setErrorMessage("Please enter your full name");
-      return;
+      newErrors.fullName = "Full name is required";
+      isValid = false;
+    } else if (form.fullName.length > 60) {
+      newErrors.fullName = "Name cannot exceed 60 characters";
+      isValid = false;
     }
-    if (!form.workEmail.trim() || !form.workEmail.includes("@")) {
-      setErrorMessage("Please enter a valid work email");
-      return;
+
+    // Email validation
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!form.workEmail.trim()) {
+      newErrors.workEmail = "Work email is required";
+      isValid = false;
+    } else if (!emailRegex.test(form.workEmail.trim())) {
+      newErrors.workEmail = "Please enter a valid work email";
+      isValid = false;
     }
+
+    // Phone validation according to selected country
+    const phoneDigits = form.phone.replace(/[^0-9]/g, "");
     if (!form.phone.trim()) {
-      setErrorMessage("Please enter your phone number");
+      newErrors.phone = "Phone number is required";
+      isValid = false;
+    } else if (phoneDigits.length < selectedCountry.min || phoneDigits.length > selectedCountry.max) {
+      if (selectedCountry.min === selectedCountry.max) {
+        newErrors.phone = `Phone number must be exactly ${selectedCountry.min} digits for ${selectedCountry.name}`;
+      } else {
+        newErrors.phone = `Phone number must be between ${selectedCountry.min} and ${selectedCountry.max} digits for ${selectedCountry.name}`;
+      }
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+
+    if (!isValid) {
       return;
     }
 
@@ -341,137 +423,177 @@ export function RequestCallbackModal() {
               </div>
             )}
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+             {/* Form */}
+            <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }} noValidate>
               {/* Full Name */}
-              <div style={inputContainerStyle}>
-                <User size={18} color="#7056ff" weight="regular" />
-                <input
-                  name="fullName"
-                  value={form.fullName}
-                  onChange={handleChange}
-                  maxLength={60}
-                  placeholder="Full Name* (Max 60 chars)"
-                  required
-                  style={inputStyle}
-                />
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <div 
+                  style={{ 
+                    ...inputContainerStyle, 
+                    borderColor: errors.fullName ? "#ef4444" : "#e2e8f0", 
+                    boxShadow: errors.fullName ? "0 0 0 1px #ef4444" : "none" 
+                  }}
+                >
+                  <User size={18} color={errors.fullName ? "#ef4444" : "#7056ff"} weight="regular" />
+                  <input
+                    name="fullName"
+                    value={form.fullName}
+                    onChange={handleChange}
+                    onBlur={() => validateField("fullName")}
+                    maxLength={60}
+                    placeholder="Full Name* (Max 60 chars)"
+                    style={inputStyle}
+                  />
+                </div>
+                {errors.fullName && (
+                  <span style={{ color: "#ef4444", fontSize: "11px", fontWeight: 600, marginLeft: "4px" }}>
+                    {errors.fullName}
+                  </span>
+                )}
               </div>
 
               {/* Work Email */}
-              <div style={inputContainerStyle}>
-                <EnvelopeSimple size={18} color="#7056ff" weight="regular" />
-                <input
-                  name="workEmail"
-                  type="email"
-                  value={form.workEmail}
-                  onChange={handleChange}
-                  placeholder="Your Work Email*"
-                  required
-                  style={inputStyle}
-                />
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <div 
+                  style={{ 
+                    ...inputContainerStyle, 
+                    borderColor: errors.workEmail ? "#ef4444" : "#e2e8f0", 
+                    boxShadow: errors.workEmail ? "0 0 0 1px #ef4444" : "none" 
+                  }}
+                >
+                  <EnvelopeSimple size={18} color={errors.workEmail ? "#ef4444" : "#7056ff"} weight="regular" />
+                  <input
+                    name="workEmail"
+                    type="email"
+                    value={form.workEmail}
+                    onChange={handleChange}
+                    onBlur={() => validateField("workEmail")}
+                    placeholder="Your Work Email*"
+                    style={inputStyle}
+                  />
+                </div>
+                {errors.workEmail && (
+                  <span style={{ color: "#ef4444", fontSize: "11px", fontWeight: 600, marginLeft: "4px" }}>
+                    {errors.workEmail}
+                  </span>
+                )}
               </div>
 
               {/* Phone with Country Code */}
-              <div style={inputContainerStyle}>
-                <div ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
-                  <button
-                    type="button"
-                    onClick={() => setDropdownOpen((prev) => !prev)}
-                    style={{
-                      background: "transparent",
-                      border: "none",
-                      outline: "none",
-                      fontSize: "13.5px",
-                      fontWeight: 700,
-                      color: "#1e293b",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "5px",
-                      padding: "6px 4px",
-                      fontFamily: "inherit",
-                    }}
-                  >
-                    <span>{selectedCountry.code}</span>
-                    <CaretDown size={13} color="#64748b" weight="bold" />
-                  </button>
-
-                  {dropdownOpen && (
-                    <div
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <div 
+                  style={{ 
+                    ...inputContainerStyle, 
+                    borderColor: errors.phone ? "#ef4444" : "#e2e8f0", 
+                    boxShadow: errors.phone ? "0 0 0 1px #ef4444" : "none" 
+                  }}
+                >
+                  <div ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
+                    <button
+                      type="button"
+                      onClick={() => setDropdownOpen((prev) => !prev)}
                       style={{
-                        position: "absolute",
-                        top: "calc(100% + 8px)",
-                        left: "-14px",
-                        width: "280px",
-                        maxHeight: "240px",
-                        overflowY: "auto",
-                        background: "#ffffff",
-                        borderRadius: "12px",
-                        boxShadow: "0 12px 36px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.08)",
-                        zIndex: 1000,
-                        padding: "6px 0",
+                        background: "transparent",
+                        border: "none",
+                        outline: "none",
+                        fontSize: "13.5px",
+                        fontWeight: 700,
+                        color: "#1e293b",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        padding: "6px 4px",
+                        fontFamily: "inherit",
                       }}
                     >
-                      {ALL_COUNTRIES.map((c) => {
-                        const isSelected = c.code === selectedCountry.code && c.dial === selectedCountry.dial;
-                        return (
-                          <div
-                            key={`${c.code}-${c.dial}`}
-                            onClick={() => {
-                              setSelectedCountry(c);
-                              setDropdownOpen(false);
-                            }}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: "10px",
-                              padding: "10px 16px",
-                              cursor: "pointer",
-                              fontSize: "13.5px",
-                              background: isSelected ? "#2563eb" : "transparent",
-                              color: isSelected ? "#ffffff" : "#1e293b",
-                              transition: "background 0.15s ease",
-                            }}
-                            onMouseEnter={(e) => {
-                              if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
-                            }}
-                            onMouseLeave={(e) => {
-                              if (!isSelected) e.currentTarget.style.background = "transparent";
-                            }}
-                          >
-                            <span
+                      <span>{selectedCountry.code}</span>
+                      <CaretDown size={13} color="#64748b" weight="bold" />
+                    </button>
+
+                    {dropdownOpen && (
+                      <div
+                        style={{
+                          position: "absolute",
+                          top: "calc(100% + 8px)",
+                          left: "-14px",
+                          width: "280px",
+                          maxHeight: "240px",
+                          overflowY: "auto",
+                          background: "#ffffff",
+                          borderRadius: "12px",
+                          boxShadow: "0 12px 36px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.08)",
+                          zIndex: 1000,
+                          padding: "6px 0",
+                        }}
+                      >
+                        {ALL_COUNTRIES.map((c) => {
+                          const isSelected = c.code === selectedCountry.code && c.dial === selectedCountry.dial;
+                          return (
+                            <div
+                              key={`${c.code}-${c.dial}`}
+                              onClick={() => {
+                                setSelectedCountry(c);
+                                setDropdownOpen(false);
+                                validateField("phone");
+                              }}
                               style={{
-                                fontSize: "11px",
-                                fontWeight: 800,
-                                letterSpacing: "0.5px",
-                                color: isSelected ? "#ffffff" : "#64748b",
-                                minWidth: "22px",
-                                textTransform: "uppercase",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                padding: "10px 16px",
+                                cursor: "pointer",
+                                fontSize: "13.5px",
+                                background: isSelected ? "#2563eb" : "transparent",
+                                color: isSelected ? "#ffffff" : "#1e293b",
+                                transition: "background 0.15s ease",
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isSelected) e.currentTarget.style.background = "#f1f5f9";
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isSelected) e.currentTarget.style.background = "transparent";
                               }}
                             >
-                              {c.code}
-                            </span>
-                            <span style={{ fontWeight: isSelected ? 700 : 500, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                              {c.name}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
+                              <span
+                                style={{
+                                  fontSize: "11px",
+                                  fontWeight: 800,
+                                  letterSpacing: "0.5px",
+                                  color: isSelected ? "#ffffff" : "#64748b",
+                                  minWidth: "22px",
+                                  textTransform: "uppercase",
+                                }}
+                              >
+                                {c.code}
+                              </span>
+                              <span style={{ fontWeight: isSelected ? 700 : 500, flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                                {c.name}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
 
-                <div style={{ width: "1px", height: "22px", background: "#cbd5e1", marginRight: "4px" }} />
-                <Phone size={18} color="#7056ff" weight="regular" />
-                <input
-                  name="phone"
-                  type="tel"
-                  value={form.phone}
-                  onChange={handleChange}
-                  placeholder={`${selectedCountry.dial} Phone number*`}
-                  required
-                  style={{ ...inputStyle, flex: 1 }}
-                />
+                  <div style={{ width: "1px", height: "22px", background: "#cbd5e1", marginRight: "4px" }} />
+                  <Phone size={18} color={errors.phone ? "#ef4444" : "#7056ff"} weight="regular" />
+                  <input
+                    name="phone"
+                    type="tel"
+                    value={form.phone}
+                    onChange={handleChange}
+                    onBlur={() => validateField("phone")}
+                    placeholder={`${selectedCountry.dial} Phone number*`}
+                    style={{ ...inputStyle, flex: 1 }}
+                  />
+                </div>
+                {errors.phone && (
+                  <span style={{ color: "#ef4444", fontSize: "11px", fontWeight: 600, marginLeft: "4px" }}>
+                    {errors.phone}
+                  </span>
+                )}
               </div>
 
               {/* Submit Button */}
