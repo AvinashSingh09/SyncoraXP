@@ -49,14 +49,20 @@ if (config.EMAIL_MODE === "zeptomail") {
   });
 }
 
-const app = await buildApp({ config, repository, mailer, auth, roomTokens, translations });
+try {
+  const app = await buildApp({ config, repository, mailer, auth, roomTokens, translations });
 
-const shutdown = async () => {
-  await app.close();
-  if (config.DATABASE_MODE === "postgres") await pool.end();
-};
+  const shutdown = async () => {
+    await app.close();
+    if (config.DATABASE_MODE === "postgres") await pool.end();
+  };
 
-process.on("SIGINT", () => void shutdown());
-process.on("SIGTERM", () => void shutdown());
+  process.on("SIGINT", () => void shutdown());
+  process.on("SIGTERM", () => void shutdown());
 
-await app.listen({ port: config.PORT, host: "0.0.0.0" });
+  const address = await app.listen({ port: config.PORT, host: "0.0.0.0" });
+  console.log(`API Server listening on ${address}`);
+} catch (err) {
+  console.error("CRITICAL: Failed to start API Server:", err);
+  process.exit(1);
+}
