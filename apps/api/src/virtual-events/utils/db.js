@@ -6,6 +6,7 @@ const connectionString = process.env.DATABASE_URL || 'postgres://postgres:postgr
 
 const pool = new Pool({
   connectionString,
+  connectionTimeoutMillis: 5000,
 });
 
 const query = (text, params) => pool.query(text, params);

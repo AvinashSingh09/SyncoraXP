@@ -10,7 +10,7 @@
     "livekit:diagnose": "node scripts/run-with-local-ca.mjs node scripts/diagnose-livekit.mjs",
     "translation:diagnose": "node scripts/diagnose-translation.mjs",
     "translation:retry": "node scripts/diagnose-translation.mjs --retry-stalled",
-    "build": "tsup src/server.ts src/db/migrate.ts --format esm --out-dir dist --sourcemap --clean",
+    "build": "tsup && node scripts/copy-virtual-events.mjs",
     "start": "node scripts/run-with-local-ca.mjs node dist/server.js",
     "typecheck": "tsc --noEmit",
     "test": "tsx --test test/**/*.test.ts",

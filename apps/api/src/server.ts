@@ -21,6 +21,7 @@ const isRemotePg = config.DATABASE_URL.includes("supabase") || config.DATABASE_U
 const pool = new Pool({
   connectionString: config.DATABASE_URL,
   max: 10,
+  connectionTimeoutMillis: 5_000,
   ...(isRemotePg ? { ssl: { rejectUnauthorized: false } } : {}),
 });
 let repository: MeetingRepository = new PostgresMeetingRepository(pool);
