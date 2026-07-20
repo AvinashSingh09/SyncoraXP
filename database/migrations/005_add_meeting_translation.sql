@@ -1,6 +1,6 @@
 BEGIN;
 
-CREATE TABLE meeting_translation_settings (
+CREATE TABLE IF NOT EXISTS meeting_translation_settings (
   meeting_id uuid PRIMARY KEY REFERENCES meetings(id) ON DELETE CASCADE,
   enabled boolean NOT NULL DEFAULT false,
   source_language varchar(8) NOT NULL DEFAULT 'en'
@@ -17,7 +17,7 @@ CREATE TABLE meeting_translation_settings (
   CHECK (allowed_target_languages <@ ARRAY['hi', 'bn', 'mr', 'ta', 'te']::text[])
 );
 
-CREATE TABLE meeting_translation_runs (
+CREATE TABLE IF NOT EXISTS meeting_translation_runs (
   id uuid PRIMARY KEY,
   meeting_id uuid NOT NULL REFERENCES meetings(id) ON DELETE CASCADE,
   livekit_room_name varchar(160) NOT NULL,
@@ -37,14 +37,14 @@ CREATE TABLE meeting_translation_runs (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE INDEX meeting_translation_runs_one_live_run_idx
+CREATE UNIQUE INDEX IF NOT EXISTS meeting_translation_runs_one_live_run_idx
   ON meeting_translation_runs (meeting_id)
   WHERE status IN ('queued', 'starting', 'active', 'reconnecting', 'stopping');
 
-CREATE INDEX meeting_translation_runs_claim_idx
+CREATE INDEX IF NOT EXISTS meeting_translation_runs_claim_idx
   ON meeting_translation_runs (status, lease_expires_at, created_at);
 
-CREATE TABLE meeting_translation_language_usage (
+CREATE TABLE IF NOT EXISTS meeting_translation_language_usage (
   id bigserial PRIMARY KEY,
   run_id uuid NOT NULL REFERENCES meeting_translation_runs(id) ON DELETE CASCADE,
   target_language varchar(8) NOT NULL
@@ -59,7 +59,7 @@ CREATE TABLE meeting_translation_language_usage (
   failure_code varchar(120)
 );
 
-CREATE INDEX meeting_translation_language_usage_run_idx
+CREATE INDEX IF NOT EXISTS meeting_translation_language_usage_run_idx
   ON meeting_translation_language_usage (run_id, target_language);
 
 COMMIT;
