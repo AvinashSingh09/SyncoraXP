@@ -84,10 +84,12 @@ export class ZeptoMailInvitationMailer implements InvitationMailer {
       body: JSON.stringify({
         from: { address: this.config.fromAddress, name: this.config.fromName },
         to: [{ email_address: { address: this.config.demoReceiverEmail, name: "Syncora Demo Manager" } }],
-        subject: `New Demo Booking Request from ${message.fullName}`,
+        subject: message.category === "Call Back Request" 
+          ? `New Call Back Request from ${message.fullName}` 
+          : `New Demo Booking Request from ${message.fullName}`,
         htmlbody: `
           <div style="font-family:Arial,sans-serif;color:#172033;line-height:1.6;max-width:600px;border:1px solid #f1f0ff;padding:30px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.02)">
-            <h2 style="color:#1e084a;margin-top:0;border-bottom:1.5px solid #f1f0ff;padding-bottom:15px">New Demo Booking Request</h2>
+            <h2 style="color:#1e084a;margin-top:0;border-bottom:1.5px solid #f1f0ff;padding-bottom:15px">${escapeHtml(message.category === "Call Back Request" ? "New Call Back Request" : "New Demo Booking Request")}</h2>
             <table style="width:100%;border-collapse:collapse;margin-top:20px">
               <tr>
                 <td style="padding:8px 0;font-weight:bold;color:#4b5563;width:140px">Full Name:</td>
