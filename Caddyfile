@@ -1,0 +1,24 @@
+# Caddyfile configuration for SyncoraXP
+
+{$DOMAIN_NAME} {
+    # Proxy API endpoints to the Fastify API container
+    reverse_proxy /api/* api:3000
+    reverse_proxy /ve-api/* api:3000
+
+    # Proxy Socket.IO websocket requests
+    reverse_proxy /socket.io/* api:3000 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+    }
+
+    # Serve the web application from the frontend container
+    reverse_proxy web:80
+}
+
+{$LIVEKIT_DOMAIN_NAME} {
+    # Proxy LiveKit room signaling
+    reverse_proxy livekit:7880 {
+        header_up Host {host}
+        header_up X-Real-IP {remote}
+    }
+}
