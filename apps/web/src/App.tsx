@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { lazy, Suspense, type ReactNode } from "react";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
+import { RequestCallbackModal } from "./components/RequestCallbackModal";
 
 const CreateMeetingPage = lazy(() => import("./pages/CreateMeetingPage").then((module) => ({ default: module.CreateMeetingPage })));
 const HomePage = lazy(() => import("./pages/HomePage").then((module) => ({ default: module.HomePage })));
@@ -11,6 +12,7 @@ const AuthPage = lazy(() => import("./pages/AuthPage").then((module) => ({ defau
 const VirtualEventsPage = lazy(() => import("./pages/VirtualEventsPage").then((module) => ({ default: module.VirtualEventsPage })));
 const VirtualEventsApp = lazy(() => import("./virtual-events/VirtualEventsApp"));
 const BookDemoPage = lazy(() => import("./pages/BookDemoPage").then((m) => ({ default: m.BookDemoPage })));
+const WebinarServicePage = lazy(() => import("./pages/WebinarServicePage").then((module) => ({ default: module.WebinarServicePage })));
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { user, loading } = useAuth();
@@ -18,10 +20,16 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return user ? children : <Navigate to="/login" replace />;
 }
 
+function WebinarServiceRoute() {
+  const { user } = useAuth();
+  return user ? <ProtectedRoute><HomePage /></ProtectedRoute> : <WebinarServicePage />;
+}
+
 export function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <RequestCallbackModal />
         <Suspense fallback={<main className="site-shell"><div className="loading-card">Loading SyncoraXP...</div></main>}>
           <Routes>
             <Route path="/" element={<LandingPage />} />
@@ -31,7 +39,7 @@ export function App() {
             <Route path="/book-demo" element={<BookDemoPage />} />
             <Route path="/virtual-events-platform/book-demo" element={<Navigate to="/book-demo" replace />} />
             <Route path="/virtual-events-platform/app/*" element={<VirtualEventsApp />} />
-            <Route path="/webinar-service" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
+            <Route path="/webinar-service" element={<WebinarServiceRoute />} />
             <Route path="/meetings/new" element={<ProtectedRoute><CreateMeetingPage /></ProtectedRoute>} />
             <Route path="/meetings/:meetingId/host" element={<ProtectedRoute><HostMeetingPage /></ProtectedRoute>} />
             <Route path="/join/:joinCode" element={<JoinMeetingPage />} />
