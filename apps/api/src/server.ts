@@ -17,7 +17,12 @@ import { MemoryTranslationRepository } from "./translation/memory-translation-re
 import { PostgresTranslationRepository } from "./translation/postgres-translation-repository";
 
 const config = loadConfig();
-const pool = new Pool({ connectionString: config.DATABASE_URL, max: 10 });
+const isRemotePg = config.DATABASE_URL.includes("supabase") || config.DATABASE_URL.includes("neon") || config.DATABASE_URL.includes("sslmode=");
+const pool = new Pool({
+  connectionString: config.DATABASE_URL,
+  max: 10,
+  ...(isRemotePg ? { ssl: { rejectUnauthorized: false } } : {}),
+});
 let repository: MeetingRepository = new PostgresMeetingRepository(pool);
 let authRepository: AuthRepository = new PostgresAuthRepository(pool);
 let translations: TranslationRepository = new PostgresTranslationRepository(pool);
