@@ -8,10 +8,12 @@ import {
   type GuestAdmissionStatusResponse,
   type HostMeetingResponse,
   type HostAdmissionListResponse,
+  type MeetingSettingsResponse,
   type MyMeetingsResponse,
   GuestRoomSessionInputSchema,
   type RoomSessionResponse,
   type PublicMeetingResponse,
+  UpdateMeetingSettingsInputSchema,
 } from "@voice/shared";
 import type { FastifyInstance } from "fastify";
 import type { AppConfig } from "../config";
@@ -19,6 +21,7 @@ import type { AuthService, AuthenticatedUser } from "../auth/auth-service";
 import type { MeetingRepository, StoredMeeting } from "../db/meeting-repository";
 import type { InvitationMailer } from "../email/invitation-mailer";
 import type { RoomTokenIssuer } from "../livekit/room-token-issuer";
+import type { TranslationRepository } from "../translation/translation-repository";
 
 interface MeetingRouteDependencies {
   config: Pick<AppConfig, "APP_BASE_URL">;
@@ -26,6 +29,7 @@ interface MeetingRouteDependencies {
   mailer: InvitationMailer;
   auth: AuthService;
   roomTokens: RoomTokenIssuer;
+  translations: TranslationRepository;
 }
 
 function joinUrl(baseUrl: string, code: string): string {
@@ -182,8 +186,62 @@ export async function registerMeetingRoutes(
       const response: HostMeetingResponse = {
         meeting: meetingSummary(meeting, dependencies.config.APP_BASE_URL),
         role: "host",
+        settings: {
+          isLocked: meeting.isLocked,
+          waitingRoomEnabled: meeting.waitingRoomEnabled,
+        },
       };
       return response;
+    },
+  );
+
+  app.patch<{ Params: { meetingId: string } }>(
+    "/api/meetings/:meetingId/settings",
+    async (request, reply) => {
+      const user = await requireUser(dependencies, request, reply);
+      if (!user) return;
+      const parsed = UpdateMeetingSettingsInputSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.status(400).send({ error: "Choose a valid host setting to update" });
+      }
+      const meeting = await dependencies.repository.updateSettingsForHost(
+        request.params.meetingId,
+        user.id,
+        parsed.data,
+      );
+      if (!meeting) return reply.status(404).send({ error: "Host meeting not found" });
+      const response: MeetingSettingsResponse = {
+        settings: {
+          isLocked: meeting.isLocked,
+          waitingRoomEnabled: meeting.waitingRoomEnabled,
+        },
+      };
+      return response;
+    },
+  );
+
+  app.post<{ Params: { meetingId: string } }>(
+    "/api/meetings/:meetingId/end",
+    async (request, reply) => {
+      const user = await requireUser(dependencies, request, reply);
+      if (!user) return;
+      const meeting = await dependencies.repository.findByIdForHost(request.params.meetingId, user.id);
+      if (!meeting) return reply.status(404).send({ error: "Host meeting not found" });
+      if (!dependencies.roomTokens.isConfigured()) {
+        return reply.status(503).send({ error: "LiveKit is not configured" });
+      }
+      const ended = await dependencies.repository.endForHost(meeting.id, user.id);
+      if (!ended) return reply.status(404).send({ error: "Host meeting not found" });
+      await dependencies.translations.requestStop(ended.id);
+      try {
+        await dependencies.roomTokens.endRoom(ended.livekitRoomName);
+      } catch (error) {
+        request.log.error(error);
+        return reply.status(502).send({
+          error: "The meeting was closed to new guests, but connected participants could not be disconnected. Try again.",
+        });
+      }
+      return reply.status(204).send();
     },
   );
 
@@ -208,12 +266,28 @@ export async function registerMeetingRoutes(
         role: "host",
         userId: user.id,
       });
+      let translation = await dependencies.translations.getSettings(meeting.id);
+      if (translation.enabled) {
+        translation = await dependencies.translations.updateSettings(meeting.id, {
+          designatedSpeakerIdentity: issued.participantIdentity,
+        });
+        await dependencies.translations.queueRun({
+          id: randomUUID(),
+          meetingId: meeting.id,
+          livekitRoomName: meeting.livekitRoomName,
+          speakerParticipantIdentity: issued.participantIdentity,
+          provider: translation.provider,
+          model: translation.model,
+        });
+      }
       const response: RoomSessionResponse = {
         serverUrl: issued.serverUrl,
         participantToken: issued.participantToken,
+        meetingId: meeting.id,
         participantIdentity: issued.participantIdentity,
         roomName: meeting.livekitRoomName,
         role: "host",
+        translation,
       };
       return reply.status(201).send(response);
     },
@@ -276,12 +350,16 @@ export async function registerMeetingRoutes(
       if (!meeting || meeting.status === "ended") {
         return reply.status(404).send({ error: "Meeting not found or no longer available" });
       }
+      if (meeting.isLocked) {
+        return reply.status(423).send({ error: "This meeting is locked by the host" });
+      }
       const token = randomBytes(32).toString("base64url");
       const admission = await dependencies.repository.createAdmissionRequest({
         id: randomUUID(),
         meetingId: meeting.id,
         displayName: parsed.data.displayName,
         tokenHash: hashAdmissionToken(token),
+        status: meeting.waitingRoomEnabled ? "pending" : "admitted",
       });
       const response: GuestAdmissionResponse = {
         admissionId: admission.id,
@@ -325,6 +403,9 @@ export async function registerMeetingRoutes(
       if (!meeting || meeting.status === "ended") {
         return reply.status(404).send({ error: "Meeting not found or no longer available" });
       }
+      if (meeting.isLocked) {
+        return reply.status(423).send({ error: "This meeting is locked by the host" });
+      }
       const admission = await dependencies.repository.findAdmissionRequest(
         meeting.id,
         parsed.data.admissionId,
@@ -347,9 +428,11 @@ export async function registerMeetingRoutes(
       const response: RoomSessionResponse = {
         serverUrl: issued.serverUrl,
         participantToken: issued.participantToken,
+        meetingId: meeting.id,
         participantIdentity: issued.participantIdentity,
         roomName: meeting.livekitRoomName,
         role: "guest",
+        translation: await dependencies.translations.getSettings(meeting.id),
       };
       return reply.status(201).send(response);
     },

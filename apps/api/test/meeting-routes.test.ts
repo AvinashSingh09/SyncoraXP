@@ -6,22 +6,29 @@ import { buildApp } from "../src/app";
 import { AuthService } from "../src/auth/auth-service";
 import { MemoryAuthRepository } from "../src/auth/memory-auth-repository";
 import { MemoryMeetingRepository } from "../src/db/memory-meeting-repository";
-import type { InvitationMailer, InvitationMessage } from "../src/email/invitation-mailer";
+import type { InvitationMailer, InvitationMessage, DemoMessage } from "../src/email/invitation-mailer";
 import type {
   RoomTokenIssuer,
   RoomTokenRequest,
 } from "../src/livekit/room-token-issuer";
+import { MemoryTranslationRepository } from "../src/translation/memory-translation-repository";
 
 class FakeMailer implements InvitationMailer {
   messages: InvitationMessage[] = [];
+  demoRequests: DemoMessage[] = [];
   async sendInvitation(message: InvitationMessage) {
     this.messages.push(message);
+    return { status: "sent" as const, providerRequestId: randomUUID() };
+  }
+  async sendDemoRequest(message: DemoMessage) {
+    this.demoRequests.push(message);
     return { status: "sent" as const, providerRequestId: randomUUID() };
   }
 }
 
 class FakeRoomTokenIssuer implements RoomTokenIssuer {
   requests: RoomTokenRequest[] = [];
+  endedRooms: string[] = [];
   constructor(private readonly configured = true) {}
   isConfigured() { return this.configured; }
   async issue(request: RoomTokenRequest) {
@@ -31,6 +38,9 @@ class FakeRoomTokenIssuer implements RoomTokenIssuer {
       participantToken: `token-${request.role}`,
       participantIdentity: `${request.role}-test-identity`,
     };
+  }
+  async endRoom(roomName: string) {
+    this.endedRooms.push(roomName);
   }
 }
 
@@ -60,7 +70,15 @@ async function setup(liveKitConfigured = true) {
   const mailer = new FakeMailer();
   const roomTokens = new FakeRoomTokenIssuer(liveKitConfigured);
   const auth = new AuthService(authRepository, 7);
-  const app = await buildApp({ config, repository, mailer, auth, roomTokens });
+  const translations = new MemoryTranslationRepository();
+  const app = await buildApp({
+    config: config as any,
+    repository,
+    mailer,
+    auth,
+    roomTokens,
+    translations,
+  });
   return { app, mailer, roomTokens };
 }
 
@@ -379,6 +397,192 @@ test("protects admission requests from other hosts and denied guests", async (t)
   assert.equal(deniedSession.statusCode, 403);
 });
 
+test("lets hosts disable the waiting room and admits pending and future guests", async (t) => {
+  const { app } = await setup();
+  t.after(() => app.close());
+  const cookie = await registerHost(app);
+  const created = await app.inject({
+    method: "POST",
+    url: "/api/meetings",
+    headers: { cookie },
+    payload: validMeeting,
+  });
+  const meeting = created.json().meeting;
+  const joinCode = meeting.joinUrl.split("/").at(-1);
+
+  const pending = await app.inject({
+    method: "POST",
+    url: `/api/join/${joinCode}/admissions`,
+    payload: { displayName: "Already Waiting" },
+  });
+  assert.equal(pending.statusCode, 201);
+  assert.equal(pending.json().status, "pending");
+
+  const updated = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meeting.id}/settings`,
+    headers: { cookie },
+    payload: { waitingRoomEnabled: false },
+  });
+  assert.equal(updated.statusCode, 200);
+  assert.deepEqual(updated.json().settings, { isLocked: false, waitingRoomEnabled: false });
+
+  const released = await app.inject({
+    method: "GET",
+    url: `/api/join/${joinCode}/admissions/${pending.json().admissionId}`,
+    headers: { authorization: `Bearer ${pending.json().admissionToken}` },
+  });
+  assert.equal(released.statusCode, 200);
+  assert.equal(released.json().status, "admitted");
+
+  const immediate = await app.inject({
+    method: "POST",
+    url: `/api/join/${joinCode}/admissions`,
+    payload: { displayName: "Immediate Guest" },
+  });
+  assert.equal(immediate.statusCode, 201);
+  assert.equal(immediate.json().status, "admitted");
+
+  const guestSession = await app.inject({
+    method: "POST",
+    url: `/api/join/${joinCode}/session`,
+    headers: { authorization: `Bearer ${immediate.json().admissionToken}` },
+    payload: { admissionId: immediate.json().admissionId },
+  });
+  assert.equal(guestSession.statusCode, 201);
+  assert.equal(guestSession.json().role, "guest");
+});
+
+test("locks new guest entry without changing the host session", async (t) => {
+  const { app } = await setup();
+  t.after(() => app.close());
+  const cookie = await registerHost(app);
+  const created = await app.inject({
+    method: "POST",
+    url: "/api/meetings",
+    headers: { cookie },
+    payload: validMeeting,
+  });
+  const meeting = created.json().meeting;
+  const joinCode = meeting.joinUrl.split("/").at(-1);
+
+  await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meeting.id}/settings`,
+    headers: { cookie },
+    payload: { waitingRoomEnabled: false },
+  });
+  const admitted = await app.inject({
+    method: "POST",
+    url: `/api/join/${joinCode}/admissions`,
+    payload: { displayName: "Admitted Before Lock" },
+  });
+  assert.equal(admitted.json().status, "admitted");
+
+  const locked = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meeting.id}/settings`,
+    headers: { cookie },
+    payload: { isLocked: true },
+  });
+  assert.equal(locked.statusCode, 200);
+  assert.deepEqual(locked.json().settings, { isLocked: true, waitingRoomEnabled: false });
+
+  const newRequest = await app.inject({
+    method: "POST",
+    url: `/api/join/${joinCode}/admissions`,
+    payload: { displayName: "Blocked Guest" },
+  });
+  assert.equal(newRequest.statusCode, 423);
+  assert.match(newRequest.json().error, /locked/i);
+
+  const blockedSession = await app.inject({
+    method: "POST",
+    url: `/api/join/${joinCode}/session`,
+    headers: { authorization: `Bearer ${admitted.json().admissionToken}` },
+    payload: { admissionId: admitted.json().admissionId },
+  });
+  assert.equal(blockedSession.statusCode, 423);
+
+  const hostSession = await app.inject({
+    method: "POST",
+    url: `/api/meetings/${meeting.id}/host-session`,
+    headers: { cookie },
+  });
+  assert.equal(hostSession.statusCode, 201);
+
+  const hostMeeting = await app.inject({
+    method: "GET",
+    url: `/api/meetings/${meeting.id}/host`,
+    headers: { cookie },
+  });
+  assert.deepEqual(hostMeeting.json().settings, { isLocked: true, waitingRoomEnabled: false });
+});
+
+test("lets only the host end a meeting for every participant", async (t) => {
+  const { app, roomTokens } = await setup();
+  t.after(() => app.close());
+  const ownerCookie = await registerHost(app);
+  const created = await app.inject({
+    method: "POST",
+    url: "/api/meetings",
+    headers: { cookie: ownerCookie },
+    payload: validMeeting,
+  });
+  const meeting = created.json().meeting;
+  const joinCode = meeting.joinUrl.split("/").at(-1);
+  const pending = await app.inject({
+    method: "POST",
+    url: `/api/join/${joinCode}/admissions`,
+    payload: { displayName: "Waiting When Ended" },
+  });
+  assert.equal(pending.statusCode, 201);
+
+  const unauthenticated = await app.inject({
+    method: "POST",
+    url: `/api/meetings/${meeting.id}/end`,
+  });
+  assert.equal(unauthenticated.statusCode, 401);
+
+  const otherCookie = await registerHost(app, "other-ending@example.com");
+  const otherHost = await app.inject({
+    method: "POST",
+    url: `/api/meetings/${meeting.id}/end`,
+    headers: { cookie: otherCookie },
+  });
+  assert.equal(otherHost.statusCode, 404);
+
+  const ended = await app.inject({
+    method: "POST",
+    url: `/api/meetings/${meeting.id}/end`,
+    headers: { cookie: ownerCookie },
+  });
+  assert.equal(ended.statusCode, 204);
+  assert.equal(roomTokens.endedRooms.length, 1);
+
+  const hostMeeting = await app.inject({
+    method: "GET",
+    url: `/api/meetings/${meeting.id}/host`,
+    headers: { cookie: ownerCookie },
+  });
+  assert.equal(hostMeeting.json().meeting.status, "ended");
+
+  const guestLink = await app.inject({ method: "GET", url: `/api/join/${joinCode}` });
+  assert.equal(guestLink.statusCode, 404);
+  const hostSession = await app.inject({
+    method: "POST",
+    url: `/api/meetings/${meeting.id}/host-session`,
+    headers: { cookie: ownerCookie },
+  });
+  assert.equal(hostSession.statusCode, 404);
+  const pendingStatus = await app.inject({
+    method: "GET",
+    url: `/api/join/${joinCode}/admissions/${pending.json().admissionId}`,
+    headers: { authorization: `Bearer ${pending.json().admissionToken}` },
+  });
+  assert.equal(pendingStatus.statusCode, 404);
+});
+
 test("returns actionable setup guidance when LiveKit is not configured", async (t) => {
   const { app } = await setup(false);
   t.after(() => app.close());
@@ -396,4 +600,182 @@ test("returns actionable setup guidance when LiveKit is not configured", async (
   });
   assert.equal(response.statusCode, 503);
   assert.match(response.json().error, /LIVEKIT_URL/);
+});
+
+test("handles book a demo request successfully", async (t) => {
+  const { app, mailer } = await setup();
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/demo",
+    payload: {
+      fullName: "Jane Doe",
+      workEmail: "jane@example.com",
+      phone: "1234567890",
+      countryCode: "+91",
+      city: "Bangalore",
+      company: "Acme Corp",
+      category: "SaaS / Technology",
+      message: "Please show me a demo",
+    },
+  });
+
+  assert.equal(response.statusCode, 200);
+  assert.equal(response.json().success, true);
+  
+  // Ensure the mailer received it
+  const fakeMailer = mailer as FakeMailer;
+  assert.equal(fakeMailer.demoRequests.length, 1);
+  assert.equal(fakeMailer.demoRequests[0]?.fullName, "Jane Doe");
+  assert.equal(fakeMailer.demoRequests[0]?.workEmail, "jane@example.com");
+});
+
+test("rejects malformed demo request", async (t) => {
+  const { app } = await setup();
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: "POST",
+    url: "/api/demo",
+    payload: {
+      fullName: "J",
+      workEmail: "not-an-email",
+      phone: "1",
+      countryCode: "+91",
+      city: "",
+      company: "",
+      category: "",
+    },
+  });
+
+  assert.equal(response.statusCode, 400);
+});
+
+test("lets only the host configure and queue meeting interpretation", async (t) => {
+  const { app } = await setup();
+  t.after(() => app.close());
+  const ownerCookie = await registerHost(app);
+  const created = await app.inject({
+    method: "POST",
+    url: "/api/meetings",
+    headers: { cookie: ownerCookie },
+    payload: validMeeting,
+  });
+  const meetingId = created.json().meeting.id;
+
+  const unauthenticated = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    payload: { enabled: true, designatedSpeakerIdentity: "host-speaker" },
+  });
+  assert.equal(unauthenticated.statusCode, 401);
+
+  const missingSpeaker = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { enabled: true },
+  });
+  assert.equal(missingSpeaker.statusCode, 400);
+
+  const geminiSelected = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { provider: "gemini" },
+  });
+  assert.equal(geminiSelected.statusCode, 200);
+  assert.equal(geminiSelected.json().settings.provider, "gemini");
+  assert.equal(
+    geminiSelected.json().settings.model,
+    "gemini-3.5-live-translate-preview",
+  );
+
+  const enabled = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: {
+      enabled: true,
+      designatedSpeakerIdentity: "host-original-identity",
+      allowedTargetLanguages: ["hi", "bn", "mr", "ta", "te", "hi"],
+    },
+  });
+  assert.equal(enabled.statusCode, 200);
+  assert.equal(enabled.json().settings.enabled, true);
+  assert.equal(enabled.json().settings.designatedSpeakerIdentity, "host-original-identity");
+  assert.deepEqual(enabled.json().settings.allowedTargetLanguages, ["hi", "bn", "mr", "ta", "te"]);
+  assert.equal(enabled.json().runtime.status, "queued");
+  assert.ok(enabled.json().runtime.runId);
+  const firstRunId = enabled.json().runtime.runId;
+
+  const providerChangeWhileRunning = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { provider: "openai" },
+  });
+  assert.equal(providerChangeWhileRunning.statusCode, 409);
+
+  const refreshedHostSession = await app.inject({
+    method: "POST",
+    url: `/api/meetings/${meetingId}/host-session`,
+    headers: { cookie: ownerCookie },
+  });
+  assert.equal(refreshedHostSession.statusCode, 201);
+  assert.equal(
+    refreshedHostSession.json().translation.designatedSpeakerIdentity,
+    "host-test-identity",
+  );
+
+  const fetched = await app.inject({
+    method: "GET",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+  });
+  assert.equal(fetched.statusCode, 200);
+  assert.equal(fetched.json().settings.provider, "gemini");
+  assert.equal(fetched.json().settings.model, "gemini-3.5-live-translate-preview");
+  assert.equal(fetched.json().settings.designatedSpeakerIdentity, "host-test-identity");
+  assert.notEqual(fetched.json().runtime.runId, firstRunId);
+
+  const otherCookie = await registerHost(app, "translation-other@example.com");
+  const forbidden = await app.inject({
+    method: "GET",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: otherCookie },
+  });
+  assert.equal(forbidden.statusCode, 404);
+
+  const disabled = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { enabled: false },
+  });
+  assert.equal(disabled.statusCode, 200);
+  assert.equal(disabled.json().settings.enabled, false);
+  assert.equal(disabled.json().runtime.status, "stopping");
+
+  const openAISelected = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { provider: "openai" },
+  });
+  assert.equal(openAISelected.statusCode, 200);
+  assert.equal(openAISelected.json().settings.provider, "openai");
+  assert.equal(openAISelected.json().settings.model, "gpt-realtime-translate");
+
+  const reenabled = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { enabled: true },
+  });
+  assert.equal(reenabled.statusCode, 200);
+  assert.equal(reenabled.json().settings.enabled, true);
+  assert.equal(reenabled.json().runtime.status, "queued");
+  assert.notEqual(reenabled.json().runtime.runId, firstRunId);
 });

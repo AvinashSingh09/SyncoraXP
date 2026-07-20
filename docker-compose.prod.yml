@@ -1,0 +1,67 @@
+services:
+  livekit:
+    image: livekit/livekit-server:v1.13.1
+    restart: unless-stopped
+    command: --config /etc/livekit.yaml
+    environment:
+      LIVEKIT_CONFIG: |
+        port: 7880
+        log_level: info
+        rtc:
+          tcp_port: 7881
+          udp_port: 7882
+          use_external_ip: true
+        keys:
+          "${LIVEKIT_API_KEY}": "${LIVEKIT_API_SECRET}"
+    ports:
+      - "7881:7881/tcp"
+      - "7882:7882/udp"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      - livekit
+
+  translation-worker:
+    build:
+      context: .
+      dockerfile: apps/translation-worker/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.production
+    depends_on:
+      - livekit
+      - api
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      DOMAIN_NAME: ${DOMAIN_NAME}
+      LIVEKIT_DOMAIN_NAME: ${LIVEKIT_DOMAIN_NAME}
+    depends_on:
+      - api
+      - web
+      - livekit
+
+volumes:
+  caddy_data:
+  caddy_config:

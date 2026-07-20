@@ -3,11 +3,17 @@ import {
   type LocalUserChoices,
 } from "@livekit/components-react";
 import { useCallback, useState } from "react";
-import type { MeetingSummary, RoomSessionResponse } from "@voice/shared";
+import type {
+  MeetingSettings,
+  MeetingSummary,
+  MeetingTranslationSettings,
+  RoomSessionResponse,
+} from "@voice/shared";
 import { Info, Users } from "@phosphor-icons/react";
-import { VideoPresets, type RoomOptions } from "livekit-client";
+import { VideoPresets, type DisconnectReason, type RoomOptions } from "livekit-client";
 import { Brand } from "./Brand";
 import { HostAdmissionPanel } from "./HostAdmissionPanel";
+import { HostToolsPanel } from "./HostToolsPanel";
 import { CustomVideoConference } from "./CustomVideoConference";
 import { MeetingInfoPanel } from "./MeetingInfoPanel";
 
@@ -39,16 +45,38 @@ export interface MeetingRoomProps {
   choices: LocalUserChoices;
   meetingId?: string;
   meeting?: MeetingSummary;
-  onLeave(): void;
+  initialHostSettings?: MeetingSettings;
+  onLeave(reason?: DisconnectReason): void;
+  onEndMeeting?(): Promise<void>;
 }
 
-export function MeetingRoom({ meetingTitle, session, choices, meetingId, meeting, onLeave }: MeetingRoomProps) {
-  const [activeHostPanel, setActiveHostPanel] = useState<"info" | "waiting" | null>(
+export function MeetingRoom({ meetingTitle, session, choices, meetingId, meeting, initialHostSettings, onLeave, onEndMeeting }: MeetingRoomProps) {
+  const [activeHostPanel, setActiveHostPanel] = useState<"info" | "waiting" | "tools" | null>(
     session.role === "host" && meeting ? "info" : null,
   );
+  const [hostSettings, setHostSettings] = useState<MeetingSettings>(
+    initialHostSettings ?? { isLocked: false, waitingRoomEnabled: true },
+  );
+  const [translationSettings, setTranslationSettings] = useState<MeetingTranslationSettings>(
+    session.translation,
+  );
   const [waitingCount, setWaitingCount] = useState(0);
+  const [isEndingMeeting, setIsEndingMeeting] = useState(false);
+  const [endMeetingError, setEndMeetingError] = useState("");
   const setWaitingRoom = useCallback((open: boolean) => setActiveHostPanel(open ? "waiting" : null), []);
   const setWaitingRoomCount = useCallback((count: number) => setWaitingCount(count), []);
+  const closeHostPanel = useCallback(() => setActiveHostPanel(null), []);
+  const endMeetingForEveryone = useCallback(async () => {
+    if (!onEndMeeting || isEndingMeeting) return;
+    setIsEndingMeeting(true);
+    setEndMeetingError("");
+    try {
+      await onEndMeeting();
+    } catch (caught) {
+      setEndMeetingError(caught instanceof Error ? caught.message : "Could not end the meeting");
+      setIsEndingMeeting(false);
+    }
+  }, [isEndingMeeting, onEndMeeting]);
 
   return (
     <main className="livekit-page" data-lk-theme="default">
@@ -96,8 +124,17 @@ export function MeetingRoom({ meetingTitle, session, choices, meetingId, meeting
           onError={(error) => console.error("LiveKit room error", error)}
         >
           <CustomVideoConference
-            isWaitingRoomOpen={activeHostPanel === "waiting"}
-            onCloseWaitingRoom={() => setActiveHostPanel((curr) => (curr === "waiting" ? null : curr))}
+            meetingId={session.meetingId}
+            participantRole={session.role}
+            translationSettings={translationSettings}
+            showHostTools={session.role === "host" && Boolean(meetingId)}
+            isHostToolsOpen={activeHostPanel === "tools"}
+            isHostPanelOpen={activeHostPanel !== null}
+            onToggleHostTools={() => setActiveHostPanel((current) => current === "tools" ? null : "tools")}
+            onCloseHostPanel={closeHostPanel}
+            onEndMeeting={() => void endMeetingForEveryone()}
+            isEndingMeeting={isEndingMeeting}
+            endMeetingError={endMeetingError}
           />
         </LiveKitRoom>
         {session.role === "host" && meetingId && (
@@ -107,6 +144,16 @@ export function MeetingRoom({ meetingTitle, session, choices, meetingId, meeting
               open={activeHostPanel === "waiting"}
               onOpenChange={setWaitingRoom}
               onCountChange={setWaitingRoomCount}
+            />
+            <HostToolsPanel
+              meetingId={meetingId}
+              participantIdentity={session.participantIdentity}
+              open={activeHostPanel === "tools"}
+              settings={hostSettings}
+              translationSettings={translationSettings}
+              onOpenChange={(open) => setActiveHostPanel(open ? "tools" : null)}
+              onSettingsChange={setHostSettings}
+              onTranslationSettingsChange={setTranslationSettings}
             />
             {meeting && (
               <MeetingInfoPanel

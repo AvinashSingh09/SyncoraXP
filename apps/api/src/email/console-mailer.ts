@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { InvitationMailer, InvitationMessage } from "./invitation-mailer";
+import type { InvitationMailer, InvitationMessage, DemoMessage } from "./invitation-mailer";
 
 export class ConsoleInvitationMailer implements InvitationMailer {
   async sendInvitation(message: InvitationMessage) {
@@ -8,4 +8,12 @@ export class ConsoleInvitationMailer implements InvitationMailer {
     );
     return { status: "simulated" as const, providerRequestId: `console:${randomUUID()}` };
   }
+
+  async sendDemoRequest(message: DemoMessage) {
+    console.log(
+      `[email:simulated] Demo Request from ${message.fullName} (${message.workEmail})`,
+    );
+    return { status: "simulated" as const, providerRequestId: `console:${randomUUID()}` };
+  }
 }
+

@@ -7,10 +7,14 @@ import type {
   HostMeetingResponse,
   HostAdmissionListResponse,
   LoginInput,
+  MeetingSettingsResponse,
+  MeetingTranslationResponse,
   MyMeetingsResponse,
   PublicMeetingResponse,
   RegisterInput,
   RoomSessionResponse,
+  UpdateMeetingSettingsInput,
+  UpdateMeetingTranslationInput,
 } from "@voice/shared";
 
 async function readJson<T>(response: Response): Promise<T> {
@@ -82,6 +86,52 @@ export async function createHostRoomSession(meetingId: string): Promise<RoomSess
       credentials: "include",
     }),
   );
+}
+
+export async function updateMeetingSettings(
+  meetingId: string,
+  settings: UpdateMeetingSettingsInput,
+): Promise<MeetingSettingsResponse> {
+  return readJson<MeetingSettingsResponse>(
+    await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/settings`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings),
+    }),
+  );
+}
+
+export async function getMeetingTranslation(
+  meetingId: string,
+): Promise<MeetingTranslationResponse> {
+  return readJson<MeetingTranslationResponse>(
+    await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/translation`, {
+      credentials: "include",
+    }),
+  );
+}
+
+export async function updateMeetingTranslation(
+  meetingId: string,
+  settings: UpdateMeetingTranslationInput,
+): Promise<MeetingTranslationResponse> {
+  return readJson<MeetingTranslationResponse>(
+    await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/translation`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(settings),
+    }),
+  );
+}
+
+export async function endMeeting(meetingId: string): Promise<void> {
+  const response = await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/end`, {
+    method: "POST",
+    credentials: "include",
+  });
+  if (!response.ok) await readJson<never>(response);
 }
 
 export async function createGuestRoomSession(
