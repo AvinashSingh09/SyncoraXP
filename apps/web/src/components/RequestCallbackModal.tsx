@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { X, CheckCircle, User, EnvelopeSimple, Phone, ShieldCheck, CaretDown } from "@phosphor-icons/react";
+import { apiFetch } from "../backend";
 
 const ALL_COUNTRIES = [
   { code: "IN", name: "India", dial: "+91", min: 10, max: 10 },
@@ -202,7 +203,7 @@ export function RequestCallbackModal() {
     setLoading(true);
 
     try {
-      await fetch("/api/demo", {
+      await apiFetch("/api/demo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -20,6 +20,7 @@ import {
 } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { apiFetch } from "../backend";
 
 const eventArtwork = "/virtual-events/syncoraxp-virtual-events-hero.png";
 const hostArtwork = "/virtual-events/host-live-v1.png";
@@ -212,7 +213,7 @@ export function VirtualEventsPage() {
     setLoading(true);
     setSubmitError(null);
     try {
-      const response = await fetch("/api/demo", {
+      const response = await apiFetch("/api/demo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

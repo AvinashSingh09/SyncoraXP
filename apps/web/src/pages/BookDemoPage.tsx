@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle } from "@phosphor-icons/react";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { apiFetch } from "../backend";
 
 const COUNTRY_CODES = [
   { code: "IN", dial: "+91", flag: "🇮🇳" },
@@ -145,7 +146,7 @@ export function BookDemoPage() {
     setLoading(true);
     setSubmitError(null);
     try {
-      const response = await fetch("/api/demo", {
+      const response = await apiFetch("/api/demo", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
