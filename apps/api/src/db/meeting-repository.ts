@@ -13,6 +13,8 @@ export interface StoredMeeting {
   status: "scheduled" | "active" | "ended";
   isLocked: boolean;
   waitingRoomEnabled: boolean;
+  allowGuestCamera: boolean;
+  allowGuestMicrophone: boolean;
   createdAt: Date;
 }
 
@@ -66,7 +68,12 @@ export interface MeetingRepository {
   updateSettingsForHost(
     meetingId: string,
     userId: string,
-    settings: { isLocked?: boolean; waitingRoomEnabled?: boolean },
+    settings: {
+      isLocked?: boolean;
+      waitingRoomEnabled?: boolean;
+      allowGuestCamera?: boolean;
+      allowGuestMicrophone?: boolean;
+    },
   ): Promise<StoredMeeting | null>;
   endForHost(meetingId: string, userId: string): Promise<StoredMeeting | null>;
   listByOwner(userId: string): Promise<StoredMeeting[]>;

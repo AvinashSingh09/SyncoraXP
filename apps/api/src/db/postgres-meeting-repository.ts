@@ -21,6 +21,8 @@ interface MeetingRow {
   status: StoredMeeting["status"];
   is_locked: boolean;
   waiting_room_enabled: boolean;
+  allow_guest_camera: boolean;
+  allow_guest_microphone: boolean;
   created_at: Date;
 }
 
@@ -58,6 +60,8 @@ function mapMeeting(row: MeetingRow): StoredMeeting {
     status: row.status,
     isLocked: row.is_locked,
     waitingRoomEnabled: row.waiting_room_enabled,
+    allowGuestCamera: row.allow_guest_camera,
+    allowGuestMicrophone: row.allow_guest_microphone,
     createdAt: row.created_at,
   };
 }
@@ -189,7 +193,12 @@ export class PostgresMeetingRepository implements MeetingRepository {
   async updateSettingsForHost(
     meetingId: string,
     userId: string,
-    settings: { isLocked?: boolean; waitingRoomEnabled?: boolean },
+    settings: {
+      isLocked?: boolean;
+      waitingRoomEnabled?: boolean;
+      allowGuestCamera?: boolean;
+      allowGuestMicrophone?: boolean;
+    },
   ): Promise<StoredMeeting | null> {
     const client = await this.pool.connect();
     try {
@@ -198,6 +207,8 @@ export class PostgresMeetingRepository implements MeetingRepository {
         `UPDATE meetings
          SET is_locked = COALESCE($3, is_locked),
              waiting_room_enabled = COALESCE($4, waiting_room_enabled),
+             allow_guest_camera = COALESCE($5, allow_guest_camera),
+             allow_guest_microphone = COALESCE($6, allow_guest_microphone),
              updated_at = now()
          WHERE id = $1
            AND EXISTS (
@@ -207,7 +218,14 @@ export class PostgresMeetingRepository implements MeetingRepository {
                AND role IN ('host', 'moderator')
            )
          RETURNING *`,
-        [meetingId, userId, settings.isLocked ?? null, settings.waitingRoomEnabled ?? null],
+        [
+          meetingId,
+          userId,
+          settings.isLocked ?? null,
+          settings.waitingRoomEnabled ?? null,
+          settings.allowGuestCamera ?? null,
+          settings.allowGuestMicrophone ?? null,
+        ],
       );
       const row = result.rows[0];
       if (!row) {

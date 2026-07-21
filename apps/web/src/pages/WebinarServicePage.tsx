@@ -13,6 +13,9 @@ import {
 } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { HostWebinarSection } from "../components/HostWebinarSection";
+import { GlobalWebinarSection } from "../components/GlobalWebinarSection";
+import { WebinarLeadFormSection } from "../components/WebinarLeadFormSection";
 
 export function WebinarServicePage() {
   return (
@@ -35,9 +38,9 @@ export function WebinarServicePage() {
             </h1>
 
             <p className="webinar-description">
-              Host highly interactive & informative live webinars – the ultimate webinar platform. 
+              Host highly interactive &amp; informative live webinars – the ultimate webinar platform. 
               Unleash the true potential of your organization and reach the set objective by 
-              conceptualizing webinars in no time with the world's best webinar services & solutions!
+              conceptualizing webinars in no time with the world's best webinar services &amp; solutions!
             </p>
 
             <Link to="/login" className="webinar-cta-button">
@@ -58,7 +61,7 @@ export function WebinarServicePage() {
                   <ShieldCheck size={22} weight="regular" />
                 </div>
                 <h3>Enterprise Ready</h3>
-                <p>Secure, scalable & reliable platform</p>
+                <p>Secure, scalable &amp; reliable platform</p>
               </div>
 
               <div className="webinar-feature-col">
@@ -135,6 +138,17 @@ export function WebinarServicePage() {
 
         </div>
       </section>
+
+      {/* Host A Webinar Showcase Section */}
+      <HostWebinarSection />
+
+      {/* Global Multi-Lingual Showcase Section */}
+      <GlobalWebinarSection />
+
+      {/* Brands Marquee & "Let's Get Your Event Going!" Contact Lead Form Section */}
+      <WebinarLeadFormSection />
     </main>
   );
 }
+
+

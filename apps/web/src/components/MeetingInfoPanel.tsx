@@ -18,17 +18,21 @@ interface MeetingInfoPanelProps {
 export function MeetingInfoPanel({ meeting, open, onOpenChange }: MeetingInfoPanelProps) {
   const [copied, setCopied] = useState<"link" | "invite" | null>(null);
 
+  const displayJoinUrl = meeting.joinUrl
+    ? `${window.location.origin}/join/${meeting.joinUrl.split("/join/").pop()}`
+    : meeting.joinUrl;
+
   const copyText = async (kind: "link" | "invite") => {
     const text = kind === "link"
-      ? meeting.joinUrl
-      : `${meeting.title}\nHosted by ${meeting.organizerName}\nJoin SyncoraXP: ${meeting.joinUrl}`;
+      ? displayJoinUrl
+      : `${meeting.title}\nHosted by ${meeting.organizerName}\nJoin SyncoraXP: ${displayJoinUrl}`;
     await navigator.clipboard.writeText(text);
     setCopied(kind);
     window.setTimeout(() => setCopied(null), 2_000);
   };
 
   const emailHref = `mailto:?subject=${encodeURIComponent(`Join ${meeting.title} on SyncoraXP`)}&body=${encodeURIComponent(
-    `${meeting.organizerName} invited you to a SyncoraXP meeting.\n\n${meeting.title}\n${meeting.scheduledFor ? new Date(meeting.scheduledFor).toLocaleString() : "Available now"}\n\nJoin meeting: ${meeting.joinUrl}`,
+    `${meeting.organizerName} invited you to a SyncoraXP meeting.\n\n${meeting.title}\n${meeting.scheduledFor ? new Date(meeting.scheduledFor).toLocaleString() : "Available now"}\n\nJoin meeting: ${displayJoinUrl}`,
   )}`;
 
   return (
@@ -47,7 +51,7 @@ export function MeetingInfoPanel({ meeting, open, onOpenChange }: MeetingInfoPan
 
           <section className="meeting-info-section">
             <div className="meeting-info-section-heading"><strong>Guest join link</strong><small>Anyone with this link can request access.</small></div>
-            <div className="meeting-link-box"><span>{meeting.joinUrl}</span></div>
+            <div className="meeting-link-box"><span>{displayJoinUrl}</span></div>
             <button className="meeting-info-button primary" type="button" onClick={() => void copyText("link")}>
               {copied === "link" ? <Check size={18} weight="bold" /> : <Copy size={18} weight="bold" />}
               {copied === "link" ? "Link copied" : "Copy guest link"}
