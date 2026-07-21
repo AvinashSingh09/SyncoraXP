@@ -10,7 +10,7 @@ services:
         rtc:
           tcp_port: 7881
           udp_port: 7882
-          use_external_ip: true
+          use_external_ip: false
           node_ip: ${LIVEKIT_NODE_IP:-103.189.88.94}
         keys:
           LK_LOCAL_CDB65FCC665488BFC3: SgEYQ4O4gRYwkezloQgrUaKELY9U00hQEF5eDuyoAy0
