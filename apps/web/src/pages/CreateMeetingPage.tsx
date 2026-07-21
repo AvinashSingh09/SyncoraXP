@@ -54,9 +54,13 @@ export function CreateMeetingPage() {
     }
   };
 
+  const displayJoinUrl = result?.meeting.joinUrl
+    ? `${window.location.origin}/join/${result.meeting.joinUrl.split("/join/").pop()}`
+    : result?.meeting.joinUrl || "";
+
   const copyLink = async () => {
     if (!result) return;
-    await navigator.clipboard.writeText(result.meeting.joinUrl);
+    await navigator.clipboard.writeText(displayJoinUrl);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 2_000);
   };
@@ -71,7 +75,7 @@ export function CreateMeetingPage() {
           <h1>{result.meeting.title}</h1>
           <p className="lead compact">Share this private link with anyone you want in the room.</p>
           <div className="share-card">
-            <span>{result.meeting.joinUrl}</span>
+            <span>{displayJoinUrl}</span>
             <button className="button primary" type="button" onClick={copyLink}>
               {copied ? "Copied" : "Copy link"}
             </button>

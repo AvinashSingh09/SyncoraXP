@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import { X, CheckCircle, User, EnvelopeSimple, Phone, ShieldCheck, CaretDown } from "@phosphor-icons/react";
 import { apiFetch } from "../backend";
 
@@ -38,6 +39,9 @@ const DEFAULT_COUNTRY = ALL_COUNTRIES[0] as { code: string; name: string; dial: 
 const DELAY_SEQUENCE = [50000, 150000, 300000];
 
 export function RequestCallbackModal() {
+  const location = useLocation();
+  const isInMeeting = location.pathname.includes("/meetings/") || location.pathname.includes("/join/");
+
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState(DEFAULT_COUNTRY);
@@ -112,6 +116,8 @@ export function RequestCallbackModal() {
   };
 
   useEffect(() => {
+    if (isInMeeting) return;
+
     // If user has already submitted the form, do not pop up again
     const isSubmitted = localStorage.getItem("syncora_callback_submitted");
     if (isSubmitted === "true") return;
@@ -129,7 +135,7 @@ export function RequestCallbackModal() {
     }, currentDelay);
 
     return () => clearTimeout(timer);
-  }, [isOpen, delayIndex]);
+  }, [isOpen, delayIndex, isInMeeting]);
 
   const handleClose = () => {
     setIsOpen(false);
@@ -140,6 +146,8 @@ export function RequestCallbackModal() {
       setSubmitted(false);
     }, 400);
   };
+
+  if (isInMeeting) return null;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>

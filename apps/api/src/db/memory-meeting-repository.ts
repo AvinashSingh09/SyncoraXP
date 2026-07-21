@@ -27,6 +27,8 @@ export class MemoryMeetingRepository implements MeetingRepository {
       status: "scheduled",
       isLocked: false,
       waitingRoomEnabled: true,
+      allowGuestCamera: true,
+      allowGuestMicrophone: true,
       createdAt: new Date(),
     };
     this.meetings.set(meeting.joinCode, meeting);
@@ -65,11 +67,18 @@ export class MemoryMeetingRepository implements MeetingRepository {
   async updateSettingsForHost(
     meetingId: string,
     userId: string,
-    settings: { isLocked?: boolean; waitingRoomEnabled?: boolean },
+    settings: {
+      isLocked?: boolean;
+      waitingRoomEnabled?: boolean;
+      allowGuestCamera?: boolean;
+      allowGuestMicrophone?: boolean;
+    },
   ): Promise<StoredMeeting | null> {
     const meeting = this.meetingsById.get(meetingId);
     if (!meeting || meeting.createdBy !== userId) return null;
     if (settings.isLocked !== undefined) meeting.isLocked = settings.isLocked;
+    if (settings.allowGuestCamera !== undefined) meeting.allowGuestCamera = settings.allowGuestCamera;
+    if (settings.allowGuestMicrophone !== undefined) meeting.allowGuestMicrophone = settings.allowGuestMicrophone;
     if (settings.waitingRoomEnabled !== undefined) {
       meeting.waitingRoomEnabled = settings.waitingRoomEnabled;
       if (!settings.waitingRoomEnabled) {

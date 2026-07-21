@@ -125,13 +125,17 @@ export interface HostAdmissionListResponse {
 export interface MeetingSettings {
   isLocked: boolean;
   waitingRoomEnabled: boolean;
+  allowGuestCamera: boolean;
+  allowGuestMicrophone: boolean;
 }
 
 export const UpdateMeetingSettingsInputSchema = z.object({
   isLocked: z.boolean().optional(),
   waitingRoomEnabled: z.boolean().optional(),
+  allowGuestCamera: z.boolean().optional(),
+  allowGuestMicrophone: z.boolean().optional(),
 }).refine(
-  (settings) => settings.isLocked !== undefined || settings.waitingRoomEnabled !== undefined,
+  (settings) => Object.values(settings).some((value) => value !== undefined),
   "Choose at least one setting to update",
 );
 

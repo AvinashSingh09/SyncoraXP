@@ -189,6 +189,8 @@ export async function registerMeetingRoutes(
         settings: {
           isLocked: meeting.isLocked,
           waitingRoomEnabled: meeting.waitingRoomEnabled,
+          allowGuestCamera: meeting.allowGuestCamera,
+          allowGuestMicrophone: meeting.allowGuestMicrophone,
         },
       };
       return response;
@@ -210,10 +212,23 @@ export async function registerMeetingRoutes(
         parsed.data,
       );
       if (!meeting) return reply.status(404).send({ error: "Host meeting not found" });
+      if (parsed.data.allowGuestCamera !== undefined || parsed.data.allowGuestMicrophone !== undefined) {
+        try {
+          await dependencies.roomTokens.updateGuestMediaPermissions(
+            meeting.livekitRoomName,
+            meeting.allowGuestCamera,
+            meeting.allowGuestMicrophone,
+          );
+        } catch (error) {
+          request.log.warn({ error }, "Could not sync guest media permissions");
+        }
+      }
       const response: MeetingSettingsResponse = {
         settings: {
           isLocked: meeting.isLocked,
           waitingRoomEnabled: meeting.waitingRoomEnabled,
+          allowGuestCamera: meeting.allowGuestCamera,
+          allowGuestMicrophone: meeting.allowGuestMicrophone,
         },
       };
       return response;
@@ -265,6 +280,8 @@ export async function registerMeetingRoutes(
         name: user.name,
         role: "host",
         userId: user.id,
+        allowCamera: true,
+        allowMicrophone: true,
       });
       let translation = await dependencies.translations.getSettings(meeting.id);
       if (translation.enabled) {
@@ -424,6 +441,8 @@ export async function registerMeetingRoutes(
         meetingId: meeting.id,
         name: admission.displayName,
         role: "guest",
+        allowCamera: meeting.allowGuestCamera,
+        allowMicrophone: meeting.allowGuestMicrophone,
       });
       const response: RoomSessionResponse = {
         serverUrl: issued.serverUrl,
