@@ -17,7 +17,13 @@ import { MemoryTranslationRepository } from "./translation/memory-translation-re
 import { PostgresTranslationRepository } from "./translation/postgres-translation-repository";
 
 const config = loadConfig();
-const pool = new Pool({ connectionString: config.DATABASE_URL, max: 10 });
+const isRemotePg = config.DATABASE_URL.includes("supabase") || config.DATABASE_URL.includes("neon") || config.DATABASE_URL.includes("sslmode=");
+const pool = new Pool({
+  connectionString: config.DATABASE_URL,
+  max: 10,
+  connectionTimeoutMillis: 5_000,
+  ...(isRemotePg ? { ssl: { rejectUnauthorized: false } } : {}),
+});
 let repository: MeetingRepository = new PostgresMeetingRepository(pool);
 let authRepository: AuthRepository = new PostgresAuthRepository(pool);
 let translations: TranslationRepository = new PostgresTranslationRepository(pool);
@@ -44,14 +50,20 @@ if (config.EMAIL_MODE === "zeptomail") {
   });
 }
 
-const app = await buildApp({ config, repository, mailer, auth, roomTokens, translations });
+try {
+  const app = await buildApp({ config, repository, mailer, auth, roomTokens, translations });
 
-const shutdown = async () => {
-  await app.close();
-  if (config.DATABASE_MODE === "postgres") await pool.end();
-};
+  const shutdown = async () => {
+    await app.close();
+    if (config.DATABASE_MODE === "postgres") await pool.end();
+  };
 
-process.on("SIGINT", () => void shutdown());
-process.on("SIGTERM", () => void shutdown());
+  process.on("SIGINT", () => void shutdown());
+  process.on("SIGTERM", () => void shutdown());
 
-await app.listen({ port: config.PORT, host: "0.0.0.0" });
+  const address = await app.listen({ port: config.PORT, host: "0.0.0.0" });
+  console.log(`API Server listening on ${address}`);
+} catch (err) {
+  console.error("CRITICAL: Failed to start API Server:", err);
+  process.exit(1);
+}

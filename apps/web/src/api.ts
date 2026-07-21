@@ -16,6 +16,7 @@ import type {
   UpdateMeetingSettingsInput,
   UpdateMeetingTranslationInput,
 } from "@voice/shared";
+import { apiFetch } from "./backend";
 
 async function readJson<T>(response: Response): Promise<T> {
   const body = (await response.json().catch(() => ({}))) as T & { error?: string };
@@ -24,7 +25,7 @@ async function readJson<T>(response: Response): Promise<T> {
 }
 
 export async function createMeeting(input: CreateMeetingInput): Promise<CreateMeetingResponse> {
-  const response = await fetch("/api/meetings", {
+  const response = await apiFetch("/api/meetings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -34,7 +35,7 @@ export async function createMeeting(input: CreateMeetingInput): Promise<CreateMe
 }
 
 export async function register(input: RegisterInput): Promise<AuthResponse> {
-  return readJson<AuthResponse>(await fetch("/api/auth/register", {
+  return readJson<AuthResponse>(await apiFetch("/api/auth/register", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -43,7 +44,7 @@ export async function register(input: RegisterInput): Promise<AuthResponse> {
 }
 
 export async function login(input: LoginInput): Promise<AuthResponse> {
-  return readJson<AuthResponse>(await fetch("/api/auth/login", {
+  return readJson<AuthResponse>(await apiFetch("/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
@@ -52,21 +53,21 @@ export async function login(input: LoginInput): Promise<AuthResponse> {
 }
 
 export async function logout(): Promise<void> {
-  await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
+  await apiFetch("/api/auth/logout", { method: "POST", credentials: "include" });
 }
 
 export async function getCurrentUser(): Promise<AuthResponse | null> {
-  const response = await fetch("/api/auth/me", { credentials: "include" });
+  const response = await apiFetch("/api/auth/me", { credentials: "include" });
   if (response.status === 401) return null;
   return readJson<AuthResponse>(response);
 }
 
 export async function getMyMeetings(): Promise<MyMeetingsResponse> {
-  return readJson<MyMeetingsResponse>(await fetch("/api/meetings", { credentials: "include" }));
+  return readJson<MyMeetingsResponse>(await apiFetch("/api/meetings", { credentials: "include" }));
 }
 
 export async function deleteMeeting(meetingId: string): Promise<void> {
-  const response = await fetch(`/api/meetings/${encodeURIComponent(meetingId)}`, {
+  const response = await apiFetch(`/api/meetings/${encodeURIComponent(meetingId)}`, {
     method: "DELETE",
     credentials: "include",
   });
@@ -75,13 +76,13 @@ export async function deleteMeeting(meetingId: string): Promise<void> {
 
 export async function getHostMeeting(meetingId: string): Promise<HostMeetingResponse> {
   return readJson<HostMeetingResponse>(
-    await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/host`, { credentials: "include" }),
+    await apiFetch(`/api/meetings/${encodeURIComponent(meetingId)}/host`, { credentials: "include" }),
   );
 }
 
 export async function createHostRoomSession(meetingId: string): Promise<RoomSessionResponse> {
   return readJson<RoomSessionResponse>(
-    await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/host-session`, {
+    await apiFetch(`/api/meetings/${encodeURIComponent(meetingId)}/host-session`, {
       method: "POST",
       credentials: "include",
     }),
@@ -93,7 +94,7 @@ export async function updateMeetingSettings(
   settings: UpdateMeetingSettingsInput,
 ): Promise<MeetingSettingsResponse> {
   return readJson<MeetingSettingsResponse>(
-    await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/settings`, {
+    await apiFetch(`/api/meetings/${encodeURIComponent(meetingId)}/settings`, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -106,7 +107,7 @@ export async function getMeetingTranslation(
   meetingId: string,
 ): Promise<MeetingTranslationResponse> {
   return readJson<MeetingTranslationResponse>(
-    await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/translation`, {
+    await apiFetch(`/api/meetings/${encodeURIComponent(meetingId)}/translation`, {
       credentials: "include",
     }),
   );
@@ -117,7 +118,7 @@ export async function updateMeetingTranslation(
   settings: UpdateMeetingTranslationInput,
 ): Promise<MeetingTranslationResponse> {
   return readJson<MeetingTranslationResponse>(
-    await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/translation`, {
+    await apiFetch(`/api/meetings/${encodeURIComponent(meetingId)}/translation`, {
       method: "PATCH",
       credentials: "include",
       headers: { "Content-Type": "application/json" },
@@ -127,7 +128,7 @@ export async function updateMeetingTranslation(
 }
 
 export async function endMeeting(meetingId: string): Promise<void> {
-  const response = await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/end`, {
+  const response = await apiFetch(`/api/meetings/${encodeURIComponent(meetingId)}/end`, {
     method: "POST",
     credentials: "include",
   });
@@ -140,7 +141,7 @@ export async function createGuestRoomSession(
   admissionToken: string,
 ): Promise<RoomSessionResponse> {
   return readJson<RoomSessionResponse>(
-    await fetch(`/api/join/${encodeURIComponent(joinCode)}/session`, {
+    await apiFetch(`/api/join/${encodeURIComponent(joinCode)}/session`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -156,7 +157,7 @@ export async function requestGuestAdmission(
   displayName: string,
 ): Promise<GuestAdmissionResponse> {
   return readJson<GuestAdmissionResponse>(
-    await fetch(`/api/join/${encodeURIComponent(joinCode)}/admissions`, {
+    await apiFetch(`/api/join/${encodeURIComponent(joinCode)}/admissions`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ displayName }),
@@ -170,7 +171,7 @@ export async function getGuestAdmissionStatus(
   admissionToken: string,
 ): Promise<GuestAdmissionStatusResponse> {
   return readJson<GuestAdmissionStatusResponse>(
-    await fetch(
+    await apiFetch(
       `/api/join/${encodeURIComponent(joinCode)}/admissions/${encodeURIComponent(admissionId)}`,
       { headers: { Authorization: `Bearer ${admissionToken}` } },
     ),
@@ -179,7 +180,7 @@ export async function getGuestAdmissionStatus(
 
 export async function getPendingAdmissions(meetingId: string): Promise<HostAdmissionListResponse> {
   return readJson<HostAdmissionListResponse>(
-    await fetch(`/api/meetings/${encodeURIComponent(meetingId)}/admissions`, {
+    await apiFetch(`/api/meetings/${encodeURIComponent(meetingId)}/admissions`, {
       credentials: "include",
     }),
   );
@@ -191,7 +192,7 @@ export async function decideAdmission(
   decision: "admitted" | "denied",
 ): Promise<void> {
   await readJson<{ status: string }>(
-    await fetch(
+    await apiFetch(
       `/api/meetings/${encodeURIComponent(meetingId)}/admissions/${encodeURIComponent(admissionId)}`,
       {
         method: "PATCH",
@@ -205,6 +206,6 @@ export async function decideAdmission(
 
 export async function getPublicMeeting(joinCode: string): Promise<PublicMeetingResponse> {
   return readJson<PublicMeetingResponse>(
-    await fetch(`/api/join/${encodeURIComponent(joinCode)}`),
+    await apiFetch(`/api/join/${encodeURIComponent(joinCode)}`),
   );
 }

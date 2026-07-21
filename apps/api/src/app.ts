@@ -1,5 +1,6 @@
 import cors from "@fastify/cors";
 import Fastify from "fastify";
+import { createRequire } from "node:module";
 import type { AppConfig } from "./config";
 import type { MeetingRepository } from "./db/meeting-repository";
 import type { InvitationMailer } from "./email/invitation-mailer";
@@ -7,11 +8,12 @@ import type { AuthService } from "./auth/auth-service";
 import { registerAuthRoutes } from "./routes/auth-routes";
 import type { RoomTokenIssuer } from "./livekit/room-token-issuer";
 import { registerMeetingRoutes } from "./routes/meeting-routes";
-import virtualEventsModule from "./virtual-events/index.cjs";
 import { registerDemoRoutes } from "./routes/demo-routes";
 import { registerTranslationRoutes } from "./routes/translation-routes";
 import type { TranslationRepository } from "./translation/translation-repository";
 
+const require = createRequire(import.meta.url);
+const virtualEventsModule = require("./virtual-events/index.cjs");
 const { registerVirtualEvents } = virtualEventsModule as { registerVirtualEvents: (app: ReturnType<typeof Fastify>) => Promise<void> };
 interface BuildAppDependencies {
   config: AppConfig;

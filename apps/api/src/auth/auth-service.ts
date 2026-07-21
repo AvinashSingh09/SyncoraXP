@@ -85,9 +85,11 @@ export class AuthService {
 }
 
 export function sessionCookie(token: string, expiresAt: Date, secure: boolean): string {
-  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=Lax; Expires=${expiresAt.toUTCString()}${secure ? "; Secure" : ""}`;
+  const sameSite = secure ? "None" : "Lax";
+  return `${SESSION_COOKIE}=${encodeURIComponent(token)}; Path=/; HttpOnly; SameSite=${sameSite}; Expires=${expiresAt.toUTCString()}${secure ? "; Secure" : ""}`;
 }
 
 export function expiredSessionCookie(secure: boolean): string {
-  return `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure ? "; Secure" : ""}`;
+  const sameSite = secure ? "None" : "Lax";
+  return `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=${sameSite}; Max-Age=0${secure ? "; Secure" : ""}`;
 }

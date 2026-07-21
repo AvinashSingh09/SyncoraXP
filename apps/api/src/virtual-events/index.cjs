@@ -84,8 +84,12 @@ function register(app, method, url, handler, options) {
 }
 
 async function registerVirtualEvents(app) {
-  await initDb();
-  await chatService.seedMockMessages();
+  // Cloud Run requires the HTTP port to open promptly. Database setup is
+  // best-effort here; durable schema migrations are run separately.
+  void (async () => {
+    await initDb();
+    await chatService.seedMockMessages();
+  })().catch((error) => app.log.warn({ error }, 'Virtual Events DB startup initialization failed'));
   app.decorate('veState', new Map());
   app.veState.set = app.veState.set.bind(app.veState);
   app.veState.get = app.veState.get.bind(app.veState);
