@@ -4,6 +4,7 @@ services:
     restart: unless-stopped
     command: --config /etc/livekit.yaml
     environment:
+      LIVEKIT_KEYS: "${LIVEKIT_API_KEY:-LK_LOCAL_CDB65FCC665488BFC3}: ${LIVEKIT_API_SECRET:-SgEYQ4O4gRYwkezloQgrUaKELY9U00hQEF5eDuyoAy0}"
       LIVEKIT_CONFIG: |
         port: 7880
         log_level: info
@@ -11,9 +12,9 @@ services:
           tcp_port: 7881
           udp_port: 7882
           use_external_ip: true
-          node_ip: ${LIVEKIT_NODE_IP}
+          node_ip: ${LIVEKIT_NODE_IP:-103.189.88.94}
         keys:
-          "${LIVEKIT_API_KEY}": "${LIVEKIT_API_SECRET}"
+          ${LIVEKIT_API_KEY:-LK_LOCAL_CDB65FCC665488BFC3}: ${LIVEKIT_API_SECRET:-SgEYQ4O4gRYwkezloQgrUaKELY9U00hQEF5eDuyoAy0}
     ports:
       - "7881:7881/tcp"
       - "7882:7882/udp"
