@@ -14,7 +14,6 @@ services:
           node_ip: ${LIVEKIT_NODE_IP:-103.189.88.94}
         keys:
           LK_LOCAL_CDB65FCC665488BFC3: SgEYQ4O4gRYwkezloQgrUaKELY9U00hQEF5eDuyoAy0
-          syncoraxp-production-api-key: syncoraxp-production-api-secret
     ports:
       - "7881:7881/tcp"
       - "7882:7882/udp"
