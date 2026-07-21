@@ -55,7 +55,12 @@ export function MeetingRoom({ meetingTitle, session, choices, meetingId, meeting
     session.role === "host" && meeting ? "info" : null,
   );
   const [hostSettings, setHostSettings] = useState<MeetingSettings>(
-    initialHostSettings ?? { isLocked: false, waitingRoomEnabled: true },
+    initialHostSettings ?? {
+      isLocked: false,
+      waitingRoomEnabled: true,
+      allowGuestCamera: true,
+      allowGuestMicrophone: true,
+    },
   );
   const [translationSettings, setTranslationSettings] = useState<MeetingTranslationSettings>(
     session.translation,

@@ -4,7 +4,7 @@ import type {
   TranslationProvider,
   UpdateMeetingSettingsInput,
 } from "@voice/shared";
-import { GlobeHemisphereWest, LockKey, Users, X } from "@phosphor-icons/react";
+import { GlobeHemisphereWest, LockKey, Microphone, Users, VideoCamera, X } from "@phosphor-icons/react";
 import { useState } from "react";
 import { updateMeetingSettings, updateMeetingTranslation } from "../api";
 
@@ -133,6 +133,44 @@ export function HostToolsPanel({
             </div>
 
             <div className="host-tool-row">
+              <span className="host-tool-icon"><VideoCamera size={18} weight="bold" /></span>
+              <span className="host-tool-copy">
+                <strong>Allow guest cameras</strong>
+                <small>Let guests turn on their camera.</small>
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-label="Allow guest cameras"
+                aria-checked={settings.allowGuestCamera}
+                className={`host-tool-switch ${settings.allowGuestCamera ? "on" : "off"}`}
+                disabled={busySetting !== null}
+                onClick={() => void updateSetting({ allowGuestCamera: !settings.allowGuestCamera })}
+              >
+                <span />
+              </button>
+            </div>
+
+            <div className="host-tool-row">
+              <span className="host-tool-icon"><Microphone size={18} weight="bold" /></span>
+              <span className="host-tool-copy">
+                <strong>Allow guest microphones</strong>
+                <small>Let guests turn on their microphone.</small>
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-label="Allow guest microphones"
+                aria-checked={settings.allowGuestMicrophone}
+                className={`host-tool-switch ${settings.allowGuestMicrophone ? "on" : "off"}`}
+                disabled={busySetting !== null}
+                onClick={() => void updateSetting({ allowGuestMicrophone: !settings.allowGuestMicrophone })}
+              >
+                <span />
+              </button>
+            </div>
+
+            <div className="host-tool-row">
               <span className="host-tool-icon"><GlobeHemisphereWest size={18} weight="bold" /></span>
               <span className="host-tool-copy">
                 <strong>Enable interpretation</strong>
@@ -194,6 +232,12 @@ export function HostToolsPanel({
           <p className="host-tools-note">
             {translationSettings.enabled
               ? `${translationSettings.provider === "gemini" ? "Gemini Live" : "OpenAI Realtime"} interpretation is starting. Guests can select Hindi, Bengali, Marathi, Tamil, or Telugu.`
+              : !settings.allowGuestCamera && !settings.allowGuestMicrophone
+              ? "Guests cannot use cameras or microphones."
+              : !settings.allowGuestCamera
+                ? "Guests cannot use cameras."
+                : !settings.allowGuestMicrophone
+                  ? "Guests cannot use microphones."
               : settings.isLocked
               ? "This meeting is locked. Connected participants can remain."
               : settings.waitingRoomEnabled

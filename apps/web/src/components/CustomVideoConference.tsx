@@ -1,6 +1,12 @@
 import { RoomEvent, Track } from "livekit-client";
 import * as React from "react";
-import { ShieldCheck, SignOut, WarningCircle } from "@phosphor-icons/react";
+import {
+  MicrophoneSlash,
+  ShieldCheck,
+  SignOut,
+  VideoCameraSlash,
+  WarningCircle,
+} from "@phosphor-icons/react";
 import type { MeetingTranslationSettings } from "@voice/shared";
 import type {
   MessageFormatter,
@@ -26,6 +32,7 @@ import {
   usePinnedTracks,
   useTracks,
   useParticipants,
+  useLocalParticipantPermissions,
   isTrackReference,
 } from "@livekit/components-react";
 import { InterpretationControl } from "./interpretation/InterpretationControl";
@@ -57,6 +64,23 @@ function isEqualTrackRef(a?: TrackReferenceOrPlaceholder, b?: TrackReferenceOrPl
   );
 }
 
+function DisabledMediaButton({ source }: { source: Track.Source }) {
+  const isMicrophone = source === Track.Source.Microphone;
+  const Icon = isMicrophone ? MicrophoneSlash : VideoCameraSlash;
+  const label = `${isMicrophone ? "Microphone" : "Camera"} disabled by host`;
+  return (
+    <button
+      type="button"
+      className="meeting-disabled-media-button"
+      aria-label={label}
+      title={label}
+      disabled
+    >
+      <Icon size={18} weight="bold" />
+    </button>
+  );
+}
+
 export function CustomVideoConference({
   chatMessageFormatter,
   chatMessageDecoder,
@@ -83,6 +107,17 @@ export function CustomVideoConference({
 
   const [showParticipants, setShowParticipants] = React.useState(false);
   const [showEndMeetingConfirmation, setShowEndMeetingConfirmation] = React.useState(false);
+  const localPermissions = useLocalParticipantPermissions();
+  const canPublishSource = (source: Track.Source) => {
+    if (!localPermissions) return true;
+    const protocolSource = source === Track.Source.Camera ? 1 : 2;
+    return localPermissions.canPublish && (
+      localPermissions.canPublishSources.length === 0 ||
+      localPermissions.canPublishSources.includes(protocolSource)
+    );
+  };
+  const canUseMicrophone = canPublishSource(Track.Source.Microphone);
+  const canUseCamera = canPublishSource(Track.Source.Camera);
   const participants = useParticipants();
   const visibleParticipants = participants.filter(
     (participant) => participant.attributes.role !== "translator" && participant.attributes.hidden !== "true",
@@ -199,18 +234,24 @@ export function CustomVideoConference({
             </div>
           )}
           <div className="lk-control-bar-container">
-            <ControlBar
-              className="meeting-device-controls"
-              variation="minimal"
-              controls={{
-                microphone: true,
-                camera: true,
-                screenShare: false,
-                chat: false,
-                settings: false,
-                leave: false,
-              }}
-            />
+            <div className="meeting-device-controls">
+              <ControlBar
+                className="meeting-device-control-bar"
+                variation="minimal"
+                controls={{
+                  microphone: canUseMicrophone,
+                  camera: canUseCamera,
+                  screenShare: false,
+                  chat: false,
+                  settings: false,
+                  leave: false,
+                }}
+              />
+              <div className="meeting-disabled-media-controls">
+                {!canUseMicrophone && <DisabledMediaButton source={Track.Source.Microphone} />}
+                {!canUseCamera && <DisabledMediaButton source={Track.Source.Camera} />}
+              </div>
+            </div>
             <div className="meeting-centered-controls">
               <ControlBar
                 className="meeting-action-controls"
