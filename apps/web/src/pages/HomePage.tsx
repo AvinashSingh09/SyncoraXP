@@ -24,6 +24,7 @@ function occursToday(meeting: MeetingSummary, now: Date) {
     && scheduled.getDate() === now.getDate();
 }
 
+// get meeting time for today's meetings
 function meetingTime(meeting: MeetingSummary) {
   if (!meeting.scheduledFor) return "Available now";
   return new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" })
