@@ -34,7 +34,7 @@ const ALL_COUNTRIES = [
 
 const DEFAULT_COUNTRY = ALL_COUNTRIES[0] as { code: string; name: string; dial: string; min: number; max: number };
 
-const DELAY_SEQUENCE = [5000, 15000, 30000];
+const DELAY_SEQUENCE = [50000, 150000, 300000];
 
 export function RequestCallbackModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -423,15 +423,15 @@ export function RequestCallbackModal() {
               </div>
             )}
 
-             {/* Form */}
+            {/* Form */}
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "14px" }} noValidate>
               {/* Full Name */}
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                <div 
-                  style={{ 
-                    ...inputContainerStyle, 
-                    borderColor: errors.fullName ? "#ef4444" : "#e2e8f0", 
-                    boxShadow: errors.fullName ? "0 0 0 1px #ef4444" : "none" 
+                <div
+                  style={{
+                    ...inputContainerStyle,
+                    borderColor: errors.fullName ? "#ef4444" : "#e2e8f0",
+                    boxShadow: errors.fullName ? "0 0 0 1px #ef4444" : "none"
                   }}
                 >
                   <User size={18} color={errors.fullName ? "#ef4444" : "#7056ff"} weight="regular" />
@@ -454,11 +454,11 @@ export function RequestCallbackModal() {
 
               {/* Work Email */}
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                <div 
-                  style={{ 
-                    ...inputContainerStyle, 
-                    borderColor: errors.workEmail ? "#ef4444" : "#e2e8f0", 
-                    boxShadow: errors.workEmail ? "0 0 0 1px #ef4444" : "none" 
+                <div
+                  style={{
+                    ...inputContainerStyle,
+                    borderColor: errors.workEmail ? "#ef4444" : "#e2e8f0",
+                    boxShadow: errors.workEmail ? "0 0 0 1px #ef4444" : "none"
                   }}
                 >
                   <EnvelopeSimple size={18} color={errors.workEmail ? "#ef4444" : "#7056ff"} weight="regular" />
@@ -481,11 +481,11 @@ export function RequestCallbackModal() {
 
               {/* Phone with Country Code */}
               <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                <div 
-                  style={{ 
-                    ...inputContainerStyle, 
-                    borderColor: errors.phone ? "#ef4444" : "#e2e8f0", 
-                    boxShadow: errors.phone ? "0 0 0 1px #ef4444" : "none" 
+                <div
+                  style={{
+                    ...inputContainerStyle,
+                    borderColor: errors.phone ? "#ef4444" : "#e2e8f0",
+                    boxShadow: errors.phone ? "0 0 0 1px #ef4444" : "none"
                   }}
                 >
                   <div ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
