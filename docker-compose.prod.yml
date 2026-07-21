@@ -4,7 +4,6 @@ services:
     restart: unless-stopped
     command: --config /etc/livekit.yaml
     environment:
-      LIVEKIT_KEYS: "${LIVEKIT_API_KEY:-LK_LOCAL_CDB65FCC665488BFC3}:${LIVEKIT_API_SECRET:-SgEYQ4O4gRYwkezloQgrUaKELY9U00hQEF5eDuyoAy0}"
       LIVEKIT_CONFIG: |
         port: 7880
         log_level: info
