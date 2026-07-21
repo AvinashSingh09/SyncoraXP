@@ -1,4 +1,4 @@
-import { Broadcast, CaretDown, List, MicrophoneStage, X } from "@phosphor-icons/react";
+import { Broadcast, CaretDown, List, MicrophoneStage, X, Ticket } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
@@ -109,6 +109,20 @@ export function MarketingHeader() {
                     <strong>Webinar service</strong>
                   </span>
                 </Link>
+                <Link
+                  className="mega-solution-row"
+                  to="/event-registartion"
+                  role="menuitem"
+                  onClick={() => {
+                    setSolutionsOpen(false);
+                    setSolutionsPinned(false);
+                  }}
+                >
+                  <span className="mega-solution-title">
+                    <Ticket size={23} weight="duotone" />
+                    <strong>Event Registration</strong>
+                  </span>
+                </Link>
               </div>
             </div>
           )}
@@ -147,6 +161,9 @@ export function MarketingHeader() {
               </Link>
               <Link to="/webinar-service" onClick={() => setMobileMenuOpen(false)}>
                 <MicrophoneStage size={18} weight="duotone" /> Webinar service
+              </Link>
+              <Link to="/event-registartion" onClick={() => setMobileMenuOpen(false)}>
+                <Ticket size={18} weight="duotone" /> Event Registration
               </Link>
             </div>
           </details>
