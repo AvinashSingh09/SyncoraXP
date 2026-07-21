@@ -32,6 +32,7 @@ export async function buildApp(dependencies: BuildAppDependencies) {
   await app.register(cors, {
     origin: dependencies.config.CORS_ORIGIN.split(",").map((origin) => origin.trim()),
     credentials: true,
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE"],
   });
 
   app.get("/api/health", async () => ({ status: "ok" }));

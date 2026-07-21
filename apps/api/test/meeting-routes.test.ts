@@ -100,6 +100,23 @@ async function registerHost(app: Awaited<ReturnType<typeof buildApp>>, email = "
   return cookieValue.split(";")[0];
 }
 
+test("allows PATCH requests during CORS preflight", async (t) => {
+  const { app } = await setup();
+  t.after(() => app.close());
+
+  const response = await app.inject({
+    method: "OPTIONS",
+    url: "/api/meetings/example/settings",
+    headers: {
+      origin: "https://meet.example.com",
+      "access-control-request-method": "PATCH",
+    },
+  });
+
+  assert.equal(response.statusCode, 204);
+  assert.match(response.headers["access-control-allow-methods"] ?? "", /PATCH/);
+});
+
 test("requires a host account to create a meeting", async (t) => {
   const { app } = await setup();
   t.after(() => app.close());
