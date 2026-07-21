@@ -130,7 +130,7 @@ export function CustomVideoConference({
       { source: Track.Source.Camera, withPlaceholder: true },
       { source: Track.Source.ScreenShare, withPlaceholder: false },
     ],
-    { updateOnlyOn: [RoomEvent.ActiveSpeakersChanged], onlySubscribed: false }
+    { onlySubscribed: false }
   );
   const tracks = allTracks.filter(
     (track) => track.participant.attributes.role !== "translator" && track.participant.attributes.hidden !== "true",
