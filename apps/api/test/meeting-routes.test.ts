@@ -29,6 +29,7 @@ class FakeMailer implements InvitationMailer {
 class FakeRoomTokenIssuer implements RoomTokenIssuer {
   requests: RoomTokenRequest[] = [];
   endedRooms: string[] = [];
+  mediaPermissionUpdates: Array<{ roomName: string; allowCamera: boolean; allowMicrophone: boolean }> = [];
   constructor(private readonly configured = true) {}
   isConfigured() { return this.configured; }
   async issue(request: RoomTokenRequest) {
@@ -41,6 +42,9 @@ class FakeRoomTokenIssuer implements RoomTokenIssuer {
   }
   async endRoom(roomName: string) {
     this.endedRooms.push(roomName);
+  }
+  async updateGuestMediaPermissions(roomName: string, allowCamera: boolean, allowMicrophone: boolean) {
+    this.mediaPermissionUpdates.push({ roomName, allowCamera, allowMicrophone });
   }
 }
 
@@ -425,7 +429,12 @@ test("lets hosts disable the waiting room and admits pending and future guests",
     payload: { waitingRoomEnabled: false },
   });
   assert.equal(updated.statusCode, 200);
-  assert.deepEqual(updated.json().settings, { isLocked: false, waitingRoomEnabled: false });
+  assert.deepEqual(updated.json().settings, {
+    isLocked: false,
+    waitingRoomEnabled: false,
+    allowGuestCamera: true,
+    allowGuestMicrophone: true,
+  });
 
   const released = await app.inject({
     method: "GET",
@@ -486,7 +495,12 @@ test("locks new guest entry without changing the host session", async (t) => {
     payload: { isLocked: true },
   });
   assert.equal(locked.statusCode, 200);
-  assert.deepEqual(locked.json().settings, { isLocked: true, waitingRoomEnabled: false });
+  assert.deepEqual(locked.json().settings, {
+    isLocked: true,
+    waitingRoomEnabled: false,
+    allowGuestCamera: true,
+    allowGuestMicrophone: true,
+  });
 
   const newRequest = await app.inject({
     method: "POST",
@@ -516,7 +530,72 @@ test("locks new guest entry without changing the host session", async (t) => {
     url: `/api/meetings/${meeting.id}/host`,
     headers: { cookie },
   });
-  assert.deepEqual(hostMeeting.json().settings, { isLocked: true, waitingRoomEnabled: false });
+  assert.deepEqual(hostMeeting.json().settings, {
+    isLocked: true,
+    waitingRoomEnabled: false,
+    allowGuestCamera: true,
+    allowGuestMicrophone: true,
+  });
+});
+
+test("applies guest camera and microphone settings to new and active guests", async (t) => {
+  const { app, roomTokens } = await setup();
+  t.after(() => app.close());
+  const cookie = await registerHost(app);
+  const created = await app.inject({
+    method: "POST",
+    url: "/api/meetings",
+    headers: { cookie },
+    payload: validMeeting,
+  });
+  const meeting = created.json().meeting;
+  const joinCode = meeting.joinUrl.split("/").at(-1);
+
+  const updated = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meeting.id}/settings`,
+    headers: { cookie },
+    payload: {
+      waitingRoomEnabled: false,
+      allowGuestCamera: false,
+      allowGuestMicrophone: false,
+    },
+  });
+  assert.equal(updated.statusCode, 200);
+  assert.deepEqual(updated.json().settings, {
+    isLocked: false,
+    waitingRoomEnabled: false,
+    allowGuestCamera: false,
+    allowGuestMicrophone: false,
+  });
+  const roomName = roomTokens.mediaPermissionUpdates.at(-1)?.roomName;
+  assert.ok(roomName);
+  assert.deepEqual(roomTokens.mediaPermissionUpdates.at(-1), {
+    roomName,
+    allowCamera: false,
+    allowMicrophone: false,
+  });
+
+  const admission = await app.inject({
+    method: "POST",
+    url: `/api/join/${joinCode}/admissions`,
+    payload: { displayName: "No Media Guest" },
+  });
+  const session = await app.inject({
+    method: "POST",
+    url: `/api/join/${joinCode}/session`,
+    headers: { authorization: `Bearer ${admission.json().admissionToken}` },
+    payload: { admissionId: admission.json().admissionId },
+  });
+  assert.equal(session.statusCode, 201);
+  assert.deepEqual(roomTokens.requests.at(-1), {
+    roomName,
+    meetingId: meeting.id,
+    name: "No Media Guest",
+    role: "guest",
+    allowCamera: false,
+    allowMicrophone: false,
+  });
 });
 
 test("lets only the host end a meeting for every participant", async (t) => {

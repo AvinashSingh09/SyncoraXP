@@ -3092,6 +3092,31 @@ textarea {
 .meeting-device-controls {
   grid-column: 1;
   justify-self: start;
+  display: flex;
+  align-items: center;
+}
+
+.meeting-device-control-bar {
+  display: flex;
+  align-items: center;
+}
+
+.meeting-disabled-media-controls {
+  display: flex;
+  align-items: center;
+}
+
+.meeting-disabled-media-button {
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 8px;
+  color: #ff526b;
+  background: transparent;
+  cursor: not-allowed;
+  opacity: .95;
 }
 
 .meeting-centered-controls {
@@ -3259,7 +3284,7 @@ textarea {
 }
 
 /* ControlBar always renders its unclassed playback fallback as the last child. */
-.meeting-device-controls>button:last-child {
+.meeting-device-control-bar>button:last-child {
   display: none !important;
 }
 
