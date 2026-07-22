@@ -13,7 +13,6 @@ import {
   RoomEvent,
   Track,
   type RemoteParticipant,
-  type RemoteTrackPublication,
 } from "livekit-client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
@@ -139,14 +138,22 @@ export function InterpretationControl({
       setPreferenceState(language);
       setCaption("");
       setMenuOpen(false);
-      void sendPreference(language);
+      void sendPreference(language).catch(() => {
+        if (language !== "original") {
+          setStatuses((current) => ({ ...current, [language]: "unavailable" }));
+        }
+      });
     },
     [sendPreference],
   );
 
   useEffect(() => {
     if (!translator) return;
-    void sendPreference(preference);
+    void sendPreference(preference).catch(() => {
+      if (preference !== "original") {
+        setStatuses((current) => ({ ...current, [preference]: "unavailable" }));
+      }
+    });
   }, [translator?.identity, translator?.runId, sendPreference]);
 
   useEffect(() => {
@@ -198,6 +205,16 @@ export function InterpretationControl({
           setSubscriptionRevision((revision) => revision + 1);
           return;
         }
+        if (message.type === "translation.preference.ack") {
+          if (message.language !== "original") {
+            setStatuses((current) => ({
+              ...current,
+              [message.language]: message.status,
+            }));
+            setSubscriptionRevision((revision) => revision + 1);
+          }
+          return;
+        }
         if (
           (message.type === "translation.caption.target.delta" ||
             message.type === "translation.caption.target.final") &&
@@ -223,7 +240,6 @@ export function InterpretationControl({
 
   useEffect(() => {
     const remoteParticipants = room.remoteParticipants;
-    let selectedPublication: RemoteTrackPublication | null = null;
     const selectedLanguage = preference === "original" ? null : preference;
 
     for (const participant of remoteParticipants.values()) {
@@ -235,21 +251,22 @@ export function InterpretationControl({
         ) as TranslationLanguageCode;
         const shouldSubscribe = language === selectedLanguage;
         publication.setSubscribed(shouldSubscribe);
-        if (shouldSubscribe) selectedPublication = publication;
       }
     }
 
-    const selectedIsReady = Boolean(
-      selectedLanguage &&
-        statuses[selectedLanguage] === "live" &&
-        selectedPublication?.isSubscribed,
-    );
+    // The listener's explicit selection is authoritative. Waiting for both a
+    // status packet and TrackSubscribed before dropping source audio creates a
+    // race where the original microphone can remain subscribed indefinitely.
+    // Keep the original only for "original" or when the provider explicitly
+    // reports that the selected translation is unavailable.
+    const shouldHearOriginal =
+      !selectedLanguage || !translator || statuses[selectedLanguage] === "unavailable";
     const sourceIdentity = translator?.sourceParticipantIdentity;
     if (sourceIdentity) {
       const sourceParticipant = remoteParticipants.get(sourceIdentity);
       for (const publication of sourceParticipant?.audioTrackPublications.values() ?? []) {
         if (publication.source === Track.Source.Microphone) {
-          publication.setSubscribed(!selectedIsReady);
+          publication.setSubscribed(shouldHearOriginal);
         }
       }
     }
