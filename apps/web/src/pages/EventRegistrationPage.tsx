@@ -20,6 +20,7 @@ const CATEGORIES = [
   "Hybrid Events",
   "Webinars",
   "Live Streaming",
+  "Registration",
   "Mobile Event App",
   "Event Check-In & Badges",
   "Event CRM",
