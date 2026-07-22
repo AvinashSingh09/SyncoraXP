@@ -38,8 +38,8 @@ const AWARDS = [
     id: "creative-engine",
     title: "Creative Engine Expo Awards 2025",
     image: "/images/awards/creative_engine_expo_2025.jpg",
-    objectFit: "contain" as const,
-    objectPosition: "center"
+    objectFit: "cover" as const,
+    objectPosition: "top center"
   },
   {
     id: "communicon",
