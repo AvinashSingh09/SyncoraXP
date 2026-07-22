@@ -36,6 +36,7 @@ import {
   isTrackReference,
 } from "@livekit/components-react";
 import { InterpretationControl } from "./interpretation/InterpretationControl";
+import { updateParticipantMediaPermissions } from "../api";
 
 export interface CustomVideoConferenceProps extends React.HTMLAttributes<HTMLDivElement> {
   chatMessageFormatter?: MessageFormatter;
@@ -118,6 +119,9 @@ export function CustomVideoConference({
   });
 
   const [showParticipants, setShowParticipants] = React.useState(false);
+  const [participantPermissionBusy, setParticipantPermissionBusy] = React.useState<string | null>(null);
+  const [participantPermissionError, setParticipantPermissionError] = React.useState("");
+  const [, refreshParticipantPermissions] = React.useReducer((revision) => revision + 1, 0);
   const [showEndMeetingConfirmation, setShowEndMeetingConfirmation] = React.useState(false);
   const localPermissions = useLocalParticipantPermissions();
   const canPublishSource = (source: Track.Source) => {
@@ -131,6 +135,18 @@ export function CustomVideoConference({
   const canUseMicrophone = canPublishSource(Track.Source.Microphone);
   const canUseCamera = canPublishSource(Track.Source.Camera);
   const participants = useParticipants();
+  const participantCanPublishSource = (
+    participant: (typeof participants)[number],
+    source: Track.Source.Camera | Track.Source.Microphone,
+  ) => {
+    const permissions = participant.permissions;
+    if (!permissions) return true;
+    const protocolSource = source === Track.Source.Camera ? 1 : 2;
+    return permissions.canPublish && (
+      permissions.canPublishSources.length === 0 ||
+      permissions.canPublishSources.includes(protocolSource)
+    );
+  };
   const visibleParticipants = participants.filter(
     (participant) => participant.attributes.role !== "translator" && participant.attributes.hidden !== "true",
   );
@@ -234,6 +250,33 @@ export function CustomVideoConference({
       return next;
     });
   }, [layoutContext.widget, onCloseHostPanel]);
+
+  const toggleParticipantPermission = React.useCallback(
+    async (
+      participantIdentity: string,
+      source: Track.Source.Camera | Track.Source.Microphone,
+      currentlyAllowed: boolean,
+    ) => {
+      const operation = `${participantIdentity}:${source}`;
+      setParticipantPermissionBusy(operation);
+      setParticipantPermissionError("");
+      try {
+        await updateParticipantMediaPermissions(meetingId, participantIdentity, {
+          ...(source === Track.Source.Camera
+            ? { allowCamera: !currentlyAllowed }
+            : { allowMicrophone: !currentlyAllowed }),
+        });
+        refreshParticipantPermissions();
+      } catch (caught) {
+        setParticipantPermissionError(
+          caught instanceof Error ? caught.message : "Could not update participant permissions",
+        );
+      } finally {
+        setParticipantPermissionBusy(null);
+      }
+    },
+    [meetingId],
+  );
 
   return (
     <div className="lk-video-conference" {...props}>
@@ -426,12 +469,20 @@ export function CustomVideoConference({
             </button>
           </div>
           <ul className="participants-list">
+            {participantPermissionError && (
+              <li className="participants-permission-error" role="alert">
+                {participantPermissionError}
+              </li>
+            )}
             {orderedParticipants.map((p) => {
               const isMicOn = p.isMicrophoneEnabled;
               const isCamOn = p.isCameraEnabled;
+              const canPublishMicrophone = participantCanPublishSource(p, Track.Source.Microphone);
+              const canPublishCamera = participantCanPublishSource(p, Track.Source.Camera);
+              const canManagePermissions = participantRole === "host" && !p.isLocal && p.attributes.role === "guest";
               const displayName = p.name?.trim() || p.identity || "Guest";
               const initial = displayName.charAt(0).toUpperCase();
-              const participantRole = p.attributes.role === "host" ? "Host" : "Guest";
+              const participantRoleLabel = p.attributes.role === "host" ? "Host" : "Guest";
 
               return (
                 <li key={p.sid} className="participant-row">
@@ -441,17 +492,28 @@ export function CustomVideoConference({
                       <span className="participant-name-text">{displayName}</span>
                       {p.isLocal && <small className="local-tag">You</small>}
                     </span>
-                    <small className="participant-role">{participantRole}</small>
+                    <small className="participant-role">{participantRoleLabel}</small>
                   </div>
                   <div className="participant-media-status" aria-label={`${displayName} media status`}>
-                    <span
-                      className={`status-icon mic ${isMicOn ? "on" : "off"}`}
-                      title={isMicOn ? "Microphone on" : "Microphone muted"}
-                      role="img"
-                      aria-label={isMicOn ? "Microphone on" : "Microphone muted"}
+                    <button
+                      type="button"
+                      className={`status-icon mic ${canManagePermissions ? "permission-control" : ""} ${canManagePermissions ? (canPublishMicrophone ? "allowed" : "blocked") : (isMicOn ? "on" : "off")}`}
+                      title={canManagePermissions
+                        ? `${canPublishMicrophone ? "Block" : "Allow"} microphone${isMicOn ? " (currently on)" : " (currently muted)"}`
+                        : isMicOn ? "Microphone on" : "Microphone muted"}
+                      aria-label={canManagePermissions
+                        ? `${canPublishMicrophone ? "Block" : "Allow"} ${displayName}'s microphone`
+                        : isMicOn ? "Microphone on" : "Microphone muted"}
+                      aria-pressed={canManagePermissions ? canPublishMicrophone : undefined}
+                      disabled={!canManagePermissions || participantPermissionBusy !== null}
+                      onClick={() => void toggleParticipantPermission(
+                        p.identity,
+                        Track.Source.Microphone,
+                        canPublishMicrophone,
+                      )}
                     >
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        {isMicOn ? (
+                        {(canManagePermissions ? canPublishMicrophone : isMicOn) ? (
                           <>
                             <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
                             <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
@@ -468,15 +530,26 @@ export function CustomVideoConference({
                           </>
                         )}
                       </svg>
-                    </span>
-                    <span
-                      className={`status-icon cam ${isCamOn ? "on" : "off"}`}
-                      title={isCamOn ? "Camera on" : "Camera off"}
-                      role="img"
-                      aria-label={isCamOn ? "Camera on" : "Camera off"}
+                    </button>
+                    <button
+                      type="button"
+                      className={`status-icon cam ${canManagePermissions ? "permission-control" : ""} ${canManagePermissions ? (canPublishCamera ? "allowed" : "blocked") : (isCamOn ? "on" : "off")}`}
+                      title={canManagePermissions
+                        ? `${canPublishCamera ? "Block" : "Allow"} camera${isCamOn ? " (currently on)" : " (currently off)"}`
+                        : isCamOn ? "Camera on" : "Camera off"}
+                      aria-label={canManagePermissions
+                        ? `${canPublishCamera ? "Block" : "Allow"} ${displayName}'s camera`
+                        : isCamOn ? "Camera on" : "Camera off"}
+                      aria-pressed={canManagePermissions ? canPublishCamera : undefined}
+                      disabled={!canManagePermissions || participantPermissionBusy !== null}
+                      onClick={() => void toggleParticipantPermission(
+                        p.identity,
+                        Track.Source.Camera,
+                        canPublishCamera,
+                      )}
                     >
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        {isCamOn ? (
+                        {(canManagePermissions ? canPublishCamera : isCamOn) ? (
                           <>
                             <path d="M23 7l-7 5 7 5V7z" />
                             <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
@@ -489,7 +562,7 @@ export function CustomVideoConference({
                           </>
                         )}
                       </svg>
-                    </span>
+                    </button>
                   </div>
                 </li>
               );

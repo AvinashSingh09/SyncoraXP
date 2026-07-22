@@ -3669,6 +3669,10 @@ textarea {
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.06);
   color: #aab5ca;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  cursor: default;
 }
 
 .status-icon.on {
@@ -3677,6 +3681,46 @@ textarea {
 
 .status-icon.off {
   color: #e55a5a;
+}
+
+.status-icon.permission-control {
+  cursor: pointer;
+  transition: color .15s ease, background .15s ease, box-shadow .15s ease, opacity .15s ease;
+}
+
+.status-icon.permission-control.allowed {
+  color: #62d6a8;
+  background: rgba(45, 173, 124, .14);
+  box-shadow: inset 0 0 0 1px rgba(45, 173, 124, .2);
+}
+
+.status-icon.permission-control.blocked {
+  color: #ff6677;
+  background: rgba(229, 90, 90, .12);
+  box-shadow: inset 0 0 0 1px rgba(229, 90, 90, .18);
+}
+
+.status-icon.permission-control:hover:not(:disabled) {
+  background: rgba(255, 255, 255, .13);
+}
+
+.status-icon.permission-control:focus-visible {
+  outline: 2px solid #8290ff;
+  outline-offset: 2px;
+}
+
+.status-icon.permission-control:disabled {
+  opacity: .55;
+}
+
+.participants-permission-error {
+  border: 1px solid rgba(239, 100, 100, .28);
+  border-radius: 9px;
+  padding: 9px 10px;
+  color: #ffc1c1;
+  background: rgba(98, 24, 37, .45);
+  font-size: 11px;
+  line-height: 1.4;
 }
 
 .participants-footer {

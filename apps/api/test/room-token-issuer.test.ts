@@ -159,3 +159,55 @@ test("publishes translation settings in room metadata without discarding existin
   assert.equal(metadata.syncoraxp.translation.settings.enabled, true);
   assert.deepEqual(metadata.syncoraxp.translation.settings.allowedTargetLanguages, ["hi", "bn"]);
 });
+
+test("updates one guest's media permission without changing unrelated grants", async () => {
+  const mutedTracks: string[] = [];
+  const permissionUpdates: Array<Record<string, unknown>> = [];
+  const roomService = {
+    async listRooms() { return [{ name: "meeting-1" }]; },
+    async listParticipants() {
+      return [{
+        identity: "guest-1",
+        attributes: { role: "guest" },
+        tracks: [
+          { sid: "TR_CAMERA", source: TrackSource.CAMERA },
+          { sid: "TR_MIC", source: TrackSource.MICROPHONE },
+        ],
+        permission: {
+          canSubscribe: true,
+          canPublish: true,
+          canPublishData: true,
+          canPublishSources: [
+            TrackSource.CAMERA,
+            TrackSource.MICROPHONE,
+            TrackSource.SCREEN_SHARE,
+          ],
+        },
+      }];
+    },
+    async mutePublishedTrack(_room: string, _identity: string, trackSid: string) {
+      mutedTracks.push(trackSid);
+      return {};
+    },
+    async updateParticipant(_room: string, _identity: string, options: { permission: Record<string, unknown> }) {
+      permissionUpdates.push(options.permission);
+      return {};
+    },
+  };
+  const issuer = new LiveKitRoomTokenIssuer(config, () => roomService as never);
+
+  const result = await issuer.updateParticipantMediaPermissions("meeting-1", "guest-1", {
+    allowCamera: false,
+  });
+
+  assert.deepEqual(mutedTracks, ["TR_CAMERA"]);
+  assert.deepEqual(permissionUpdates[0]?.canPublishSources, [
+    TrackSource.MICROPHONE,
+    TrackSource.SCREEN_SHARE,
+  ]);
+  assert.deepEqual(result, {
+    participantIdentity: "guest-1",
+    allowCamera: false,
+    allowMicrophone: true,
+  });
+});
