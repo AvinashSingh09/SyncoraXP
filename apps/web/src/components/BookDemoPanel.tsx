@@ -58,14 +58,31 @@ export function BookDemoPanel({ isOpen, onClose }: BookDemoPanelProps) {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const getMaxDigitsForCountry = (cc: string) => {
+    if (cc === "+91" || cc === "+1") return 10;
+    if (cc === "+971") return 9;
+    if (cc === "+65") return 8;
+    if (cc === "+61") return 9;
+    if (cc === "+44" || cc === "+49") return 11;
+    return 12;
+  };
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     let { name, value } = e.target;
     if (name === "phone" || e.target.type === "tel") {
-      value = value.replace(/[^\d\s\-\+]/g, "");
+      const maxDigits = getMaxDigitsForCountry(form.countryCode);
+      value = value.replace(/\D/g, "").slice(0, maxDigits);
     }
-    setForm((prev) => ({ ...prev, [name]: value }));
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
+      if (name === "countryCode") {
+        const max = getMaxDigitsForCountry(value);
+        next.phone = prev.phone.replace(/\D/g, "").slice(0, max);
+      }
+      return next;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

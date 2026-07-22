@@ -105,10 +105,20 @@ export function WebinarLeadFormSection() {
     return error;
   };
 
+  const getMaxDigitsForCountry = (cc: string) => {
+    if (cc === "+91" || cc === "+1") return 10;
+    if (cc === "+971") return 9;
+    if (cc === "+65") return 8;
+    if (cc === "+61") return 9;
+    if (cc === "+44" || cc === "+49") return 11;
+    return 12;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     let { name, value } = e.target;
     if (name === "phone" || e.target.type === "tel") {
-      value = value.replace(/[^\d\s\-\+]/g, "");
+      const maxDigits = getMaxDigitsForCountry(formData.countryCode);
+      value = value.replace(/\D/g, "").slice(0, maxDigits);
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
 
