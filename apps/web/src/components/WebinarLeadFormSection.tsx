@@ -30,7 +30,7 @@ const brandLogoFiles = [
   "9.png", "10.png", "11.png", "12.png", "13.jpg", "14.png", "15.jfif", "16.avif", "16.jpg",
   "17.png", "18.png", "19.jfif", "20.png", "21.avif", "22.png", "23.png", "24.png",
   "25.svg", "26.png", "27.png", "28.png", "29.png", "30.png", "31.png", "32.png",
-  "33-removebg-preview.png", "34.jfif", "35.png", "36.png", "37.jfif"
+  "33-removebg-preview.png", "35.png", "36.png", "37.jfif"
 ];
 
 export function WebinarLeadFormSection() {

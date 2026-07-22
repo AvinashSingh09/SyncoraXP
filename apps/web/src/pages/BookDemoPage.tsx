@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { CheckCircle } from "@phosphor-icons/react";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { Footer } from "../components/Footer";
 import { apiFetch } from "../backend";
 
 const COUNTRY_CODES = [
@@ -1172,6 +1173,7 @@ export function BookDemoPage() {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }

@@ -125,7 +125,7 @@ export function MarketingHeader() {
                 </Link>
                 <Link
                   className="mega-solution-row"
-                  to="/event-registartion"
+                  to="/event-registration"
                   role="menuitem"
                   onClick={() => {
                     setSolutionsOpen(false);
@@ -279,7 +279,7 @@ export function MarketingHeader() {
               <Link to="/webinar-service" onClick={() => setMobileMenuOpen(false)}>
                 <MicrophoneStage size={18} weight="duotone" /> Webinar service
               </Link>
-              <Link to="/event-registartion" onClick={() => setMobileMenuOpen(false)}>
+              <Link to="/event-registration" onClick={() => setMobileMenuOpen(false)}>
                 <Ticket size={18} weight="duotone" /> Event Registration
               </Link>
             </div>

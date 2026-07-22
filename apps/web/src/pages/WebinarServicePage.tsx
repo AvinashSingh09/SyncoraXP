@@ -16,6 +16,7 @@ import { MarketingHeader } from "../components/MarketingHeader";
 import { HostWebinarSection } from "../components/HostWebinarSection";
 import { GlobalWebinarSection } from "../components/GlobalWebinarSection";
 import { WebinarLeadFormSection } from "../components/WebinarLeadFormSection";
+import { Footer } from "../components/Footer";
 
 export function WebinarServicePage() {
   return (
@@ -147,6 +148,8 @@ export function WebinarServicePage() {
 
       {/* Brands Marquee & "Let's Get Your Event Going!" Contact Lead Form Section */}
       <WebinarLeadFormSection />
+
+      <Footer />
     </main>
   );
 }
