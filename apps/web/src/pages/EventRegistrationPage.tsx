@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { Footer } from "../components/Footer";
 import { apiFetch } from "../backend";
 import { CheckCircle } from "@phosphor-icons/react";
 
@@ -27,19 +28,12 @@ const CATEGORIES = [
   "Other",
 ];
 
-const brandLogos = [
-  { name: "Dell", style: { fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px" } },
-  { name: "FICCI", style: { fontWeight: 900, fontStyle: "italic" } },
-  { name: "FIFS", style: { fontWeight: 900, letterSpacing: "0.5px" } },
-  { name: "Firefox", style: { fontWeight: 800, fontStyle: "italic" } },
-  { name: "Teamwork", style: { fontWeight: 900, letterSpacing: "-0.05em" } },
-  { name: "ISB", style: { fontWeight: 800, fontStyle: "italic" } },
-  { name: "Johnson & Johnson", style: { fontFamily: "serif", fontStyle: "italic", fontWeight: 700 } },
-  { name: "Automation Anywhere", style: { fontWeight: 300, letterSpacing: "0.1em" } },
-  { name: "AAOS", style: { fontWeight: 900 } },
-  { name: "Lenovo", style: { fontWeight: 800, textTransform: "uppercase" } },
-  { name: "Novo Nordisk", style: { fontFamily: "sans-serif", fontWeight: 600 } },
-  { name: "Tech Mahindra", style: { fontWeight: 400, letterSpacing: "0.05em" } },
+const brandLogoFiles = [
+  "1.jfif", "2.jfif", "3.webp", "4.jfif", "5.png", "6.png", "7.png", "8.png",
+  "9.png", "10.png", "11.png", "12.png", "13.jpg", "14.png", "15.jfif", "16.avif", "16.jpg",
+  "17.png", "18.png", "19.jfif", "20.png", "21.avif", "22.png", "23.png", "24.png",
+  "25.svg", "26.png", "27.png", "28.png", "29.png", "30.png", "31.png", "32.png",
+  "33-removebg-preview.png", "35.png", "36.png", "37.jfif"
 ];
 
 const smartSolutions = [
@@ -304,7 +298,7 @@ export function EventRegistrationPage() {
           boxSizing: "border-box",
         }}>
           <img
-            src="/virtual-events-assets/event-registartion.png"
+            src="/virtual-events-assets/event-registration.png"
             alt="Event Registration Platform & Solutions Collage"
             style={{
               width: "100%",
@@ -331,65 +325,32 @@ export function EventRegistrationPage() {
           boxSizing: "border-box",
           overflow: "hidden",
         }}>
-          <style>{`
-            @keyframes ve-logo-marquee {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-          `}</style>
-          <p style={{
-            fontSize: "clamp(18px, 2.5vw, 22px)",
-            fontWeight: 850,
-            color: "#1e1b4b",
-            margin: "0 auto 36px",
-          }}>
-            Trusted by the Biggest Names in B2B
-          </p>
+          <div className="brand-logos-wrapper">
+            <h3 className="brand-logos-title">
+              Trusted by the Biggest Names in B2B
+            </h3>
 
-          <div style={{
-            overflow: "hidden",
-            width: "100%",
-            display: "flex",
-            position: "relative",
-            maskImage: "linear-gradient(to right, transparent, white 20%, white 80%, transparent)",
-            WebkitMaskImage: "linear-gradient(to right, transparent, white 20%, white 80%, transparent)",
-          }}>
-            <div style={{
-              display: "flex",
-              gap: "80px",
-              alignItems: "center",
-              width: "max-content",
-              animation: "ve-logo-marquee 30s linear infinite",
-              paddingRight: "80px",
-            }}>
-              {brandLogos.map((brand, i) => (
-                <span
-                  key={`1-${i}`}
-                  style={{
-                    color: "#1e1b4b",
-                    fontSize: "16px",
-                    whiteSpace: "nowrap",
-                    opacity: 0.85,
-                    ...brand.style,
-                  }}
-                >
-                  {brand.name}
-                </span>
-              ))}
-              {brandLogos.map((brand, i) => (
-                <span
-                  key={`2-${i}`}
-                  style={{
-                    color: "#1e1b4b",
-                    fontSize: "16px",
-                    whiteSpace: "nowrap",
-                    opacity: 0.85,
-                    ...brand.style,
-                  }}
-                >
-                  {brand.name}
-                </span>
-              ))}
+            <div className="brand-marquee-track-outer">
+              <div className="brand-marquee-track">
+                {brandLogoFiles.map((file, i) => (
+                  <img
+                    key={`1-${i}`}
+                    src={`/brands/${file}`}
+                    alt={`Brand Logo ${i + 1}`}
+                    className="brand-normal-logo-img"
+                    loading="lazy"
+                  />
+                ))}
+                {brandLogoFiles.map((file, i) => (
+                  <img
+                    key={`2-${i}`}
+                    src={`/brands/${file}`}
+                    alt={`Brand Logo ${i + 1}`}
+                    className="brand-normal-logo-img"
+                    loading="lazy"
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </section>
@@ -1085,7 +1046,7 @@ export function EventRegistrationPage() {
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.06)"; }}
             >
-              <div style={{ width: "100%", height: "240px", overflow: "hidden" }}>
+              <div style={{ width: "100%", height: "360px", overflow: "hidden" }}>
                 <img
                   src="/virtual-events-assets/event_reg_facial_kiosk.png"
                   alt="Facial Recognition Check-in"
@@ -1112,7 +1073,7 @@ export function EventRegistrationPage() {
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.06)"; }}
             >
-              <div style={{ width: "100%", height: "240px", overflow: "hidden" }}>
+              <div style={{ width: "100%", height: "360px", overflow: "hidden" }}>
                 <img
                   src="/virtual-events-assets/event_reg_forbes_desk.png"
                   alt="On-Spot Registration"
@@ -1139,7 +1100,7 @@ export function EventRegistrationPage() {
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
             onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.06)"; }}
             >
-              <div style={{ width: "100%", height: "240px", overflow: "hidden" }}>
+              <div style={{ width: "100%", height: "360px", overflow: "hidden" }}>
                 <img
                   src="/virtual-events-assets/event_reg_badge_printing.png"
                   alt="Badge Printing Solutions"
@@ -1320,6 +1281,7 @@ export function EventRegistrationPage() {
           </div>
         </section>
       </div>
+      <Footer />
     </main>
   );
 }

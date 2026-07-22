@@ -43,7 +43,7 @@ export function App() {
             <Route path="/virtual-events-platform/book-demo" element={<Navigate to="/book-demo" replace />} />
             <Route path="/virtual-events-platform/app/*" element={<VirtualEventsApp />} />
             <Route path="/webinar-service" element={<WebinarServiceRoute />} />
-            <Route path="/event-registartion" element={<EventRegistrationPage />} />
+            <Route path="/event-registration" element={<EventRegistrationPage />} />
             <Route path="/meetings/new" element={<ProtectedRoute><CreateMeetingPage /></ProtectedRoute>} />
             <Route path="/meetings/:meetingId/host" element={<ProtectedRoute><HostMeetingPage /></ProtectedRoute>} />
             <Route path="/join/:joinCode" element={<JoinMeetingPage />} />

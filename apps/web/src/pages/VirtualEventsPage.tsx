@@ -20,6 +20,7 @@ import {
 } from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { Footer } from "../components/Footer";
 import { apiFetch } from "../backend";
 
 const eventArtwork = "/virtual-events/syncoraxp-virtual-events-hero.png";
@@ -1519,6 +1520,7 @@ export function VirtualEventsPage() {
           </div>
         </section>
       </div>
+      <Footer />
     </main>
   );
 }

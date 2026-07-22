@@ -4217,8 +4217,8 @@ textarea {
 
 .solution-tabs {
   width: fit-content;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  align-items: center;
   gap: 4px;
   margin: 26px auto 18px;
   padding: 4px;
@@ -4228,7 +4228,7 @@ textarea {
 }
 
 .solution-tabs button {
-  min-width: 220px;
+  white-space: nowrap;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4316,9 +4316,10 @@ textarea {
 
 .solution-showcase-image {
   width: 100%;
-  height: 302px;
+  height: auto;
+  max-height: 340px;
   display: block;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   border: 1px solid rgba(255, 255, 255, .7);
   border-radius: 18px;
@@ -4701,10 +4702,10 @@ textarea {
 .event-stage-live, .event-stage-viewers { position: absolute; top: 13px; display: inline-flex; align-items: center; gap: 5px; padding: 6px 8px; border-radius: 6px; color: #fff; font-size: 9px; font-weight: 900; }
 .event-stage-live { left: 13px; background: #f14e5d; text-transform: uppercase; }.event-stage-viewers { left: 62px; background: rgba(10,15,50,.72); }
 .event-stage-audience { position: relative; grid-column: 2; grid-row: 3; }
-.event-stage-audience-photo { object-position: 50% 90%; }
+.event-stage-audience-photo { object-position: center; object-fit: contain; background: #151b65; }
 .event-stage-audience > span { position: absolute; top: 11px; left: 11px; display: inline-flex; align-items: center; gap: 6px; padding: 5px 7px; border-radius: 99px; color: #d5fff5; background: rgba(5,31,55,.72); font-size: 8px; font-weight: 800; }
 .event-stage-speakers { grid-column: 3; grid-row: 1; overflow: hidden; background: transparent; border: 0; }
-.event-stage-attendee-grid { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; }.event-stage-networking { grid-column: 3; grid-row: 2; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 7px; padding: 12px; color: #fff; background: linear-gradient(135deg, #2e14bf, #5941e8); }
+.event-stage-attendee-grid { display: block; width: 100%; height: 100%; object-fit: contain; object-position: center; border-radius: 12px; background: #151b65; }.event-stage-networking { grid-column: 3; grid-row: 2; display: grid; grid-template-columns: 1fr auto; align-items: end; gap: 7px; padding: 12px; color: #fff; background: linear-gradient(135deg, #2e14bf, #5941e8); }
 .event-stage-networking > div:first-child { display: grid; grid-template-columns: auto 1fr; column-gap: 7px; align-items: center; }.event-stage-networking > div:first-child svg { grid-row: 1 / span 2; }.event-stage-networking b { font-size: 12px; }.event-stage-networking span { color: #d9d4ff; font-size: 8px; line-height: 1.2; }
 .event-stage-mini-avatars { grid-column: 1; display: flex; align-items: center; }.event-stage-mini-avatars img { width: 19px; height: 19px; margin-right: -5px; border: 1px solid #846cf8; border-radius: 50%; object-fit: cover; }.event-stage-mini-avatars b { margin-left: 8px; font-size: 8px; }.event-stage-networking > svg { align-self: center; }
 .event-stage-engagement { grid-column: 3; grid-row: 3; display: grid; grid-template-columns: auto 1fr; align-items: end; gap: 10px; padding: 12px; background: linear-gradient(145deg, #0b1757, #101d68); }.event-stage-engagement span, .event-stage-engagement strong, .event-stage-engagement b { display: block; }.event-stage-engagement span { color: #aebae9; font-size: 8px; }.event-stage-engagement strong { margin-top: 2px; color: #fff; font: 800 27px/.9 "Manrope", sans-serif; letter-spacing: -.06em; }.event-stage-engagement b { margin-top: 4px; color: #69edcf; font-size: 8px; }
