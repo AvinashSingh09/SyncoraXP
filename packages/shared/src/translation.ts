@@ -27,6 +27,11 @@ export const TRANSLATION_MODELS = {
 
 export type TranslationModel = (typeof TRANSLATION_MODELS)[TranslationProvider];
 
+export const TranslationModelSchema = z.enum([
+  TRANSLATION_MODELS.openai,
+  TRANSLATION_MODELS.gemini,
+]);
+
 export function translationModelForProvider(provider: TranslationProvider): TranslationModel {
   return TRANSLATION_MODELS[provider];
 }
@@ -54,14 +59,31 @@ export const TranslationLanguageStatusSchema = z.enum([
 ]);
 export type TranslationLanguageStatus = z.infer<typeof TranslationLanguageStatusSchema>;
 
-export interface MeetingTranslationSettings {
-  enabled: boolean;
-  sourceLanguage: "en";
-  allowedTargetLanguages: TranslationLanguageCode[];
-  provider: TranslationProvider;
-  model: TranslationModel;
-  designatedSpeakerIdentity: string | null;
-}
+export const MeetingTranslationSettingsSchema = z.object({
+  enabled: z.boolean(),
+  sourceLanguage: z.literal("en"),
+  allowedTargetLanguages: z.array(TranslationLanguageCodeSchema),
+  provider: TranslationProviderSchema,
+  model: TranslationModelSchema,
+  designatedSpeakerIdentity: z.string().nullable(),
+});
+export type MeetingTranslationSettings = z.infer<typeof MeetingTranslationSettingsSchema>;
+
+export const SyncoraRoomMetadataSchema = z
+  .object({
+    syncoraxp: z
+      .object({
+        translation: z
+          .object({
+            version: z.literal(1),
+            settings: MeetingTranslationSettingsSchema,
+          })
+          .optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough();
 
 export interface TranslationLanguageRuntime {
   language: TranslationLanguageCode;

@@ -1,5 +1,6 @@
 import {
   TRANSLATION_LANGUAGES,
+  SyncoraRoomMetadataSchema,
   TranslationDataMessageSchema,
   type MeetingTranslationSettings,
   type TranslationLanguageCode,
@@ -56,14 +57,13 @@ export function InterpretationControl({
 }: InterpretationControlProps) {
   const room = useRoomContext();
   const participants = useParticipants();
+  const [liveSettings, setLiveSettings] = useState(settings);
   const [preference, setPreferenceState] = useState<TranslationPreference>("original");
   const [menuOpen, setMenuOpen] = useState(false);
   const [statuses, setStatuses] = useState<
     Partial<Record<TranslationLanguageCode, TranslationLanguageStatus>>
   >({});
   const [caption, setCaption] = useState("");
-  const [workerStopped, setWorkerStopped] = useState(false);
-  const [hasSeenTranslator, setHasSeenTranslator] = useState(false);
   const [subscriptionRevision, setSubscriptionRevision] = useState(0);
   const sequence = useRef(0);
   const captionTimer = useRef<number | undefined>(undefined);
@@ -74,15 +74,40 @@ export function InterpretationControl({
   );
   const allowedLanguages = translator?.allowedLanguages.length
     ? translator.allowedLanguages
-    : settings.allowedTargetLanguages;
-  const interpretationAvailable =
-    Boolean(translator) || (settings.enabled && !workerStopped && !hasSeenTranslator);
+    : liveSettings.allowedTargetLanguages;
+  const interpretationAvailable = liveSettings.enabled;
 
   useEffect(() => {
-    if (!translator) return;
-    setHasSeenTranslator(true);
-    setWorkerStopped(false);
-  }, [translator?.identity, translator?.runId]);
+    setLiveSettings(settings);
+  }, [settings]);
+
+  useEffect(() => {
+    const applyMetadata = (metadata?: string) => {
+      if (!metadata) return;
+      try {
+        const parsed = SyncoraRoomMetadataSchema.safeParse(JSON.parse(metadata));
+        const nextSettings = parsed.success
+          ? parsed.data.syncoraxp?.translation?.settings
+          : undefined;
+        if (nextSettings) setLiveSettings(nextSettings);
+      } catch {
+        // Ignore metadata owned by another integration or malformed room data.
+      }
+    };
+    applyMetadata(room.metadata);
+    room.on(RoomEvent.RoomMetadataChanged, applyMetadata);
+    return () => {
+      room.off(RoomEvent.RoomMetadataChanged, applyMetadata);
+    };
+  }, [room]);
+
+  useEffect(() => {
+    if (liveSettings.enabled) return;
+    setPreferenceState("original");
+    setCaption("");
+    setMenuOpen(false);
+    setStatuses({});
+  }, [liveSettings.enabled]);
 
   const sendPreference = useCallback(
     async (language: TranslationPreference) => {
@@ -158,7 +183,6 @@ export function InterpretationControl({
         const message = parsed.data;
         if (message.type === "translation.worker.status") {
           if (["stopping", "completed", "failed"].includes(message.status)) {
-            setWorkerStopped(true);
             setPreferenceState("original");
             setCaption("");
             setMenuOpen(false);

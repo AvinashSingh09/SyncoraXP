@@ -129,3 +129,33 @@ test("guest media updates attempt every guest before reporting failures", async 
   );
   assert.deepEqual(attemptedIdentities.sort(), ["guest-1", "guest-2"]);
 });
+
+test("publishes translation settings in room metadata without discarding existing metadata", async () => {
+  const metadataUpdates: string[] = [];
+  const roomService = {
+    async listRooms() {
+      return [{ name: "meeting-1", metadata: JSON.stringify({ anotherIntegration: true }) }];
+    },
+    async updateRoomMetadata(_room: string, metadata: string) {
+      metadataUpdates.push(metadata);
+      return {};
+    },
+  };
+  const issuer = new LiveKitRoomTokenIssuer(config, () => roomService as never);
+
+  await issuer.updateTranslationSettings("meeting-1", {
+    enabled: true,
+    sourceLanguage: "en",
+    allowedTargetLanguages: ["hi", "bn"],
+    provider: "gemini",
+    model: "gemini-3.5-live-translate-preview",
+    designatedSpeakerIdentity: "host-1",
+  });
+
+  assert.equal(metadataUpdates.length, 1);
+  const metadata = JSON.parse(metadataUpdates[0] ?? "{}");
+  assert.equal(metadata.anotherIntegration, true);
+  assert.equal(metadata.syncoraxp.translation.version, 1);
+  assert.equal(metadata.syncoraxp.translation.settings.enabled, true);
+  assert.deepEqual(metadata.syncoraxp.translation.settings.allowedTargetLanguages, ["hi", "bn"]);
+});
