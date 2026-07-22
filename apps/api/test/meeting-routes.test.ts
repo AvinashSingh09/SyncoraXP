@@ -30,6 +30,7 @@ class FakeRoomTokenIssuer implements RoomTokenIssuer {
   requests: RoomTokenRequest[] = [];
   endedRooms: string[] = [];
   mediaPermissionUpdates: Array<{ roomName: string; allowCamera: boolean; allowMicrophone: boolean }> = [];
+  mediaPermissionFailuresRemaining = 0;
   constructor(private readonly configured = true) {}
   isConfigured() { return this.configured; }
   async issue(request: RoomTokenRequest) {
@@ -45,6 +46,10 @@ class FakeRoomTokenIssuer implements RoomTokenIssuer {
   }
   async updateGuestMediaPermissions(roomName: string, allowCamera: boolean, allowMicrophone: boolean) {
     this.mediaPermissionUpdates.push({ roomName, allowCamera, allowMicrophone });
+    if (this.mediaPermissionFailuresRemaining > 0) {
+      this.mediaPermissionFailuresRemaining -= 1;
+      throw new Error("LiveKit permission update failed");
+    }
   }
 }
 
@@ -613,6 +618,50 @@ test("applies guest camera and microphone settings to new and active guests", as
     allowCamera: false,
     allowMicrophone: false,
   });
+});
+
+test("restores guest media settings when active LiveKit permissions cannot be synchronized", async (t) => {
+  const { app, roomTokens } = await setup();
+  t.after(() => app.close());
+  const cookie = await registerHost(app);
+  const created = await app.inject({
+    method: "POST",
+    url: "/api/meetings",
+    headers: { cookie },
+    payload: validMeeting,
+  });
+  const meeting = created.json().meeting;
+  roomTokens.mediaPermissionFailuresRemaining = 1;
+
+  const updated = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meeting.id}/settings`,
+    headers: { cookie },
+    payload: { allowGuestCamera: false },
+  });
+
+  assert.equal(updated.statusCode, 502);
+  assert.deepEqual(roomTokens.mediaPermissionUpdates.slice(-2), [
+    {
+      roomName: roomTokens.mediaPermissionUpdates.at(-1)?.roomName,
+      allowCamera: false,
+      allowMicrophone: true,
+    },
+    {
+      roomName: roomTokens.mediaPermissionUpdates.at(-1)?.roomName,
+      allowCamera: true,
+      allowMicrophone: true,
+    },
+  ]);
+
+  const hostMeeting = await app.inject({
+    method: "GET",
+    url: `/api/meetings/${meeting.id}/host`,
+    headers: { cookie },
+  });
+  assert.equal(hostMeeting.statusCode, 200);
+  assert.equal(hostMeeting.json().settings.allowGuestCamera, true);
+  assert.equal(hostMeeting.json().settings.allowGuestMicrophone, true);
 });
 
 test("lets only the host end a meeting for every participant", async (t) => {

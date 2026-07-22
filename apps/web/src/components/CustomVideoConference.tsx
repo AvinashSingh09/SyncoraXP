@@ -1,4 +1,4 @@
-import { RoomEvent, Track } from "livekit-client";
+import { Track } from "livekit-client";
 import * as React from "react";
 import {
   MicrophoneSlash,
@@ -62,6 +62,18 @@ function isEqualTrackRef(a?: TrackReferenceOrPlaceholder, b?: TrackReferenceOrPl
     a.source === b.source &&
     a.publication?.trackSid === b.publication?.trackSid
   );
+}
+
+function trackReferenceKey(track: TrackReferenceOrPlaceholder): string {
+  return [
+    track.participant.identity,
+    track.source,
+    track.publication?.trackSid ?? "placeholder",
+  ].join(":");
+}
+
+function trackListKey(tracks: TrackReferenceOrPlaceholder[]): string {
+  return tracks.map(trackReferenceKey).sort().join("|");
 }
 
 function DisabledMediaButton({ source }: { source: Track.Source }) {
@@ -152,6 +164,8 @@ export function CustomVideoConference({
 
   const focusTrack = usePinnedTracks(layoutContext)?.[0];
   const carouselTracks = tracks.filter((track) => !isEqualTrackRef(track, focusTrack));
+  const gridLayoutKey = trackListKey(tracks);
+  const carouselLayoutKey = trackListKey(carouselTracks);
 
   // Host side panels, chat, and participants are mutually exclusive.
   React.useEffect(() => {
@@ -181,13 +195,15 @@ export function CustomVideoConference({
       layoutContext.pin.dispatch?.({ msg: "clear_pin" });
       lastAutoFocusedScreenShareTrack.current = null;
     }
-    if (focusTrack && !isTrackReference(focusTrack)) {
+    if (focusTrack) {
       const updatedFocusTrack = tracks.find(
         (tr) =>
           tr.participant.identity === focusTrack.participant.identity &&
           tr.source === focusTrack.source
       );
-      if (updatedFocusTrack && isTrackReference(updatedFocusTrack)) {
+      if (!updatedFocusTrack) {
+        layoutContext.pin.dispatch?.({ msg: "clear_pin" });
+      } else if (!isEqualTrackRef(updatedFocusTrack, focusTrack)) {
         layoutContext.pin.dispatch?.({ msg: "set_pin", trackReference: updatedFocusTrack });
       }
     }
@@ -219,14 +235,17 @@ export function CustomVideoConference({
         <div className="lk-video-conference-inner">
           {!focusTrack ? (
             <div className="lk-grid-layout-wrapper">
-              <GridLayout tracks={tracks}>
+              {/* LiveKit's visual-stability paginator can retain a camera publication after
+                  the participant has transitioned to a placeholder. Remount only when track
+                  membership changes so its internal page state starts from the current list. */}
+              <GridLayout key={gridLayoutKey} tracks={tracks}>
                 <ParticipantTile />
               </GridLayout>
             </div>
           ) : (
             <div className="lk-focus-layout-wrapper">
               <FocusLayoutContainer>
-                <CarouselLayout tracks={carouselTracks}>
+                <CarouselLayout key={carouselLayoutKey} tracks={carouselTracks}>
                   <ParticipantTile />
                 </CarouselLayout>
                 {focusTrack && <FocusLayout trackRef={focusTrack} />}
