@@ -29,6 +29,7 @@ interface TranslatorDetails {
   runId: string;
   sourceParticipantIdentity: string;
   allowedLanguages: TranslationLanguageCode[];
+  joinedAtMs: number;
 }
 
 function translatorDetails(participant: ReturnType<typeof useParticipants>[number]): TranslatorDetails | null {
@@ -46,6 +47,7 @@ function translatorDetails(participant: ReturnType<typeof useParticipants>[numbe
     runId,
     sourceParticipantIdentity,
     allowedLanguages: allowed,
+    joinedAtMs: participant.joinedAt?.getTime() ?? 0,
   };
 }
 
@@ -63,13 +65,19 @@ export function InterpretationControl({
     Partial<Record<TranslationLanguageCode, TranslationLanguageStatus>>
   >({});
   const [caption, setCaption] = useState("");
+  const [inactiveRunIds, setInactiveRunIds] = useState<ReadonlySet<string>>(() => new Set());
   const [subscriptionRevision, setSubscriptionRevision] = useState(0);
   const sequence = useRef(0);
   const captionTimer = useRef<number | undefined>(undefined);
 
   const translator = useMemo(
-    () => participants.map(translatorDetails).find(Boolean) ?? null,
-    [participants],
+    () =>
+      participants
+        .map(translatorDetails)
+        .filter((details): details is TranslatorDetails => details !== null)
+        .filter((details) => !inactiveRunIds.has(details.runId))
+        .sort((left, right) => right.joinedAtMs - left.joinedAtMs)[0] ?? null,
+    [inactiveRunIds, participants],
   );
   const allowedLanguages = translator?.allowedLanguages.length
     ? translator.allowedLanguages
@@ -186,13 +194,32 @@ export function InterpretationControl({
         const parsed = TranslationDataMessageSchema.safeParse(
           JSON.parse(new TextDecoder().decode(payload)),
         );
-        if (!parsed.success || parsed.data.meetingId !== meetingId) return;
+        if (
+          !parsed.success ||
+          parsed.data.meetingId !== meetingId ||
+          parsed.data.translationRunId !== translator?.runId
+        ) return;
         const message = parsed.data;
         if (message.type === "translation.worker.status") {
           if (["stopping", "completed", "failed"].includes(message.status)) {
+            setInactiveRunIds((current) => {
+              if (current.has(message.translationRunId)) return current;
+              const next = new Set(current);
+              next.add(message.translationRunId);
+              return next;
+            });
+          }
+          if (
+            !liveSettings.enabled &&
+            ["stopping", "completed"].includes(message.status)
+          ) {
             setPreferenceState("original");
             setCaption("");
             setMenuOpen(false);
+          }
+          if (message.status === "failed" && preference !== "original") {
+            setStatuses((current) => ({ ...current, [preference]: "unavailable" }));
+            setSubscriptionRevision((revision) => revision + 1);
           }
           return;
         }
@@ -236,7 +263,7 @@ export function InterpretationControl({
       room.off(RoomEvent.DataReceived, onData);
       if (captionTimer.current) window.clearTimeout(captionTimer.current);
     };
-  }, [meetingId, preference, room, translator?.identity]);
+  }, [liveSettings.enabled, meetingId, preference, room, translator?.identity, translator?.runId]);
 
   useEffect(() => {
     const remoteParticipants = room.remoteParticipants;
