@@ -8,12 +8,14 @@ import type {
   HostAdmissionListResponse,
   LoginInput,
   MeetingSettingsResponse,
+  ParticipantMediaPermissionsResponse,
   MeetingTranslationResponse,
   MyMeetingsResponse,
   PublicMeetingResponse,
   RegisterInput,
   RoomSessionResponse,
   UpdateMeetingSettingsInput,
+  UpdateParticipantMediaPermissionsInput,
   UpdateMeetingTranslationInput,
 } from "@voice/shared";
 import { apiFetch } from "./backend";
@@ -100,6 +102,24 @@ export async function updateMeetingSettings(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(settings),
     }),
+  );
+}
+
+export async function updateParticipantMediaPermissions(
+  meetingId: string,
+  participantIdentity: string,
+  permissions: UpdateParticipantMediaPermissionsInput,
+): Promise<ParticipantMediaPermissionsResponse> {
+  return readJson<ParticipantMediaPermissionsResponse>(
+    await apiFetch(
+      `/api/meetings/${encodeURIComponent(meetingId)}/participants/${encodeURIComponent(participantIdentity)}/media-permissions`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(permissions),
+      },
+    ),
   );
 }
 

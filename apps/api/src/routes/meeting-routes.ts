@@ -14,6 +14,8 @@ import {
   type RoomSessionResponse,
   type PublicMeetingResponse,
   UpdateMeetingSettingsInputSchema,
+  UpdateParticipantMediaPermissionsInputSchema,
+  type ParticipantMediaPermissionsResponse,
 } from "@voice/shared";
 import type { FastifyInstance } from "fastify";
 import type { AppConfig } from "../config";
@@ -256,6 +258,42 @@ export async function registerMeetingRoutes(
         },
       };
       return response;
+    },
+  );
+
+  app.patch<{ Params: { meetingId: string; participantIdentity: string } }>(
+    "/api/meetings/:meetingId/participants/:participantIdentity/media-permissions",
+    async (request, reply) => {
+      const user = await requireUser(dependencies, request, reply);
+      if (!user) return;
+      const parsed = UpdateParticipantMediaPermissionsInputSchema.safeParse(request.body);
+      if (!parsed.success) {
+        return reply.status(400).send({ error: "Choose a valid participant media permission" });
+      }
+      const meeting = await dependencies.repository.findByIdForHost(
+        request.params.meetingId,
+        user.id,
+      );
+      if (!meeting) return reply.status(404).send({ error: "Host meeting not found" });
+      if (!dependencies.roomTokens.isConfigured()) {
+        return reply.status(503).send({ error: "LiveKit is not configured" });
+      }
+      try {
+        const permissions = await dependencies.roomTokens.updateParticipantMediaPermissions(
+          meeting.livekitRoomName,
+          request.params.participantIdentity,
+          parsed.data,
+        );
+        if (!permissions) {
+          return reply.status(404).send({ error: "The guest is no longer connected" });
+        }
+        return permissions satisfies ParticipantMediaPermissionsResponse;
+      } catch (error) {
+        request.log.warn({ error }, "Could not update participant media permissions");
+        return reply.status(502).send({
+          error: "This participant's media permissions could not be updated",
+        });
+      }
     },
   );
 

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { AccessToken, RoomServiceClient, TrackSource } from "livekit-server-sdk";
-import type { MeetingTranslationSettings } from "@voice/shared";
+import type { MeetingTranslationSettings, ParticipantMediaPermissionsResponse } from "@voice/shared";
 
 type RoomService = Pick<
   RoomServiceClient,
@@ -29,6 +29,11 @@ export interface RoomTokenIssuer {
   isConfigured(): boolean;
   issue(request: RoomTokenRequest): Promise<IssuedRoomToken>;
   updateGuestMediaPermissions(roomName: string, allowCamera: boolean, allowMicrophone: boolean): Promise<void>;
+  updateParticipantMediaPermissions(
+    roomName: string,
+    participantIdentity: string,
+    change: { allowCamera?: boolean; allowMicrophone?: boolean },
+  ): Promise<ParticipantMediaPermissionsResponse | null>;
   updateTranslationSettings(roomName: string, settings: MeetingTranslationSettings): Promise<void>;
   endRoom(roomName: string): Promise<void>;
 }
@@ -129,6 +134,57 @@ export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
         `Could not update media permissions for ${failures.length} guest(s)`,
       );
     }
+  }
+
+  async updateParticipantMediaPermissions(
+    roomName: string,
+    participantIdentity: string,
+    change: { allowCamera?: boolean; allowMicrophone?: boolean },
+  ): Promise<ParticipantMediaPermissionsResponse | null> {
+    if (!this.config.serverUrl || !this.config.apiKey || !this.config.apiSecret) return null;
+    const serviceUrl = this.config.serverUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+    const rooms = this.roomServiceFactory(serviceUrl, this.config.apiKey, this.config.apiSecret);
+    if (!(await rooms.listRooms([roomName])).length) return null;
+    const participant = (await rooms.listParticipants(roomName)).find(
+      (candidate) =>
+        candidate.identity === participantIdentity && candidate.attributes?.role === "guest",
+    );
+    if (!participant) return null;
+
+    const sources = new Set(participant.permission?.canPublishSources ?? []);
+    if (change.allowCamera !== undefined) {
+      if (change.allowCamera) sources.add(TrackSource.CAMERA);
+      else sources.delete(TrackSource.CAMERA);
+    }
+    if (change.allowMicrophone !== undefined) {
+      if (change.allowMicrophone) sources.add(TrackSource.MICROPHONE);
+      else sources.delete(TrackSource.MICROPHONE);
+    }
+
+    for (const track of participant.tracks ?? []) {
+      if (
+        (change.allowCamera === false && track.source === TrackSource.CAMERA) ||
+        (change.allowMicrophone === false && track.source === TrackSource.MICROPHONE)
+      ) {
+        await rooms.mutePublishedTrack(roomName, participant.identity, track.sid, true);
+      }
+    }
+
+    const canPublishSources = [...sources];
+    await rooms.updateParticipant(roomName, participant.identity, {
+      permission: {
+        ...participant.permission,
+        canSubscribe: true,
+        canPublish: true,
+        canPublishData: true,
+        canPublishSources,
+      },
+    });
+    return {
+      participantIdentity,
+      allowCamera: sources.has(TrackSource.CAMERA),
+      allowMicrophone: sources.has(TrackSource.MICROPHONE),
+    };
   }
 
   async updateTranslationSettings(

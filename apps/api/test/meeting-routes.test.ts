@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
-import type { CreateMeetingInput, MeetingTranslationSettings } from "@voice/shared";
+import type { CreateMeetingInput, MeetingTranslationSettings, ParticipantMediaPermissionsResponse } from "@voice/shared";
 import { buildApp } from "../src/app";
 import { AuthService } from "../src/auth/auth-service";
 import { MemoryAuthRepository } from "../src/auth/memory-auth-repository";
@@ -31,6 +31,11 @@ class FakeRoomTokenIssuer implements RoomTokenIssuer {
   endedRooms: string[] = [];
   mediaPermissionUpdates: Array<{ roomName: string; allowCamera: boolean; allowMicrophone: boolean }> = [];
   translationSettingsUpdates: Array<{ roomName: string; settings: MeetingTranslationSettings }> = [];
+  participantMediaPermissionUpdates: Array<{
+    roomName: string;
+    participantIdentity: string;
+    change: { allowCamera?: boolean; allowMicrophone?: boolean };
+  }> = [];
   mediaPermissionFailuresRemaining = 0;
   constructor(private readonly configured = true) {}
   isConfigured() { return this.configured; }
@@ -54,6 +59,18 @@ class FakeRoomTokenIssuer implements RoomTokenIssuer {
   }
   async updateTranslationSettings(roomName: string, settings: MeetingTranslationSettings) {
     this.translationSettingsUpdates.push({ roomName, settings });
+  }
+  async updateParticipantMediaPermissions(
+    roomName: string,
+    participantIdentity: string,
+    change: { allowCamera?: boolean; allowMicrophone?: boolean },
+  ): Promise<ParticipantMediaPermissionsResponse | null> {
+    this.participantMediaPermissionUpdates.push({ roomName, participantIdentity, change });
+    return {
+      participantIdentity,
+      allowCamera: change.allowCamera ?? false,
+      allowMicrophone: change.allowMicrophone ?? false,
+    };
   }
 }
 
@@ -666,6 +683,44 @@ test("restores guest media settings when active LiveKit permissions cannot be sy
   assert.equal(hostMeeting.statusCode, 200);
   assert.equal(hostMeeting.json().settings.allowGuestCamera, true);
   assert.equal(hostMeeting.json().settings.allowGuestMicrophone, true);
+});
+
+test("lets only the host update a connected guest's individual media permissions", async (t) => {
+  const { app, roomTokens } = await setup();
+  t.after(() => app.close());
+  const cookie = await registerHost(app);
+  const created = await app.inject({
+    method: "POST",
+    url: "/api/meetings",
+    headers: { cookie },
+    payload: validMeeting,
+  });
+  const meetingId = created.json().meeting.id;
+
+  const unauthenticated = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/participants/guest-1/media-permissions`,
+    payload: { allowMicrophone: true },
+  });
+  assert.equal(unauthenticated.statusCode, 401);
+
+  const updated = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/participants/guest-1/media-permissions`,
+    headers: { cookie },
+    payload: { allowCamera: false, allowMicrophone: true },
+  });
+  assert.equal(updated.statusCode, 200);
+  assert.deepEqual(updated.json(), {
+    participantIdentity: "guest-1",
+    allowCamera: false,
+    allowMicrophone: true,
+  });
+  assert.deepEqual(roomTokens.participantMediaPermissionUpdates.at(-1), {
+    roomName: roomTokens.participantMediaPermissionUpdates.at(-1)?.roomName,
+    participantIdentity: "guest-1",
+    change: { allowCamera: false, allowMicrophone: true },
+  });
 });
 
 test("lets only the host end a meeting for every participant", async (t) => {

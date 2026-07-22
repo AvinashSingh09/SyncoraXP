@@ -145,6 +145,25 @@ export interface MeetingSettingsResponse {
   settings: MeetingSettings;
 }
 
+export const UpdateParticipantMediaPermissionsInputSchema = z.object({
+  allowCamera: z.boolean().optional(),
+  allowMicrophone: z.boolean().optional(),
+}).refine(
+  (permissions) =>
+    permissions.allowCamera !== undefined || permissions.allowMicrophone !== undefined,
+  "Choose a camera or microphone permission to update",
+);
+
+export type UpdateParticipantMediaPermissionsInput = z.infer<
+  typeof UpdateParticipantMediaPermissionsInputSchema
+>;
+
+export interface ParticipantMediaPermissionsResponse {
+  participantIdentity: string;
+  allowCamera: boolean;
+  allowMicrophone: boolean;
+}
+
 export const AdmissionDecisionInputSchema = z.object({
   decision: z.enum(["admitted", "denied"]),
 });
