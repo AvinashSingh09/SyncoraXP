@@ -1,10 +1,18 @@
 import type {
   MeetingSettings,
   MeetingTranslationSettings,
-  TranslationProvider,
   UpdateMeetingSettingsInput,
 } from "@voice/shared";
-import { GlobeHemisphereWest, LockKey, Microphone, Monitor, Users, VideoCamera, X } from "@phosphor-icons/react";
+import {
+  CaretDown,
+  GlobeHemisphereWest,
+  LockKey,
+  Microphone,
+  Monitor,
+  Users,
+  VideoCamera,
+  X,
+} from "@phosphor-icons/react";
 import { useState } from "react";
 import { updateMeetingSettings, updateMeetingTranslation } from "../api";
 
@@ -48,30 +56,18 @@ export function HostToolsPanel({
   };
 
   const toggleInterpretation = async () => {
+    const enabled = !translationSettings.enabled;
     setTranslationBusy(true);
     setError("");
     try {
       const response = await updateMeetingTranslation(meetingId, {
-        enabled: !translationSettings.enabled,
+        enabled,
         designatedSpeakerIdentity: participantIdentity,
+        ...(enabled ? { provider: "gemini" as const } : {}),
       });
       onTranslationSettingsChange(response.settings);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Could not update interpretation");
-    } finally {
-      setTranslationBusy(false);
-    }
-  };
-
-  const updateTranslationProvider = async (provider: TranslationProvider) => {
-    if (translationSettings.enabled || provider === translationSettings.provider) return;
-    setTranslationBusy(true);
-    setError("");
-    try {
-      const response = await updateMeetingTranslation(meetingId, { provider });
-      onTranslationSettingsChange(response.settings);
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not change translation provider");
     } finally {
       setTranslationBusy(false);
     }
@@ -132,127 +128,101 @@ export function HostToolsPanel({
               </button>
             </div>
 
-            <div className="host-tool-row">
-              <span className="host-tool-icon"><VideoCamera size={18} weight="bold" /></span>
-              <span className="host-tool-copy">
-                <strong>Allow guest cameras</strong>
-                <small>Let guests turn on their camera.</small>
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-label="Allow guest cameras"
-                aria-checked={settings.allowGuestCamera}
-                className={`host-tool-switch ${settings.allowGuestCamera ? "on" : "off"}`}
-                disabled={busySetting !== null}
-                onClick={() => void updateSetting({ allowGuestCamera: !settings.allowGuestCamera })}
-              >
-                <span />
-              </button>
-            </div>
+            <details className="host-tools-advanced">
+              <summary>
+                <span>
+                  <strong>Advanced settings</strong>
+                  <small>Guest media permissions and interpretation.</small>
+                </span>
+                <CaretDown className="host-tools-advanced-caret" size={17} weight="bold" />
+              </summary>
 
-            <div className="host-tool-row">
-              <span className="host-tool-icon"><Microphone size={18} weight="bold" /></span>
-              <span className="host-tool-copy">
-                <strong>Allow guest microphones</strong>
-                <small>Let guests turn on their microphone.</small>
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-label="Allow guest microphones"
-                aria-checked={settings.allowGuestMicrophone}
-                className={`host-tool-switch ${settings.allowGuestMicrophone ? "on" : "off"}`}
-                disabled={busySetting !== null}
-                onClick={() => void updateSetting({ allowGuestMicrophone: !settings.allowGuestMicrophone })}
-              >
-                <span />
-              </button>
-            </div>
+              <div className="host-tools-advanced-content">
+                <div className="host-tool-row">
+                  <span className="host-tool-icon"><VideoCamera size={18} weight="bold" /></span>
+                  <span className="host-tool-copy">
+                    <strong>Allow guest cameras</strong>
+                    <small>Let guests turn on their camera.</small>
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-label="Allow guest cameras"
+                    aria-checked={settings.allowGuestCamera}
+                    className={`host-tool-switch ${settings.allowGuestCamera ? "on" : "off"}`}
+                    disabled={busySetting !== null}
+                    onClick={() => void updateSetting({ allowGuestCamera: !settings.allowGuestCamera })}
+                  >
+                    <span />
+                  </button>
+                </div>
 
-            <div className="host-tool-row">
-              <span className="host-tool-icon"><Monitor size={18} weight="bold" /></span>
-              <span className="host-tool-copy">
-                <strong>Allow guest screen sharing</strong>
-                <small>Let guests present their screen to the meeting.</small>
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-label="Allow guest screen sharing"
-                aria-checked={settings.allowGuestScreenShare}
-                className={`host-tool-switch ${settings.allowGuestScreenShare ? "on" : "off"}`}
-                disabled={busySetting !== null}
-                onClick={() => void updateSetting({
-                  allowGuestScreenShare: !settings.allowGuestScreenShare,
-                })}
-              >
-                <span />
-              </button>
-            </div>
+                <div className="host-tool-row">
+                  <span className="host-tool-icon"><Microphone size={18} weight="bold" /></span>
+                  <span className="host-tool-copy">
+                    <strong>Allow guest microphones</strong>
+                    <small>Let guests turn on their microphone.</small>
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-label="Allow guest microphones"
+                    aria-checked={settings.allowGuestMicrophone}
+                    className={`host-tool-switch ${settings.allowGuestMicrophone ? "on" : "off"}`}
+                    disabled={busySetting !== null}
+                    onClick={() => void updateSetting({ allowGuestMicrophone: !settings.allowGuestMicrophone })}
+                  >
+                    <span />
+                  </button>
+                </div>
 
-            <div className="host-tool-row">
-              <span className="host-tool-icon"><GlobeHemisphereWest size={18} weight="bold" /></span>
-              <span className="host-tool-copy">
-                <strong>Enable interpretation</strong>
-                <small>Translate your English audio into five Indian languages.</small>
-              </span>
-              <button
-                type="button"
-                role="switch"
-                aria-label="Enable interpretation"
-                aria-checked={translationSettings.enabled}
-                className={`host-tool-switch ${translationSettings.enabled ? "on" : "off"}`}
-                disabled={busySetting !== null || translationBusy}
-                onClick={() => void toggleInterpretation()}
-              >
-                <span />
-              </button>
-            </div>
+                <div className="host-tool-row">
+                  <span className="host-tool-icon"><Monitor size={18} weight="bold" /></span>
+                  <span className="host-tool-copy">
+                    <strong>Allow guest screen sharing</strong>
+                    <small>Let guests present their screen to the meeting.</small>
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-label="Allow guest screen sharing"
+                    aria-checked={settings.allowGuestScreenShare}
+                    className={`host-tool-switch ${settings.allowGuestScreenShare ? "on" : "off"}`}
+                    disabled={busySetting !== null}
+                    onClick={() => void updateSetting({
+                      allowGuestScreenShare: !settings.allowGuestScreenShare,
+                    })}
+                  >
+                    <span />
+                  </button>
+                </div>
 
-            <div className="translation-provider-setting">
-              <div className="translation-provider-heading">
-                <strong>Translation provider</strong>
-                <small>
-                  {translationSettings.enabled
-                    ? "Stop interpretation to switch providers."
-                    : "Choose which realtime engine to test."}
-                </small>
+                <div className="host-tool-row">
+                  <span className="host-tool-icon"><GlobeHemisphereWest size={18} weight="bold" /></span>
+                  <span className="host-tool-copy">
+                    <strong>Enable interpretation</strong>
+                    <small>Translate your English audio into five Indian languages.</small>
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-label="Enable interpretation"
+                    aria-checked={translationSettings.enabled}
+                    className={`host-tool-switch ${translationSettings.enabled ? "on" : "off"}`}
+                    disabled={busySetting !== null || translationBusy}
+                    onClick={() => void toggleInterpretation()}
+                  >
+                    <span />
+                  </button>
+                </div>
+
               </div>
-              <div
-                className="translation-provider-options"
-                role="radiogroup"
-                aria-label="Translation provider"
-              >
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={translationSettings.provider === "openai"}
-                  className={translationSettings.provider === "openai" ? "selected" : ""}
-                  disabled={translationSettings.enabled || translationBusy}
-                  onClick={() => void updateTranslationProvider("openai")}
-                >
-                  <strong>OpenAI</strong>
-                  <small>Realtime Translate</small>
-                </button>
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={translationSettings.provider === "gemini"}
-                  className={translationSettings.provider === "gemini" ? "selected" : ""}
-                  disabled={translationSettings.enabled || translationBusy}
-                  onClick={() => void updateTranslationProvider("gemini")}
-                >
-                  <strong>Gemini</strong>
-                  <small>Live Translate - Preview</small>
-                </button>
-              </div>
-            </div>
+            </details>
           </div>
 
           <p className="host-tools-note">
             {translationSettings.enabled
-              ? `${translationSettings.provider === "gemini" ? "Gemini Live" : "OpenAI Realtime"} interpretation is starting. Guests can select Hindi, Bengali, Marathi, Tamil, or Telugu.`
+              ? "Gemini Live interpretation is starting. Guests can select Hindi, Bengali, Marathi, Tamil, or Telugu."
               : !settings.allowGuestScreenShare
                 ? "Only the host can share their screen."
               : !settings.allowGuestCamera && !settings.allowGuestMicrophone

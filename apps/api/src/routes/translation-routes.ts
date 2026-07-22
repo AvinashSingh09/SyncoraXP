@@ -62,7 +62,7 @@ export async function registerTranslationRoutes(
       const current = await dependencies.translations.getSettings(meeting.id);
       const nextEnabled = parsed.data.enabled ?? current.enabled;
       if (
-        nextEnabled &&
+        current.enabled &&
         parsed.data.provider !== undefined &&
         parsed.data.provider !== current.provider
       ) {
