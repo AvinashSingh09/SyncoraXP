@@ -57,8 +57,10 @@ export function MarketingHeader() {
     };
   }, []);
 
+  const isAboutPage = location.pathname.startsWith("/about");
+
   return (
-    <header className={`landing-header${headerScrolled ? " is-scrolled" : ""}`}>
+    <header className={`landing-header${headerScrolled ? " is-scrolled" : ""}${isAboutPage ? " is-about-header" : ""}`}>
       <Brand />
 
       <nav className="landing-nav" aria-label="Primary navigation">
@@ -197,7 +199,7 @@ export function MarketingHeader() {
                         </div>
                       </span>
                     </Link>
-                    <Link className="mega-solution-row" to="/contact" role="menuitem" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
+                    <Link className="mega-solution-row" to="/book-demo" role="menuitem" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
                       <span className="mega-solution-title">
                         <PhoneCall size={23} weight="duotone" />
                         <div>
@@ -212,11 +214,11 @@ export function MarketingHeader() {
                         <div>
                           <strong>Find Us At</strong>
                           <div className="company-social-icons">
-                            <a href="#" aria-label="Instagram"><InstagramLogo size={20} /></a>
-                            <a href="#" aria-label="LinkedIn"><LinkedinLogo size={20} /></a>
-                            <a href="#" aria-label="Youtube"><YoutubeLogo size={20} /></a>
-                            <a href="#" aria-label="Facebook"><FacebookLogo size={20} /></a>
-                            <a href="#" aria-label="X"><XLogo size={20} /></a>
+                            <a href="https://www.instagram.com/360brightmedia?igsh=MXF4djN5YXgyYnR3eQ==" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><InstagramLogo size={20} /></a>
+                            <a href="https://www.linkedin.com/company/360-bright-media/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><LinkedinLogo size={20} /></a>
+                            <a href="https://www.youtube.com/@360brightmedia8/featured" target="_blank" rel="noopener noreferrer" aria-label="Youtube"><YoutubeLogo size={20} /></a>
+                            <a href="https://www.instagram.com/360brightmedia?igsh=MXF4djN5YXgyYnR3eQ==" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FacebookLogo size={20} /></a>
+                            <a href="https://www.linkedin.com/company/360-bright-media/" target="_blank" rel="noopener noreferrer" aria-label="X"><XLogo size={20} /></a>
                           </div>
                         </div>
                       </span>
