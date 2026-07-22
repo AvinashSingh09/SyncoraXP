@@ -23,6 +23,7 @@ interface MeetingRow {
   waiting_room_enabled: boolean;
   allow_guest_camera: boolean;
   allow_guest_microphone: boolean;
+  allow_guest_screen_share: boolean;
   created_at: Date;
 }
 
@@ -62,6 +63,7 @@ function mapMeeting(row: MeetingRow): StoredMeeting {
     waitingRoomEnabled: row.waiting_room_enabled,
     allowGuestCamera: row.allow_guest_camera,
     allowGuestMicrophone: row.allow_guest_microphone,
+    allowGuestScreenShare: row.allow_guest_screen_share,
     createdAt: row.created_at,
   };
 }
@@ -198,6 +200,7 @@ export class PostgresMeetingRepository implements MeetingRepository {
       waitingRoomEnabled?: boolean;
       allowGuestCamera?: boolean;
       allowGuestMicrophone?: boolean;
+      allowGuestScreenShare?: boolean;
     },
   ): Promise<StoredMeeting | null> {
     const client = await this.pool.connect();
@@ -209,6 +212,7 @@ export class PostgresMeetingRepository implements MeetingRepository {
              waiting_room_enabled = COALESCE($4, waiting_room_enabled),
              allow_guest_camera = COALESCE($5, allow_guest_camera),
              allow_guest_microphone = COALESCE($6, allow_guest_microphone),
+             allow_guest_screen_share = COALESCE($7, allow_guest_screen_share),
              updated_at = now()
          WHERE id = $1
            AND EXISTS (
@@ -225,6 +229,7 @@ export class PostgresMeetingRepository implements MeetingRepository {
           settings.waitingRoomEnabled ?? null,
           settings.allowGuestCamera ?? null,
           settings.allowGuestMicrophone ?? null,
+          settings.allowGuestScreenShare ?? null,
         ],
       );
       const row = result.rows[0];

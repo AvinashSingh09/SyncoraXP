@@ -193,6 +193,7 @@ export async function registerMeetingRoutes(
           waitingRoomEnabled: meeting.waitingRoomEnabled,
           allowGuestCamera: meeting.allowGuestCamera,
           allowGuestMicrophone: meeting.allowGuestMicrophone,
+          allowGuestScreenShare: meeting.allowGuestScreenShare,
         },
       };
       return response;
@@ -216,6 +217,7 @@ export async function registerMeetingRoutes(
       const previousGuestMediaSettings = {
         allowGuestCamera: previousMeeting.allowGuestCamera,
         allowGuestMicrophone: previousMeeting.allowGuestMicrophone,
+        allowGuestScreenShare: previousMeeting.allowGuestScreenShare,
       };
       const meeting = await dependencies.repository.updateSettingsForHost(
         request.params.meetingId,
@@ -223,12 +225,17 @@ export async function registerMeetingRoutes(
         parsed.data,
       );
       if (!meeting) return reply.status(404).send({ error: "Host meeting not found" });
-      if (parsed.data.allowGuestCamera !== undefined || parsed.data.allowGuestMicrophone !== undefined) {
+      if (
+        parsed.data.allowGuestCamera !== undefined ||
+        parsed.data.allowGuestMicrophone !== undefined ||
+        parsed.data.allowGuestScreenShare !== undefined
+      ) {
         try {
           await dependencies.roomTokens.updateGuestMediaPermissions(
             meeting.livekitRoomName,
             meeting.allowGuestCamera,
             meeting.allowGuestMicrophone,
+            meeting.allowGuestScreenShare,
           );
         } catch (error) {
           request.log.warn({ error }, "Could not sync guest media permissions");
@@ -240,6 +247,7 @@ export async function registerMeetingRoutes(
               previousMeeting.livekitRoomName,
               previousGuestMediaSettings.allowGuestCamera,
               previousGuestMediaSettings.allowGuestMicrophone,
+              previousGuestMediaSettings.allowGuestScreenShare,
             );
           } catch (rollbackError) {
             request.log.error({ error: rollbackError }, "Could not restore guest media permissions");
@@ -255,6 +263,7 @@ export async function registerMeetingRoutes(
           waitingRoomEnabled: meeting.waitingRoomEnabled,
           allowGuestCamera: meeting.allowGuestCamera,
           allowGuestMicrophone: meeting.allowGuestMicrophone,
+          allowGuestScreenShare: meeting.allowGuestScreenShare,
         },
       };
       return response;
@@ -509,6 +518,7 @@ export async function registerMeetingRoutes(
         role: "guest",
         allowCamera: meeting.allowGuestCamera,
         allowMicrophone: meeting.allowGuestMicrophone,
+        allowScreenShare: meeting.allowGuestScreenShare,
       });
       const response: RoomSessionResponse = {
         serverUrl: issued.serverUrl,

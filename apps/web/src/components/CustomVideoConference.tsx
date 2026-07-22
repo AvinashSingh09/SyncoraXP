@@ -124,9 +124,12 @@ export function CustomVideoConference({
   const [, refreshParticipantPermissions] = React.useReducer((revision) => revision + 1, 0);
   const [showEndMeetingConfirmation, setShowEndMeetingConfirmation] = React.useState(false);
   const localPermissions = useLocalParticipantPermissions();
-  const canPublishSource = (source: Track.Source) => {
+  const canPublishSource = (
+    source: Track.Source.Camera | Track.Source.Microphone | Track.Source.ScreenShare,
+  ) => {
     if (!localPermissions) return true;
-    const protocolSource = source === Track.Source.Camera ? 1 : 2;
+    const protocolSource =
+      source === Track.Source.Camera ? 1 : source === Track.Source.Microphone ? 2 : 3;
     return localPermissions.canPublish && (
       localPermissions.canPublishSources.length === 0 ||
       localPermissions.canPublishSources.includes(protocolSource)
@@ -134,6 +137,7 @@ export function CustomVideoConference({
   };
   const canUseMicrophone = canPublishSource(Track.Source.Microphone);
   const canUseCamera = canPublishSource(Track.Source.Camera);
+  const canUseScreenShare = canPublishSource(Track.Source.ScreenShare);
   const participants = useParticipants();
   const participantCanPublishSource = (
     participant: (typeof participants)[number],
@@ -329,7 +333,7 @@ export function CustomVideoConference({
                 controls={{
                   microphone: false,
                   camera: false,
-                  screenShare: true,
+                  screenShare: canUseScreenShare,
                   chat: true,
                   settings: !!SettingsComponent,
                   leave: false,

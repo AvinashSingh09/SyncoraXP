@@ -4,7 +4,7 @@ import type {
   TranslationProvider,
   UpdateMeetingSettingsInput,
 } from "@voice/shared";
-import { GlobeHemisphereWest, LockKey, Microphone, Users, VideoCamera, X } from "@phosphor-icons/react";
+import { GlobeHemisphereWest, LockKey, Microphone, Monitor, Users, VideoCamera, X } from "@phosphor-icons/react";
 import { useState } from "react";
 import { updateMeetingSettings, updateMeetingTranslation } from "../api";
 
@@ -171,6 +171,27 @@ export function HostToolsPanel({
             </div>
 
             <div className="host-tool-row">
+              <span className="host-tool-icon"><Monitor size={18} weight="bold" /></span>
+              <span className="host-tool-copy">
+                <strong>Allow guest screen sharing</strong>
+                <small>Let guests present their screen to the meeting.</small>
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-label="Allow guest screen sharing"
+                aria-checked={settings.allowGuestScreenShare}
+                className={`host-tool-switch ${settings.allowGuestScreenShare ? "on" : "off"}`}
+                disabled={busySetting !== null}
+                onClick={() => void updateSetting({
+                  allowGuestScreenShare: !settings.allowGuestScreenShare,
+                })}
+              >
+                <span />
+              </button>
+            </div>
+
+            <div className="host-tool-row">
               <span className="host-tool-icon"><GlobeHemisphereWest size={18} weight="bold" /></span>
               <span className="host-tool-copy">
                 <strong>Enable interpretation</strong>
@@ -232,6 +253,8 @@ export function HostToolsPanel({
           <p className="host-tools-note">
             {translationSettings.enabled
               ? `${translationSettings.provider === "gemini" ? "Gemini Live" : "OpenAI Realtime"} interpretation is starting. Guests can select Hindi, Bengali, Marathi, Tamil, or Telugu.`
+              : !settings.allowGuestScreenShare
+                ? "Only the host can share their screen."
               : !settings.allowGuestCamera && !settings.allowGuestMicrophone
               ? "Guests cannot use cameras or microphones."
               : !settings.allowGuestCamera

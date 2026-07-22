@@ -29,7 +29,12 @@ class FakeMailer implements InvitationMailer {
 class FakeRoomTokenIssuer implements RoomTokenIssuer {
   requests: RoomTokenRequest[] = [];
   endedRooms: string[] = [];
-  mediaPermissionUpdates: Array<{ roomName: string; allowCamera: boolean; allowMicrophone: boolean }> = [];
+  mediaPermissionUpdates: Array<{
+    roomName: string;
+    allowCamera: boolean;
+    allowMicrophone: boolean;
+    allowScreenShare: boolean;
+  }> = [];
   translationSettingsUpdates: Array<{ roomName: string; settings: MeetingTranslationSettings }> = [];
   participantMediaPermissionUpdates: Array<{
     roomName: string;
@@ -50,8 +55,13 @@ class FakeRoomTokenIssuer implements RoomTokenIssuer {
   async endRoom(roomName: string) {
     this.endedRooms.push(roomName);
   }
-  async updateGuestMediaPermissions(roomName: string, allowCamera: boolean, allowMicrophone: boolean) {
-    this.mediaPermissionUpdates.push({ roomName, allowCamera, allowMicrophone });
+  async updateGuestMediaPermissions(
+    roomName: string,
+    allowCamera: boolean,
+    allowMicrophone: boolean,
+    allowScreenShare: boolean,
+  ) {
+    this.mediaPermissionUpdates.push({ roomName, allowCamera, allowMicrophone, allowScreenShare });
     if (this.mediaPermissionFailuresRemaining > 0) {
       this.mediaPermissionFailuresRemaining -= 1;
       throw new Error("LiveKit permission update failed");
@@ -477,6 +487,7 @@ test("lets hosts disable the waiting room and admits pending and future guests",
     waitingRoomEnabled: false,
     allowGuestCamera: true,
     allowGuestMicrophone: true,
+    allowGuestScreenShare: false,
   });
 
   const released = await app.inject({
@@ -543,6 +554,7 @@ test("locks new guest entry without changing the host session", async (t) => {
     waitingRoomEnabled: false,
     allowGuestCamera: true,
     allowGuestMicrophone: true,
+    allowGuestScreenShare: false,
   });
 
   const newRequest = await app.inject({
@@ -578,10 +590,11 @@ test("locks new guest entry without changing the host session", async (t) => {
     waitingRoomEnabled: false,
     allowGuestCamera: true,
     allowGuestMicrophone: true,
+    allowGuestScreenShare: false,
   });
 });
 
-test("applies guest camera and microphone settings to new and active guests", async (t) => {
+test("applies guest media and screen-share settings to new and active guests", async (t) => {
   const { app, roomTokens } = await setup();
   t.after(() => app.close());
   const cookie = await registerHost(app);
@@ -602,6 +615,7 @@ test("applies guest camera and microphone settings to new and active guests", as
       waitingRoomEnabled: false,
       allowGuestCamera: false,
       allowGuestMicrophone: false,
+      allowGuestScreenShare: true,
     },
   });
   assert.equal(updated.statusCode, 200);
@@ -610,6 +624,7 @@ test("applies guest camera and microphone settings to new and active guests", as
     waitingRoomEnabled: false,
     allowGuestCamera: false,
     allowGuestMicrophone: false,
+    allowGuestScreenShare: true,
   });
   const roomName = roomTokens.mediaPermissionUpdates.at(-1)?.roomName;
   assert.ok(roomName);
@@ -617,6 +632,7 @@ test("applies guest camera and microphone settings to new and active guests", as
     roomName,
     allowCamera: false,
     allowMicrophone: false,
+    allowScreenShare: true,
   });
 
   const admission = await app.inject({
@@ -638,6 +654,7 @@ test("applies guest camera and microphone settings to new and active guests", as
     role: "guest",
     allowCamera: false,
     allowMicrophone: false,
+    allowScreenShare: true,
   });
 });
 
@@ -667,11 +684,13 @@ test("restores guest media settings when active LiveKit permissions cannot be sy
       roomName: roomTokens.mediaPermissionUpdates.at(-1)?.roomName,
       allowCamera: false,
       allowMicrophone: true,
+      allowScreenShare: false,
     },
     {
       roomName: roomTokens.mediaPermissionUpdates.at(-1)?.roomName,
       allowCamera: true,
       allowMicrophone: true,
+      allowScreenShare: false,
     },
   ]);
 

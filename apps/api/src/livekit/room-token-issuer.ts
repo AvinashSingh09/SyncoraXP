@@ -17,6 +17,7 @@ export interface RoomTokenRequest {
   userId?: string;
   allowCamera?: boolean;
   allowMicrophone?: boolean;
+  allowScreenShare?: boolean;
 }
 
 export interface IssuedRoomToken {
@@ -28,7 +29,12 @@ export interface IssuedRoomToken {
 export interface RoomTokenIssuer {
   isConfigured(): boolean;
   issue(request: RoomTokenRequest): Promise<IssuedRoomToken>;
-  updateGuestMediaPermissions(roomName: string, allowCamera: boolean, allowMicrophone: boolean): Promise<void>;
+  updateGuestMediaPermissions(
+    roomName: string,
+    allowCamera: boolean,
+    allowMicrophone: boolean,
+    allowScreenShare: boolean,
+  ): Promise<void>;
   updateParticipantMediaPermissions(
     roomName: string,
     participantIdentity: string,
@@ -72,17 +78,18 @@ export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
     const canPublishSources = [
       ...(request.role === "host" || request.allowCamera !== false ? [TrackSource.CAMERA] : []),
       ...(request.role === "host" || request.allowMicrophone !== false ? [TrackSource.MICROPHONE] : []),
-      TrackSource.SCREEN_SHARE,
-      TrackSource.SCREEN_SHARE_AUDIO,
+      ...(request.role === "host" || request.allowScreenShare === true
+        ? [TrackSource.SCREEN_SHARE, TrackSource.SCREEN_SHARE_AUDIO]
+        : []),
     ];
     token.addGrant({
       roomJoin: true,
       room: request.roomName,
       roomAdmin: request.role === "host",
-      canPublish: true,
+      canPublish: request.role === "host" || canPublishSources.length > 0,
       canSubscribe: true,
       canPublishData: true,
-      canPublishSources,
+      ...(canPublishSources.length > 0 ? { canPublishSources } : {}),
     });
 
     return {
@@ -92,7 +99,12 @@ export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
     };
   }
 
-  async updateGuestMediaPermissions(roomName: string, allowCamera: boolean, allowMicrophone: boolean): Promise<void> {
+  async updateGuestMediaPermissions(
+    roomName: string,
+    allowCamera: boolean,
+    allowMicrophone: boolean,
+    allowScreenShare: boolean,
+  ): Promise<void> {
     if (!this.config.serverUrl || !this.config.apiKey || !this.config.apiSecret) return;
     const serviceUrl = this.config.serverUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
     const rooms = this.roomServiceFactory(serviceUrl, this.config.apiKey, this.config.apiSecret);
@@ -100,18 +112,21 @@ export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
     const sources = [
       ...(allowCamera ? [TrackSource.CAMERA] : []),
       ...(allowMicrophone ? [TrackSource.MICROPHONE] : []),
-      TrackSource.SCREEN_SHARE,
-      TrackSource.SCREEN_SHARE_AUDIO,
+      ...(allowScreenShare ? [TrackSource.SCREEN_SHARE, TrackSource.SCREEN_SHARE_AUDIO] : []),
     ];
     const guests = (await rooms.listParticipants(roomName)).filter(
       (participant) => participant.attributes?.role === "guest",
     );
     const updates = await Promise.allSettled(
       guests.map(async (participant) => {
-        if (!allowCamera || !allowMicrophone) {
+        if (!allowCamera || !allowMicrophone || !allowScreenShare) {
           for (const track of participant.tracks ?? []) {
             if ((!allowCamera && track.source === TrackSource.CAMERA) ||
-                (!allowMicrophone && track.source === TrackSource.MICROPHONE)) {
+                (!allowMicrophone && track.source === TrackSource.MICROPHONE) ||
+                (!allowScreenShare && (
+                  track.source === TrackSource.SCREEN_SHARE ||
+                  track.source === TrackSource.SCREEN_SHARE_AUDIO
+                ))) {
               await rooms.mutePublishedTrack(roomName, participant.identity, track.sid, true);
             }
           }
@@ -120,7 +135,7 @@ export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
           permission: {
             ...participant.permission,
             canSubscribe: true,
-            canPublish: true,
+            canPublish: sources.length > 0,
             canPublishData: true,
             canPublishSources: sources,
           },
@@ -175,7 +190,7 @@ export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
       permission: {
         ...participant.permission,
         canSubscribe: true,
-        canPublish: true,
+        canPublish: canPublishSources.length > 0,
         canPublishData: true,
         canPublishSources,
       },

@@ -51,11 +51,38 @@ test("guest grants allow media but never room administration", async () => {
     name: "Guest Person",
     role: "guest",
   });
-  const claims = decodePayload(issued.participantToken) as { video?: Record<string, unknown> };
+  const claims = decodePayload(issued.participantToken) as {
+    video?: Record<string, unknown> & { canPublishSources?: number[] };
+  };
   assert.equal(claims.video?.roomJoin, true);
   assert.equal(claims.video?.canPublish, true);
   assert.equal(claims.video?.canSubscribe, true);
   assert.notEqual(claims.video?.roomAdmin, true);
+  assert.equal(claims.video?.canPublishSources?.includes(TrackSource.SCREEN_SHARE), false);
+});
+
+test("guest grants disable publishing when every media source is blocked", async () => {
+  const issuer = new LiveKitRoomTokenIssuer({
+    serverUrl: "wss://example.livekit.cloud",
+    apiKey: "test-key",
+    apiSecret: "a-test-secret-that-is-long-enough-for-signing",
+  });
+  const issued = await issuer.issue({
+    roomName: "room-123",
+    meetingId: "meeting-123",
+    name: "View-only Guest",
+    role: "guest",
+    allowCamera: false,
+    allowMicrophone: false,
+    allowScreenShare: false,
+  });
+  const claims = decodePayload(issued.participantToken) as {
+    video?: Record<string, unknown> & { canPublishSources?: number[] };
+  };
+
+  assert.equal(claims.video?.canPublish, false);
+  assert.equal(claims.video?.canPublishData, true);
+  assert.equal(claims.video?.canPublishSources, undefined);
 });
 
 test("guest media updates preserve subscription and data permissions", async () => {
@@ -67,7 +94,11 @@ test("guest media updates preserve subscription and data permissions", async () 
       return [{
         identity: "guest-1",
         attributes: { role: "guest" },
-        tracks: [{ sid: "TR_MIC", source: TrackSource.MICROPHONE }],
+        tracks: [
+          { sid: "TR_MIC", source: TrackSource.MICROPHONE },
+          { sid: "TR_SCREEN", source: TrackSource.SCREEN_SHARE },
+          { sid: "TR_SCREEN_AUDIO", source: TrackSource.SCREEN_SHARE_AUDIO },
+        ],
         permission: {
           canSubscribe: true,
           canPublish: true,
@@ -89,17 +120,19 @@ test("guest media updates preserve subscription and data permissions", async () 
   };
   const issuer = new LiveKitRoomTokenIssuer(config, () => roomService as never);
 
-  await issuer.updateGuestMediaPermissions("meeting-1", true, false);
+  await issuer.updateGuestMediaPermissions("meeting-1", true, false, false);
 
-  assert.deepEqual(mutedTracks, [{ identity: "guest-1", trackSid: "TR_MIC" }]);
+  assert.deepEqual(mutedTracks, [
+    { identity: "guest-1", trackSid: "TR_MIC" },
+    { identity: "guest-1", trackSid: "TR_SCREEN" },
+    { identity: "guest-1", trackSid: "TR_SCREEN_AUDIO" },
+  ]);
   assert.equal(permissionUpdates.length, 1);
   assert.equal(permissionUpdates[0]?.permission.canSubscribe, true);
   assert.equal(permissionUpdates[0]?.permission.canPublishData, true);
   assert.equal(permissionUpdates[0]?.permission.canSubscribeMetrics, true);
   assert.deepEqual(permissionUpdates[0]?.permission.canPublishSources, [
     TrackSource.CAMERA,
-    TrackSource.SCREEN_SHARE,
-    TrackSource.SCREEN_SHARE_AUDIO,
   ]);
 });
 
@@ -124,7 +157,7 @@ test("guest media updates attempt every guest before reporting failures", async 
   const issuer = new LiveKitRoomTokenIssuer(config, () => roomService as never);
 
   await assert.rejects(
-    issuer.updateGuestMediaPermissions("meeting-1", true, true),
+    issuer.updateGuestMediaPermissions("meeting-1", true, true, false),
     /Could not update media permissions for 1 guest/,
   );
   assert.deepEqual(attemptedIdentities.sort(), ["guest-1", "guest-2"]);
