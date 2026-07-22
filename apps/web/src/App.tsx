@@ -13,6 +13,7 @@ const VirtualEventsPage = lazy(() => import("./pages/VirtualEventsPage").then((m
 const VirtualEventsApp = lazy(() => import("./virtual-events/VirtualEventsApp"));
 const BookDemoPage = lazy(() => import("./pages/BookDemoPage").then((m) => ({ default: m.BookDemoPage })));
 const WebinarServicePage = lazy(() => import("./pages/WebinarServicePage").then((module) => ({ default: module.WebinarServicePage })));
+const AboutPage = lazy(() => import("./pages/AboutPage").then((module) => ({ default: module.AboutPage })));
 const EventRegistrationPage = lazy(() => import("./pages/EventRegistrationPage").then((module) => ({ default: module.EventRegistrationPage })));
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
@@ -34,6 +35,7 @@ export function App() {
         <Suspense fallback={<main className="site-shell"><div className="loading-card">Loading SyncoraXP...</div></main>}>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/about" element={<AboutPage />} />
             <Route path="/login" element={<AuthPage mode="login" />} />
             <Route path="/register" element={<AuthPage mode="register" />} />
             <Route path="/virtual-events-platform" element={<VirtualEventsPage />} />
