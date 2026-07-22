@@ -152,7 +152,10 @@ export function RequestCallbackModal() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === "phone" || e.target.type === "tel") {
+      value = value.replace(/[^\d\s\-\+]/g, "");
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
     validateField(name as any, value);
   };

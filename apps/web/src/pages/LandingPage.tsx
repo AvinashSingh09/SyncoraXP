@@ -11,6 +11,8 @@ import {
   Star,
   Ticket,
   Translate,
+  IdentificationCard,
+  Globe,
 } from "@phosphor-icons/react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -276,34 +278,84 @@ export function LandingPage() {
 
       <section style={{ width: "100%", padding: "90px 0 110px", background: "#f7f6fd", color: "#2a1758", textAlign: "center" }}>
         <div style={{ width: "min(1240px, calc(100% - 48px))", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "52px" }}>
-          <h2 style={{ font: "800 clamp(34px, 4.2vw, 54px)/1.15 'Manrope', sans-serif", color: "#2a1758", margin: 0, letterSpacing: "-0.035em", maxWidth: "920px" }}>
-            Great Tech backed by<br />Great Services = SyncoraXP
-          </h2>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <h2 style={{ font: "800 clamp(34px, 4.2vw, 54px)/1.15 'Manrope', sans-serif", color: "#2a1758", margin: "0 0 16px", letterSpacing: "-0.035em", maxWidth: "920px" }}>
+              Powering Exceptional Event Experiences
+            </h2>
+            <p style={{ color: "#475569", fontSize: "16.5px", lineHeight: "1.6", margin: 0, maxWidth: "720px" }}>
+              Enterprise-grade technology that helps you create, manage, and deliver seamless events of any scale.
+            </p>
+          </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", width: "100%", background: "#ffffff", border: "1px solid #e5e0f5", borderRadius: "28px", padding: "64px 0", boxShadow: "0 14px 45px rgba(42,23,88,0.05)", boxSizing: "border-box" }}>
-
+            
+            {/* Card 1: Enterprise Security */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "10px 32px", borderRight: "1.5px solid #f1f5f9" }}>
-              <div style={{ marginBottom: "24px", height: "110px", display: "grid", placeItems: "center" }}>
-                <img src="/landing/Round-the-Clock-Support (1).svg" alt="Round-the-Clock Support" style={{ width: "110px", height: "110px", objectFit: "contain" }} />
+              <div style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                background: "rgba(109, 40, 217, 0.08)",
+                border: "1px solid rgba(109, 40, 217, 0.2)",
+                color: "#6d28d9",
+                display: "grid",
+                placeItems: "center",
+                marginBottom: "24px"
+              }}>
+                <ShieldCheck size={32} weight="duotone" />
               </div>
-              <h3 style={{ font: "800 24px/1.3 'Manrope', sans-serif", color: "#1e1b4b", margin: "0 0 12px" }}>Round-the-Clock<br />Support</h3>
-              <p style={{ color: "#475569", fontSize: "15.5px", lineHeight: "1.6", margin: 0, maxWidth: "270px" }}>Help available anytime,<br />wherever you operate.</p>
+              <h3 style={{ font: "800 22px/1.3 'Manrope', sans-serif", color: "#1e1b4b", margin: "0 0 12px" }}>
+                Enterprise Security
+              </h3>
+              <p style={{ color: "#475569", fontSize: "15.5px", lineHeight: "1.6", margin: 0, maxWidth: "270px" }}>
+                Secure authentication, encrypted data, and role-based access to keep your events and attendees protected.
+              </p>
             </div>
 
+            {/* Card 2: Smart Registration */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "10px 32px", borderRight: "1.5px solid #f1f5f9" }}>
-              <div style={{ marginBottom: "24px", height: "110px", display: "grid", placeItems: "center" }}>
-                <img src="/landing/Rapid-Issue-Resolution.svg" alt="Rapid Issue Resolution" style={{ width: "110px", height: "110px", objectFit: "contain" }} />
+              <div style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                background: "rgba(109, 40, 217, 0.08)",
+                border: "1px solid rgba(109, 40, 217, 0.2)",
+                color: "#6d28d9",
+                display: "grid",
+                placeItems: "center",
+                marginBottom: "24px"
+              }}>
+                <IdentificationCard size={32} weight="duotone" />
               </div>
-              <h3 style={{ font: "800 24px/1.3 'Manrope', sans-serif", color: "#1e1b4b", margin: "0 0 12px" }}>Rapid Issue<br />Resolution</h3>
-              <p style={{ color: "#475569", fontSize: "15.5px", lineHeight: "1.6", margin: 0, maxWidth: "270px" }}>Problems addressed<br />within minutes.</p>
+              <h3 style={{ font: "800 22px/1.3 'Manrope', sans-serif", color: "#1e1b4b", margin: "0 0 12px" }}>
+                Smart Registration
+              </h3>
+              <p style={{ color: "#475569", fontSize: "15.5px", lineHeight: "1.6", margin: 0, maxWidth: "270px" }}>
+                Seamless registrations with custom forms, QR-based check-in, and real-time attendee management.
+              </p>
             </div>
 
+            {/* Card 3: Scalable Infrastructure */}
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", padding: "10px 32px" }}>
-              <div style={{ marginBottom: "24px", height: "110px", display: "grid", placeItems: "center" }}>
-                <img src="/landing/Proven-System-Reliability.svg" alt="Proven System Reliability" style={{ width: "110px", height: "110px", objectFit: "contain" }} />
+              <div style={{
+                width: "64px",
+                height: "64px",
+                borderRadius: "50%",
+                background: "rgba(109, 40, 217, 0.08)",
+                border: "1px solid rgba(109, 40, 217, 0.2)",
+                color: "#6d28d9",
+                display: "grid",
+                placeItems: "center",
+                marginBottom: "24px"
+              }}>
+                <Globe size={32} weight="duotone" />
               </div>
-              <h3 style={{ font: "800 24px/1.3 'Manrope', sans-serif", color: "#1e1b4b", margin: "0 0 12px" }}>Proven System<br />Reliability</h3>
-              <p style={{ color: "#475569", fontSize: "15.5px", lineHeight: "1.6", margin: 0, maxWidth: "270px" }}>Enterprise-grade consistency<br />you can depend on.</p>
+              <h3 style={{ font: "800 22px/1.3 'Manrope', sans-serif", color: "#1e1b4b", margin: "0 0 12px" }}>
+                Scalable Infrastructure
+              </h3>
+              <p style={{ color: "#475569", fontSize: "15.5px", lineHeight: "1.6", margin: 0, maxWidth: "270px" }}>
+                Built on a robust, scalable infrastructure to support conferences, expos, webinars, and hybrid events of any scale.
+              </p>
             </div>
 
           </div>

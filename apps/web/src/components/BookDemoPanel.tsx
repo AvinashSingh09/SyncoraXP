@@ -61,7 +61,11 @@ export function BookDemoPanel({ isOpen, onClose }: BookDemoPanelProps) {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    let { name, value } = e.target;
+    if (name === "phone" || e.target.type === "tel") {
+      value = value.replace(/[^\d\s\-\+]/g, "");
+    }
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
