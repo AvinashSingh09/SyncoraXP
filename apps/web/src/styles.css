@@ -3509,7 +3509,11 @@ textarea {
 .participants-panel {
   display: flex;
   flex-direction: column;
-  width: min(var(--meeting-side-panel-width), 340px);
+  align-items: stretch;
+  width: min(var(--meeting-side-panel-width), 100vw);
+  min-width: min(320px, 100vw);
+  min-height: 0;
+  box-sizing: border-box;
   background: var(--meeting-surface);
   border-left: 1px solid var(--meeting-border);
   height: 100%;
@@ -3521,7 +3525,10 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
+  min-height: 58px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--meeting-border);
 }
 
@@ -3545,8 +3552,13 @@ textarea {
 }
 
 .participants-close-btn {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
   background: transparent;
   border: none;
+  border-radius: 8px;
   color: var(--meeting-muted);
   font-size: 22px;
   line-height: 1;
@@ -3555,24 +3567,30 @@ textarea {
 
 .participants-close-btn:hover {
   color: #ffffff;
+  background: rgba(255, 255, 255, .08);
 }
 
 .participants-list {
   flex: 1;
+  width: 100%;
+  box-sizing: border-box;
   overflow-y: auto;
   list-style: none;
   margin: 0;
-  padding: 12px 16px;
+  min-height: 0;
+  padding: 12px;
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
 .participant-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: 11px;
+  min-width: 0;
+  padding: 10px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.03);
   transition: background 0.15s;
@@ -3595,29 +3613,51 @@ textarea {
 }
 
 .participant-info {
-  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   min-width: 0;
 }
 
 .participant-name {
-  display: block;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 13px;
   font-weight: 600;
   color: #f7f9fd;
-  white-space: nowrap;
+}
+
+.participant-name-text {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .participant-name .local-tag {
+  flex: 0 0 auto;
+  border-radius: 999px;
+  padding: 2px 6px;
+  color: #cbd5ff;
+  background: rgba(82, 100, 232, .2);
+  font-size: 9px;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.participant-role {
   color: var(--meeting-muted);
-  font-size: 11px;
+  font-size: 10px;
+  line-height: 1.2;
 }
 
 .participant-media-status {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex: 0 0 auto;
 }
 
 .status-icon {
@@ -3640,6 +3680,8 @@ textarea {
 }
 
 .participants-footer {
+  width: 100%;
+  box-sizing: border-box;
   padding: 14px 20px;
   border-top: 1px solid var(--meeting-border);
   color: var(--meeting-muted);
@@ -3649,6 +3691,28 @@ textarea {
 
 .participants-footer strong {
   color: #ffffff;
+}
+
+.participants-empty-state {
+  margin: auto 0;
+  padding: 28px 18px;
+  color: var(--meeting-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .participants-panel {
+    position: absolute;
+    z-index: 80;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(380px, 100%);
+    min-width: 0;
+    box-shadow: -18px 0 50px rgba(0, 0, 0, .38);
+  }
 }
 
 /* Landing page: cinematic enterprise event direction */

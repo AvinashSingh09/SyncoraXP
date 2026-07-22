@@ -134,6 +134,15 @@ export function CustomVideoConference({
   const visibleParticipants = participants.filter(
     (participant) => participant.attributes.role !== "translator" && participant.attributes.hidden !== "true",
   );
+  const orderedParticipants = React.useMemo(
+    () => [...visibleParticipants].sort((left, right) => {
+      if (left.isLocal !== right.isLocal) return left.isLocal ? -1 : 1;
+      const leftName = left.name?.trim() || left.identity;
+      const rightName = right.name?.trim() || right.identity;
+      return leftName.localeCompare(rightName, undefined, { sensitivity: "base" });
+    }),
+    [visibleParticipants],
+  );
 
   const lastAutoFocusedScreenShareTrack = React.useRef<TrackReferenceOrPlaceholder | null>(null);
 
@@ -417,22 +426,30 @@ export function CustomVideoConference({
             </button>
           </div>
           <ul className="participants-list">
-            {visibleParticipants.map((p) => {
+            {orderedParticipants.map((p) => {
               const isMicOn = p.isMicrophoneEnabled;
               const isCamOn = p.isCameraEnabled;
-              const initial = (p.name || p.identity || "?").charAt(0).toUpperCase();
+              const displayName = p.name?.trim() || p.identity || "Guest";
+              const initial = displayName.charAt(0).toUpperCase();
+              const participantRole = p.attributes.role === "host" ? "Host" : "Guest";
 
               return (
                 <li key={p.sid} className="participant-row">
-                  <div className="participant-avatar">{initial}</div>
+                  <div className="participant-avatar" aria-hidden="true">{initial}</div>
                   <div className="participant-info">
-                    <span className="participant-name">
-                      {p.name || p.identity}
-                      {p.isLocal && <small className="local-tag"> (You)</small>}
+                    <span className="participant-name" title={displayName}>
+                      <span className="participant-name-text">{displayName}</span>
+                      {p.isLocal && <small className="local-tag">You</small>}
                     </span>
+                    <small className="participant-role">{participantRole}</small>
                   </div>
-                  <div className="participant-media-status">
-                    <span className={`status-icon mic ${isMicOn ? "on" : "off"}`} title={isMicOn ? "Microphone On" : "Microphone Muted"}>
+                  <div className="participant-media-status" aria-label={`${displayName} media status`}>
+                    <span
+                      className={`status-icon mic ${isMicOn ? "on" : "off"}`}
+                      title={isMicOn ? "Microphone on" : "Microphone muted"}
+                      role="img"
+                      aria-label={isMicOn ? "Microphone on" : "Microphone muted"}
+                    >
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         {isMicOn ? (
                           <>
@@ -452,7 +469,12 @@ export function CustomVideoConference({
                         )}
                       </svg>
                     </span>
-                    <span className={`status-icon cam ${isCamOn ? "on" : "off"}`} title={isCamOn ? "Camera On" : "Camera Off"}>
+                    <span
+                      className={`status-icon cam ${isCamOn ? "on" : "off"}`}
+                      title={isCamOn ? "Camera on" : "Camera off"}
+                      role="img"
+                      aria-label={isCamOn ? "Camera on" : "Camera off"}
+                    >
                       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         {isCamOn ? (
                           <>
@@ -472,9 +494,12 @@ export function CustomVideoConference({
                 </li>
               );
             })}
+            {orderedParticipants.length === 0 && (
+              <li className="participants-empty-state">No participants are connected.</li>
+            )}
           </ul>
           <div className="participants-footer">
-            <span>Total Joined: <strong>{visibleParticipants.length}</strong></span>
+            <span><strong>{visibleParticipants.length}</strong> {visibleParticipants.length === 1 ? "person" : "people"} in this meeting</span>
           </div>
         </aside>
         {SettingsComponent && (
