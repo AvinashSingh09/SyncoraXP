@@ -15,6 +15,7 @@ export interface StoredMeeting {
   waitingRoomEnabled: boolean;
   allowGuestCamera: boolean;
   allowGuestMicrophone: boolean;
+  allowGuestScreenShare: boolean;
   createdAt: Date;
 }
 
@@ -73,6 +74,7 @@ export interface MeetingRepository {
       waitingRoomEnabled?: boolean;
       allowGuestCamera?: boolean;
       allowGuestMicrophone?: boolean;
+      allowGuestScreenShare?: boolean;
     },
   ): Promise<StoredMeeting | null>;
   endForHost(meetingId: string, userId: string): Promise<StoredMeeting | null>;

@@ -29,6 +29,7 @@ export class MemoryMeetingRepository implements MeetingRepository {
       waitingRoomEnabled: true,
       allowGuestCamera: true,
       allowGuestMicrophone: true,
+      allowGuestScreenShare: false,
       createdAt: new Date(),
     };
     this.meetings.set(meeting.joinCode, meeting);
@@ -72,6 +73,7 @@ export class MemoryMeetingRepository implements MeetingRepository {
       waitingRoomEnabled?: boolean;
       allowGuestCamera?: boolean;
       allowGuestMicrophone?: boolean;
+      allowGuestScreenShare?: boolean;
     },
   ): Promise<StoredMeeting | null> {
     const meeting = this.meetingsById.get(meetingId);
@@ -79,6 +81,9 @@ export class MemoryMeetingRepository implements MeetingRepository {
     if (settings.isLocked !== undefined) meeting.isLocked = settings.isLocked;
     if (settings.allowGuestCamera !== undefined) meeting.allowGuestCamera = settings.allowGuestCamera;
     if (settings.allowGuestMicrophone !== undefined) meeting.allowGuestMicrophone = settings.allowGuestMicrophone;
+    if (settings.allowGuestScreenShare !== undefined) {
+      meeting.allowGuestScreenShare = settings.allowGuestScreenShare;
+    }
     if (settings.waitingRoomEnabled !== undefined) {
       meeting.waitingRoomEnabled = settings.waitingRoomEnabled;
       if (!settings.waitingRoomEnabled) {

@@ -60,6 +60,7 @@ export function MeetingRoom({ meetingTitle, session, choices, meetingId, meeting
       waitingRoomEnabled: true,
       allowGuestCamera: true,
       allowGuestMicrophone: true,
+      allowGuestScreenShare: false,
     },
   );
   const [translationSettings, setTranslationSettings] = useState<MeetingTranslationSettings>(

@@ -127,6 +127,7 @@ export interface MeetingSettings {
   waitingRoomEnabled: boolean;
   allowGuestCamera: boolean;
   allowGuestMicrophone: boolean;
+  allowGuestScreenShare: boolean;
 }
 
 export const UpdateMeetingSettingsInputSchema = z.object({
@@ -134,6 +135,7 @@ export const UpdateMeetingSettingsInputSchema = z.object({
   waitingRoomEnabled: z.boolean().optional(),
   allowGuestCamera: z.boolean().optional(),
   allowGuestMicrophone: z.boolean().optional(),
+  allowGuestScreenShare: z.boolean().optional(),
 }).refine(
   (settings) => Object.values(settings).some((value) => value !== undefined),
   "Choose at least one setting to update",
