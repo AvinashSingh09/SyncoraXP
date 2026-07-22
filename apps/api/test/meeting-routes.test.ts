@@ -997,10 +997,12 @@ test("lets only the host configure and queue meeting interpretation", async (t) 
     method: "PATCH",
     url: `/api/meetings/${meetingId}/translation`,
     headers: { cookie: ownerCookie },
-    payload: { enabled: true },
+    payload: { enabled: true, provider: "gemini" },
   });
   assert.equal(reenabled.statusCode, 200);
   assert.equal(reenabled.json().settings.enabled, true);
+  assert.equal(reenabled.json().settings.provider, "gemini");
+  assert.equal(reenabled.json().settings.model, "gemini-3.5-live-translate-preview");
   assert.equal(reenabled.json().runtime.status, "queued");
   assert.notEqual(reenabled.json().runtime.runId, firstRunId);
 });

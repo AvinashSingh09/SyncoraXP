@@ -34,6 +34,14 @@ const capabilities = [
   { icon: ChartLineUp, title: "Measure what matters", text: "See the signals behind attendance, participation, and event outcomes." },
 ];
 
+const brandLogoFiles = [
+  "1.jfif", "2.jfif", "3.webp", "4.jfif", "5.png", "6.png", "7.png", "8.png",
+  "9.png", "10.png", "11.png", "12.png", "13.jpg", "14.png", "15.jfif", "16.avif", "16.jpg",
+  "17.png", "18.png", "19.jfif", "20.png", "21.avif", "22.png", "23.png", "24.png",
+  "25.svg", "26.png", "27.png", "28.png", "29.png", "30.png", "31.png", "32.png",
+  "33-removebg-preview.png", "35.png", "36.png", "37.jfif"
+];
+
 const COUNTRY_CODES = [
   { code: "IN", dial: "+91", flag: "🇮🇳" },
   { code: "US", dial: "+1", flag: "🇺🇸" },
@@ -341,85 +349,52 @@ export function VirtualEventsPage() {
         <Link className="virtual-events-join" to="/register">Create your event <CheckCircle size={19} weight="fill" /></Link>
       </section>
 
+      {/* ── B2B TRUST LOGOS SECTION (Clean White Background like Webinar Service) ── */}
+      <section className="webinar-lead-section" style={{ padding: "60px 0 70px", background: "#ffffff" }}>
+        <div className="webinar-lead-container">
+          <div className="brand-logos-wrapper">
+            <h3 className="brand-logos-title">
+              Trusted by the Biggest Names in B2B
+            </h3>
+
+            <div className="brand-marquee-track-outer">
+              <div className="brand-marquee-track">
+                <div className="brand-marquee-group">
+                  {brandLogoFiles.map((file, i) => (
+                    <img
+                      key={`ve-1-${i}`}
+                      src={`/brands/${file}`}
+                      alt={`Brand Logo ${i + 1}`}
+                      className="brand-normal-logo-img"
+                      loading="eager"
+                      height={52}
+                    />
+                  ))}
+                </div>
+                <div className="brand-marquee-group" aria-hidden="true">
+                  {brandLogoFiles.map((file, i) => (
+                    <img
+                      key={`ve-2-${i}`}
+                      src={`/brands/${file}`}
+                      alt={`Brand Logo ${i + 1}`}
+                      className="brand-normal-logo-img"
+                      loading="eager"
+                      height={52}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── DOT MATRIX BACKGROUND GRID ── */}
       <div style={{
         backgroundImage: "radial-gradient(rgba(255, 255, 255, 0.06) 1.5px, transparent 1.5px)",
         backgroundSize: "24px 24px",
         width: "100%",
       }}>
-        {/* ── B2B TRUST LOGOS SECTION ── */}
-        <section style={{
-        padding: "48px 0",
-        background: "rgba(255, 255, 255, 0.02)",
-        borderTop: "1px solid rgba(255, 255, 255, 0.05)",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.05)",
-        textAlign: "center",
-        width: "100%",
-        boxSizing: "border-box",
-        overflow: "hidden",
-      }}>
-        <style>{`
-          @keyframes ve-marquee {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-          }
-        `}</style>
-        <p style={{
-          fontSize: "11px",
-          fontWeight: 800,
-          color: "rgba(255, 255, 255, 0.4)",
-          textTransform: "uppercase",
-          letterSpacing: "2.5px",
-          marginBottom: "32px",
-        }}>
-          Trusted by the Biggest Names in B2B
-        </p>
-
-        <div style={{
-          overflow: "hidden",
-          width: "100%",
-          display: "flex",
-          position: "relative",
-          maskImage: "linear-gradient(to right, transparent, white 20%, white 80%, transparent)",
-          WebkitMaskImage: "linear-gradient(to right, transparent, white 20%, white 80%, transparent)",
-        }}>
-          <div style={{
-            display: "flex",
-            gap: "80px",
-            alignItems: "center",
-            width: "max-content",
-            animation: "ve-marquee 30s linear infinite",
-            paddingRight: "80px",
-          }}>
-            {brandLogos.map((brand, i) => (
-              <span
-                key={`1-${i}`}
-                style={{
-                  color: "#ffffff",
-                  fontSize: "16px",
-                  whiteSpace: "nowrap",
-                  ...brand.style,
-                }}
-              >
-                {brand.name}
-              </span>
-            ))}
-            {brandLogos.map((brand, i) => (
-              <span
-                key={`2-${i}`}
-                style={{
-                  color: "#ffffff",
-                  fontSize: "16px",
-                  whiteSpace: "nowrap",
-                  ...brand.style,
-                }}
-              >
-                {brand.name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── CONTACT/DEMO FORM CARD ── */}
       <section ref={formRef} style={{

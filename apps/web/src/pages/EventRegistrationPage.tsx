@@ -310,59 +310,59 @@ export function EventRegistrationPage() {
         </div>
       </section>
 
-      {/* ── B2B TRUST LOGOS SECTION (Clean White Background) ── */}
-      <div style={{
-        background: "#ffffff",
-        width: "100%",
-        borderTop: "1px solid rgba(109, 40, 217, 0.05)",
-      }}>
-        <section style={{
-          padding: "54px 0",
-          background: "#ffffff",
-          borderBottom: "1px solid rgba(109, 40, 217, 0.05)",
-          textAlign: "center",
-          width: "100%",
-          boxSizing: "border-box",
-          overflow: "hidden",
-        }}>
-          <div className="brand-logos-wrapper">
-            <h3 className="brand-logos-title">
-              Trusted by the Biggest Names in B2B
-            </h3>
-
-            <div className="brand-marquee-track-outer">
-              <div className="brand-marquee-track">
-                {brandLogoFiles.map((file, i) => (
-                  <img
-                    key={`1-${i}`}
-                    src={`/brands/${file}`}
-                    alt={`Brand Logo ${i + 1}`}
-                    className="brand-normal-logo-img"
-                    loading="lazy"
-                  />
-                ))}
-                {brandLogoFiles.map((file, i) => (
-                  <img
-                    key={`2-${i}`}
-                    src={`/brands/${file}`}
-                    alt={`Brand Logo ${i + 1}`}
-                    className="brand-normal-logo-img"
-                    loading="lazy"
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      {/* ── WHITE DOT MATRIX BACKGROUND SECTION (Starts Below Logos) ── */}
+      {/* ── WHITE DOT MATRIX BACKGROUND SECTION (Includes Logos & Form) ── */}
       <div style={{
         background: "#faf9ff",
         backgroundImage: "radial-gradient(rgba(109, 40, 217, 0.08) 1.5px, transparent 1.5px)",
         backgroundSize: "24px 24px",
         width: "100%",
       }}>
+        {/* ── B2B TRUST LOGOS SECTION ── */}
+        <section style={{
+          padding: "60px 0 20px",
+          textAlign: "center",
+          width: "100%",
+          boxSizing: "border-box",
+          overflow: "hidden",
+        }}>
+          <div className="webinar-lead-container">
+            <div className="brand-logos-wrapper">
+              <h3 className="brand-logos-title">
+                Trusted by the Biggest Names in B2B
+              </h3>
+
+              <div className="brand-marquee-track-outer">
+                <div className="brand-marquee-track">
+                  <div className="brand-marquee-group">
+                    {brandLogoFiles.map((file, i) => (
+                      <img
+                        key={`1-${i}`}
+                        src={`/brands/${file}`}
+                        alt={`Brand Logo ${i + 1}`}
+                        className="brand-normal-logo-img"
+                        loading="eager"
+                        height={52}
+                      />
+                    ))}
+                  </div>
+                  <div className="brand-marquee-group" aria-hidden="true">
+                    {brandLogoFiles.map((file, i) => (
+                      <img
+                        key={`2-${i}`}
+                        src={`/brands/${file}`}
+                        alt={`Brand Logo ${i + 1}`}
+                        className="brand-normal-logo-img"
+                        loading="eager"
+                        height={52}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── CONTACT/DEMO FORM CARD ── */}
         <section ref={formRef} style={{
           padding: "80px 24px 140px",

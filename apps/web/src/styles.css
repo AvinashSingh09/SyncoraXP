@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Caveat:wght@600;700&display=swap");
 
 :root {
   font-family: "DM Sans", system-ui, sans-serif;
@@ -1697,6 +1697,62 @@ textarea {
   margin-top: 8px;
 }
 
+.host-tools-advanced > summary {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--meeting-border);
+  color: var(--meeting-text);
+  cursor: pointer;
+  list-style: none;
+}
+
+.host-tools-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+.host-tools-advanced > summary strong,
+.host-tools-advanced > summary small {
+  display: block;
+}
+
+.host-tools-advanced > summary strong {
+  font-size: 13px;
+}
+
+.host-tools-advanced > summary small {
+  margin-top: 3px;
+  color: var(--meeting-muted);
+  font-size: 10px;
+}
+
+.host-tools-advanced > summary:hover,
+.host-tools-advanced > summary:focus-visible {
+  color: #fff;
+}
+
+.host-tools-advanced > summary:focus-visible {
+  border-radius: 6px;
+  outline: 2px solid #aab4ff;
+  outline-offset: 2px;
+}
+
+.host-tools-advanced-caret {
+  flex: 0 0 auto;
+  color: var(--meeting-muted);
+  transition: transform .18s ease;
+}
+
+.host-tools-advanced[open] .host-tools-advanced-caret {
+  transform: rotate(180deg);
+}
+
+.host-tools-advanced-content {
+  display: grid;
+}
+
 .host-tool-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -3346,73 +3402,6 @@ textarea {
 .host-tools-toggle-button>span {
   font-size: 11px;
   line-height: 1;
-}
-
-.translation-provider-setting {
-  padding: 15px 0 17px;
-  border-bottom: 1px solid var(--meeting-border);
-}
-
-.translation-provider-heading strong,
-.translation-provider-heading small {
-  display: block;
-}
-
-.translation-provider-heading strong {
-  font-size: 12px;
-}
-
-.translation-provider-heading small {
-  margin-top: 3px;
-  color: var(--meeting-muted);
-  font-size: 10px;
-  line-height: 1.35;
-}
-
-.translation-provider-options {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 11px;
-}
-
-.translation-provider-options button {
-  min-width: 0;
-  padding: 10px;
-  border: 1px solid var(--meeting-border);
-  border-radius: 10px;
-  color: var(--meeting-text);
-  text-align: left;
-  background: rgba(255, 255, 255, .035);
-}
-
-.translation-provider-options button:hover:not(:disabled),
-.translation-provider-options button.selected {
-  border-color: rgba(111, 126, 255, .7);
-  background: rgba(82, 100, 232, .18);
-}
-
-.translation-provider-options button:disabled {
-  cursor: not-allowed;
-  opacity: .58;
-}
-
-.translation-provider-options button strong,
-.translation-provider-options button small {
-  display: block;
-}
-
-.translation-provider-options button strong {
-  font-size: 11px;
-}
-
-.translation-provider-options button small {
-  margin-top: 3px;
-  overflow: hidden;
-  color: var(--meeting-muted);
-  font-size: 9px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .interpretation-control {
@@ -6440,7 +6429,7 @@ textarea {
 .webinar-lead-section {
   width: 100%;
   background: #ffffff;
-  padding: 80px 0 100px;
+  padding: 60px 0 80px;
   color: #0f172a;
   font-family: "Manrope", "DM Sans", sans-serif;
   box-sizing: border-box;
@@ -6479,43 +6468,57 @@ textarea {
   width: 100%;
   display: flex;
   position: relative;
-  mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
-  padding: 16px 0;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  padding: 20px 0;
+  contain: layout paint;
 }
 
 .brand-marquee-track {
   display: flex;
-  gap: 72px;
-  align-items: center;
   width: max-content;
-  animation: brandMarquee 42s linear infinite;
+  animation: brandMarquee 75s linear infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .brand-marquee-track:hover {
   animation-play-state: paused;
 }
 
-.brand-normal-logo-img {
-  height: 64px;
-  max-height: 72px;
-  width: auto;
-  max-width: 220px;
-  object-fit: contain;
-  opacity: 0.92;
-  filter: contrast(1.05);
-  transition: all 0.2s ease;
+.brand-marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 72px;
+  padding-right: 72px;
   flex-shrink: 0;
+}
+
+.brand-normal-logo-img {
+  height: 52px;
+  max-height: 52px;
+  width: auto;
+  max-width: 185px;
+  object-fit: contain;
+  opacity: 0.88;
+  filter: contrast(1.05);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+  flex-shrink: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .brand-normal-logo-img:hover {
   opacity: 1;
-  transform: scale(1.08);
+  transform: scale(1.08) translateZ(0);
 }
 
 @keyframes brandMarquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
 /* Purple Contact Lead Form Card */
@@ -7968,7 +7971,6 @@ textarea {
 /* ==========================================================================
    OUR PRESENCE SECTION (DELHI, MUMBAI, DUBAI) - PREMIUM CARD ART
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
 
 .presence-section {
   position: relative;
