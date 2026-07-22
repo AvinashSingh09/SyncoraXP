@@ -372,22 +372,7 @@ export function EventRegistrationPage() {
           alignItems: "center",
           boxSizing: "border-box",
         }}>
-          <div style={{
-            width: "100%",
-            maxWidth: "1100px",
-            background: "#080c3e",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-            borderRadius: "24px",
-            padding: "54px 48px",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "48px",
-            alignItems: "center",
-            boxShadow: "0 24px 60px rgba(0, 0, 0, 0.25)",
-            boxSizing: "border-box",
-            position: "relative",
-            overflow: "hidden",
-          }}>
+          <div className="webinar-form-card">
             {/* Watermark Backdrop Favicon Logo */}
             <div style={{
               position: "absolute",
@@ -405,23 +390,11 @@ export function EventRegistrationPage() {
             }} />
 
             {/* Left Column Info */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "20px", textAlign: "left", zIndex: 2 }}>
-              <h2 style={{
-                fontSize: "clamp(30px, 4vw, 44px)",
-                fontWeight: 850,
-                color: "#ffffff",
-                margin: 0,
-                lineHeight: 1.15,
-                letterSpacing: "-0.02em",
-              }}>
+            <div className="form-card-left" style={{ zIndex: 2 }}>
+              <h2 className="form-headline">
                 Let's Get<br />Your Event Going!
               </h2>
-              <p style={{
-                fontSize: "16px",
-                color: "rgba(255, 255, 255, 0.8)",
-                margin: 0,
-                fontWeight: 500,
-              }}>
+              <p className="form-subheadline">
                 Connect With Us Today!
               </p>
 
@@ -441,7 +414,7 @@ export function EventRegistrationPage() {
             </div>
 
             {/* Right Column Form */}
-            <div style={{ width: "100%", zIndex: 2 }}>
+            <div className="form-card-right" style={{ zIndex: 2 }}>
               {submitted ? (
                 <div style={{
                   display: "flex",
@@ -476,7 +449,7 @@ export function EventRegistrationPage() {
                   </p>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+                <form onSubmit={handleSubmit} className="webinar-contact-form" noValidate>
                   {submitError && (
                     <div style={{
                       background: "rgba(239, 68, 68, 0.2)",
@@ -492,169 +465,173 @@ export function EventRegistrationPage() {
                     </div>
                   )}
 
-                  {/* Full Name */}
-                  <div>
-                    <input
-                      name="fullName"
-                      value={form.fullName}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      maxLength={60}
-                      placeholder="Full Name* (Max 60 chars)"
-                      style={inputStyle("fullName")}
-                    />
-                    {renderError("fullName")}
-                  </div>
-
-                  {/* Work Email */}
-                  <div>
-                    <input
-                      name="workEmail"
-                      type="email"
-                      value={form.workEmail}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Your Work Email*"
-                      style={inputStyle("workEmail")}
-                    />
-                    {renderError("workEmail")}
-                  </div>
-
-                  {/* Phone */}
-                  <div>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <div style={{ position: "relative", flexShrink: 0 }}>
-                        <select
-                          name="countryCode"
-                          value={form.countryCode}
-                          onChange={handleChange}
-                          style={{
-                            height: "100%",
-                            padding: "0 28px 0 12px",
-                            borderRadius: "10px",
-                            fontSize: "13.5px",
-                            color: "#1e1b4b",
-                            background: "#ffffff",
-                            border: "1.5px solid rgba(109, 40, 217, 0.15)",
-                            outline: "none",
-                            cursor: "pointer",
-                            appearance: "none",
-                            backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                            backgroundRepeat: "no-repeat",
-                            backgroundPosition: "right 10px center",
-                            backgroundSize: "14px",
-                          }}
-                        >
-                          {COUNTRY_CODES.map((c) => (
-                            <option key={c.code} value={c.dial}>
-                              {c.code} {c.dial}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+                  {/* Form Row 1 */}
+                  <div className="form-row two-cols">
+                    {/* Full Name */}
+                    <div className="form-field">
                       <input
-                        name="phone"
-                        type="tel"
-                        value={form.phone}
+                        name="fullName"
+                        value={form.fullName}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        placeholder="Phone No.*"
-                        style={inputStyle("phone")}
+                        maxLength={60}
+                        placeholder="Full Name* (Max 60 chars)"
+                      />
+                      {renderError("fullName")}
+                    </div>
+
+                    {/* Work Email */}
+                    <div className="form-field">
+                      <input
+                        name="workEmail"
+                        type="email"
+                        value={form.workEmail}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Your Work Email*"
+                      />
+                      {renderError("workEmail")}
+                    </div>
+
+                    {/* Phone */}
+                    <div className="form-field">
+                      <div className="phone-combo-field">
+                        <div style={{ position: "relative", flexShrink: 0 }}>
+                          <select
+                            name="countryCode"
+                            value={form.countryCode}
+                            onChange={handleChange}
+                            style={{
+                              height: "100%",
+                              padding: "0 28px 0 12px",
+                              borderRadius: "14px",
+                              fontSize: "15px",
+                              color: "#0f172a",
+                              background: "#ffffff",
+                              border: "none",
+                              outline: "none",
+                              cursor: "pointer",
+                              appearance: "none",
+                              backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                              backgroundRepeat: "no-repeat",
+                              backgroundPosition: "right 10px center",
+                              backgroundSize: "14px",
+                            }}
+                          >
+                            {COUNTRY_CODES.map((c) => (
+                              <option key={c.code} value={c.dial}>
+                                {c.code} {c.dial}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <input
+                          name="phone"
+                          type="tel"
+                          value={form.phone}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="Phone No.*"
+                          style={{ border: "none", paddingLeft: "10px" }}
+                        />
+                      </div>
+                      {renderError("phone")}
+                    </div>
+                  </div>
+
+                  {/* Form Row 2 */}
+                  <div className="form-row three-cols">
+                    {/* City */}
+                    <div className="form-field">
+                      <input
+                        name="city"
+                        value={form.city}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        maxLength={60}
+                        placeholder="City* (Max 60 chars)"
+                      />
+                      {renderError("city")}
+                    </div>
+
+                    {/* Company */}
+                    <div className="form-field">
+                      <input
+                        name="company"
+                        value={form.company}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        maxLength={60}
+                        placeholder="Company* (Max 60 chars)"
+                      />
+                      {renderError("company")}
+                    </div>
+
+                    {/* Category */}
+                    <div className="form-field">
+                      <select
+                        name="category"
+                        value={form.category}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        style={{
+                          appearance: "none",
+                          backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "right 16px center",
+                          backgroundSize: "16px",
+                        }}
+                      >
+                        <option value="" disabled>Category of Business*</option>
+                        {CATEGORIES.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                      {renderError("category")}
+                    </div>
+                  </div>
+
+                  {/* Form Row 3 */}
+                  <div className="form-row single-col">
+                    {/* Message */}
+                    <div className="form-field">
+                      <textarea
+                        name="message"
+                        value={form.message}
+                        onChange={handleChange}
+                        maxLength={2000}
+                        placeholder="Message (Max 2000 chars)"
+                        rows={3}
+                        style={{
+                          height: "100px",
+                          resize: "none",
+                        }}
                       />
                     </div>
-                    {renderError("phone")}
                   </div>
 
-                  {/* City */}
-                  <div>
-                    <input
-                      name="city"
-                      value={form.city}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      maxLength={60}
-                      placeholder="City* (Max 60 chars)"
-                      style={inputStyle("city")}
-                    />
-                    {renderError("city")}
-                  </div>
-
-                  {/* Company */}
-                  <div>
-                    <input
-                      name="company"
-                      value={form.company}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      maxLength={60}
-                      placeholder="Company* (Max 60 chars)"
-                      style={inputStyle("company")}
-                    />
-                    {renderError("company")}
-                  </div>
-
-                  {/* Category */}
-                  <div>
-                    <select
-                      name="category"
-                      value={form.category}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
+                  {/* Form Row 4: Submit Button */}
+                  <div className="form-row button-row">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="form-submit-btn"
                       style={{
-                        ...inputStyle("category"),
-                        appearance: "none",
-                        backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236d28d9' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "right 16px center",
-                        backgroundSize: "16px",
+                        background: loading ? "rgba(255, 255, 255, 0.5)" : "#ffffff",
+                        color: "#6d28d9",
+                        border: "none",
+                        borderRadius: "10px",
+                        padding: "14px 20px",
+                        fontWeight: 800,
+                        fontSize: "14.5px",
+                        cursor: loading ? "not-allowed" : "pointer",
                       }}
                     >
-                      <option value="" disabled>Category of Business*</option>
-                      {CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                    </select>
-                    {renderError("category")}
+                      {loading ? "Submitting..." : "Submit"}
+                    </button>
                   </div>
-
-                  {/* Message */}
-                  <div>
-                    <textarea
-                      name="message"
-                      value={form.message}
-                      onChange={handleChange}
-                      maxLength={2000}
-                      placeholder="Message (Max 2000 chars)"
-                      style={{
-                        ...inputStyle("message"),
-                        height: "100px",
-                        resize: "none",
-                      }}
-                    />
-                  </div>
-
-                  {/* Submit Button */}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    style={{
-                      background: loading ? "rgba(255, 255, 255, 0.5)" : "#ffffff",
-                      color: "#6d28d9",
-                      border: "none",
-                      borderRadius: "10px",
-                      padding: "14px 20px",
-                      fontWeight: 800,
-                      fontSize: "14.5px",
-                      cursor: loading ? "not-allowed" : "pointer",
-                      transition: "all 0.2s ease",
-                      marginTop: "6px",
-                      boxShadow: loading ? "none" : "0 4px 14px rgba(0, 0, 0, 0.2)",
-                    }}
-                  >
-                    {loading ? "Submitting…" : "Submit"}
-                  </button>
                 </form>
               )}
             </div>

@@ -27,6 +27,7 @@ import {
   CookingPot
 } from "@phosphor-icons/react";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { Footer } from "../components/Footer";
 
 const AWARDS = [
   {
@@ -287,6 +288,7 @@ export function AboutPage() {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }
