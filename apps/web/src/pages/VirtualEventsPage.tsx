@@ -172,7 +172,10 @@ export function VirtualEventsPage() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === "phone" || e.target.type === "tel") {
+      value = value.replace(/[^\d\s\-\+]/g, "");
+    }
     setForm((p) => {
       const nextForm = { ...p, [name]: value };
       if (name === "countryCode" && touched["phone"]) {

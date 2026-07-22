@@ -27,6 +27,7 @@ import {
   CookingPot
 } from "@phosphor-icons/react";
 import { MarketingHeader } from "../components/MarketingHeader";
+import { Footer } from "../components/Footer";
 
 const AWARDS = [
   {
@@ -38,8 +39,8 @@ const AWARDS = [
     id: "creative-engine",
     title: "Creative Engine Expo Awards 2025",
     image: "/images/awards/creative_engine_expo_2025.jpg",
-    objectFit: "contain" as const,
-    objectPosition: "center"
+    objectFit: "cover" as const,
+    objectPosition: "top center"
   },
   {
     id: "communicon",
@@ -287,6 +288,7 @@ export function AboutPage() {
           </div>
         </div>
       </section>
+      <Footer />
     </div>
   );
 }
