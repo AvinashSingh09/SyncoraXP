@@ -14,8 +14,14 @@ interface ManagedLanguage {
   session: TranslationSession | null;
   status: TranslationLanguageStatus;
   idleTimer: ReturnType<typeof setTimeout> | null;
+  retryTimer: ReturnType<typeof setTimeout> | null;
+  stopPromise: Promise<void> | null;
+  retryAttempt: number;
   generation: number;
 }
+
+const RETRY_BASE_MS = 1_000;
+const RETRY_MAX_MS = 10_000;
 
 export interface LanguageSessionManagerHooks {
   onStatus(
@@ -26,7 +32,7 @@ export interface LanguageSessionManagerHooks {
   ): void;
   onAudio(language: TranslationLanguageCode, pcm16: Int16Array): void;
   onTranscript(language: TranslationLanguageCode, delta: TranslationTranscriptDelta): void;
-  onClosed(language: TranslationLanguageCode): void;
+  onClosed(language: TranslationLanguageCode): void | Promise<void>;
 }
 
 export class LanguageSessionManager {
@@ -46,6 +52,9 @@ export class LanguageSessionManager {
         session: null,
         status: "idle",
         idleTimer: null,
+        retryTimer: null,
+        stopPromise: null,
+        retryAttempt: 0,
         generation: 0,
       });
     }
@@ -54,10 +63,10 @@ export class LanguageSessionManager {
   async setPreference(participantIdentity: string, preference: TranslationPreference): Promise<void> {
     if (this.closed) return;
     const previous = this.preferences.get(participantIdentity) ?? "original";
-    if (previous === preference) return;
-
-    if (previous !== "original") this.removeListener(previous, participantIdentity);
-    this.preferences.set(participantIdentity, preference);
+    if (previous !== preference) {
+      if (previous !== "original") this.removeListener(previous, participantIdentity);
+      this.preferences.set(participantIdentity, preference);
+    }
     if (preference === "original") return;
 
     const managed = this.languages.get(preference);
@@ -67,7 +76,13 @@ export class LanguageSessionManager {
       clearTimeout(managed.idleTimer);
       managed.idleTimer = null;
     }
+    if (managed.retryTimer) {
+      clearTimeout(managed.retryTimer);
+      managed.retryTimer = null;
+    }
     this.emitStatus(preference, managed);
+    await managed.stopPromise;
+    if (this.closed || !managed.listeners.has(participantIdentity)) return;
     if (!managed.session) await this.start(preference, managed);
   }
 
@@ -98,6 +113,8 @@ export class LanguageSessionManager {
       Array.from(this.languages.entries()).map(async ([language, managed]) => {
         if (managed.idleTimer) clearTimeout(managed.idleTimer);
         managed.idleTimer = null;
+        if (managed.retryTimer) clearTimeout(managed.retryTimer);
+        managed.retryTimer = null;
         await this.stop(language, managed);
       }),
     );
@@ -119,18 +136,11 @@ export class LanguageSessionManager {
           if (managed.generation === generation) this.hooks.onTranscript(language, delta);
         },
         onError: (error) => {
-          if (managed.generation !== generation) return;
-          managed.status = "unavailable";
-          this.emitStatus(language, managed, error.name || "provider_error");
+          this.handleSessionFailure(language, managed, generation, session, error);
         },
       });
     } catch (error) {
-      managed.status = "unavailable";
-      this.emitStatus(
-        language,
-        managed,
-        error instanceof Error ? error.name || "provider_configuration_error" : "provider_configuration_error",
-      );
+      await this.handleStartFailure(language, managed, error);
       return;
     }
     managed.session = session;
@@ -141,16 +151,11 @@ export class LanguageSessionManager {
         return;
       }
       managed.status = "live";
+      managed.retryAttempt = 0;
       this.emitStatus(language, managed);
     } catch (error) {
-      managed.session = null;
-      managed.status = "unavailable";
-      this.emitStatus(
-        language,
-        managed,
-        error instanceof Error ? error.name || "provider_start_failed" : "provider_start_failed",
-      );
-      await session.close().catch(() => undefined);
+      this.handleSessionFailure(language, managed, generation, session, error);
+      await managed.stopPromise;
     }
   }
 
@@ -167,9 +172,15 @@ export class LanguageSessionManager {
   }
 
   private async stop(language: TranslationLanguageCode, managed: ManagedLanguage): Promise<void> {
+    if (managed.retryTimer) {
+      clearTimeout(managed.retryTimer);
+      managed.retryTimer = null;
+    }
+    await managed.stopPromise;
     const session = managed.session;
     if (!session) {
       managed.status = "idle";
+      await this.closePublishedLanguage(language);
       this.emitStatus(language, managed);
       return;
     }
@@ -177,10 +188,85 @@ export class LanguageSessionManager {
     this.emitStatus(language, managed);
     managed.session = null;
     managed.generation += 1;
-    await session.close().catch(() => undefined);
+    const stopPromise = (async () => {
+      await session.close().catch(() => undefined);
+      await this.closePublishedLanguage(language);
+    })();
+    managed.stopPromise = stopPromise;
+    await stopPromise;
+    if (managed.stopPromise === stopPromise) managed.stopPromise = null;
     managed.status = "idle";
-    this.hooks.onClosed(language);
     this.emitStatus(language, managed);
+  }
+
+  private async handleStartFailure(
+    language: TranslationLanguageCode,
+    managed: ManagedLanguage,
+    error: unknown,
+  ): Promise<void> {
+    const errorCode =
+      error instanceof Error
+        ? error.name || "provider_configuration_error"
+        : "provider_configuration_error";
+    managed.status = this.isPermanentError(error) ? "unavailable" : "reconnecting";
+    this.emitStatus(language, managed, errorCode);
+    await this.closePublishedLanguage(language);
+    if (managed.status === "reconnecting") this.scheduleRestart(language, managed);
+  }
+
+  private handleSessionFailure(
+    language: TranslationLanguageCode,
+    managed: ManagedLanguage,
+    generation: number,
+    session: TranslationSession,
+    error: unknown,
+  ): void {
+    if (managed.generation !== generation || managed.session !== session) return;
+    const permanent = this.isPermanentError(error);
+    const errorCode = error instanceof Error ? error.name || "provider_error" : "provider_error";
+    managed.generation += 1;
+    managed.session = null;
+    managed.status = permanent ? "unavailable" : "reconnecting";
+    this.emitStatus(language, managed, errorCode);
+
+    const stopPromise = (async () => {
+      await session.close().catch(() => undefined);
+      await this.closePublishedLanguage(language);
+    })();
+    managed.stopPromise = stopPromise;
+    void stopPromise.then(() => {
+      if (managed.stopPromise === stopPromise) managed.stopPromise = null;
+      if (this.closed || managed.listeners.size === 0) {
+        managed.status = "idle";
+        this.emitStatus(language, managed);
+        return;
+      }
+      if (!permanent) this.scheduleRestart(language, managed);
+    });
+  }
+
+  private scheduleRestart(language: TranslationLanguageCode, managed: ManagedLanguage): void {
+    if (this.closed || managed.listeners.size === 0 || managed.retryTimer) return;
+    managed.status = "reconnecting";
+    this.emitStatus(language, managed);
+    const retryDelay = Math.min(
+      RETRY_BASE_MS * 2 ** Math.min(managed.retryAttempt, 4),
+      RETRY_MAX_MS,
+    );
+    managed.retryAttempt += 1;
+    managed.retryTimer = setTimeout(() => {
+      managed.retryTimer = null;
+      if (this.closed || managed.listeners.size === 0 || managed.session) return;
+      void this.start(language, managed);
+    }, retryDelay);
+  }
+
+  private isPermanentError(error: unknown): boolean {
+    return error instanceof Error && error.name === "provider_not_configured";
+  }
+
+  private async closePublishedLanguage(language: TranslationLanguageCode): Promise<void> {
+    await Promise.resolve(this.hooks.onClosed(language)).catch(() => undefined);
   }
 
   private emitStatus(

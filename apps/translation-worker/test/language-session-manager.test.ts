@@ -117,3 +117,114 @@ test("marks a language unavailable when its provider is not configured", async (
   });
   await manager.close();
 });
+
+test("waits for an old session to close before starting a replacement", async () => {
+  let created = 0;
+  let releaseFirstClose!: () => void;
+  let notifyFirstCloseStarted!: () => void;
+  let releaseFirstTrackClose!: () => void;
+  let notifyFirstTrackCloseStarted!: () => void;
+  const firstCloseStarted = new Promise<void>((resolve) => {
+    notifyFirstCloseStarted = resolve;
+  });
+  const firstCloseReleased = new Promise<void>((resolve) => {
+    releaseFirstClose = resolve;
+  });
+  const firstTrackCloseStarted = new Promise<void>((resolve) => {
+    notifyFirstTrackCloseStarted = resolve;
+  });
+  const firstTrackCloseReleased = new Promise<void>((resolve) => {
+    releaseFirstTrackClose = resolve;
+  });
+  const factory: TranslationSessionFactory = (language) => {
+    created += 1;
+    const instance = created;
+    return {
+      language,
+      async open() {},
+      appendAudio() {},
+      async close() {
+        if (instance === 1) {
+          notifyFirstCloseStarted();
+          await firstCloseReleased;
+        }
+      },
+    };
+  };
+  const manager = new LanguageSessionManager(
+    ["hi"],
+    factory,
+    {
+      onStatus() {},
+      onAudio() {},
+      onTranscript() {},
+      async onClosed() {
+        if (created === 1) {
+          notifyFirstTrackCloseStarted();
+          await firstTrackCloseReleased;
+        }
+      },
+    },
+    0,
+  );
+
+  await manager.setPreference("guest", "hi");
+  await manager.setPreference("guest", "original");
+  await firstCloseStarted;
+
+  const replacement = manager.setPreference("guest", "hi");
+  await wait(5);
+  assert.equal(created, 1, "a replacement must not overlap the closing session");
+
+  releaseFirstClose();
+  await firstTrackCloseStarted;
+  await wait(5);
+  assert.equal(created, 1, "a replacement must wait for the old LiveKit track to unpublish");
+  releaseFirstTrackClose();
+  await replacement;
+  assert.equal(created, 2);
+  assert.deepEqual(manager.getStatus("hi"), { status: "live", listenerCount: 1 });
+  await manager.close();
+});
+
+test("reselecting a language recovers a provider session that disconnected", async () => {
+  let created = 0;
+  let failFirstSession!: (error: Error) => void;
+  let releaseFirstClose!: () => void;
+  const firstCloseReleased = new Promise<void>((resolve) => {
+    releaseFirstClose = resolve;
+  });
+  const factory: TranslationSessionFactory = (language, handlers) => {
+    created += 1;
+    const instance = created;
+    if (instance === 1) failFirstSession = handlers.onError;
+    return {
+      language,
+      async open() {},
+      appendAudio() {},
+      async close() {
+        if (instance === 1) await firstCloseReleased;
+      },
+    };
+  };
+  const manager = new LanguageSessionManager(
+    ["ta"],
+    factory,
+    { onStatus() {}, onAudio() {}, onTranscript() {}, onClosed() {} },
+    0,
+  );
+
+  await manager.setPreference("guest", "ta");
+  failFirstSession(new Error("provider connection dropped"));
+  assert.deepEqual(manager.getStatus("ta"), { status: "reconnecting", listenerCount: 1 });
+
+  const recovered = manager.setPreference("guest", "ta");
+  await wait(5);
+  assert.equal(created, 1);
+  releaseFirstClose();
+  await recovered;
+
+  assert.equal(created, 2);
+  assert.deepEqual(manager.getStatus("ta"), { status: "live", listenerCount: 1 });
+  await manager.close();
+});
