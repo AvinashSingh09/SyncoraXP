@@ -40,6 +40,7 @@ export function App() {
             <Route path="/register" element={<AuthPage mode="register" />} />
             <Route path="/virtual-events-platform" element={<VirtualEventsPage />} />
             <Route path="/book-demo" element={<BookDemoPage />} />
+            <Route path="/contact" element={<Navigate to="/book-demo" replace />} />
             <Route path="/virtual-events-platform/book-demo" element={<Navigate to="/book-demo" replace />} />
             <Route path="/virtual-events-platform/app/*" element={<VirtualEventsApp />} />
             <Route path="/webinar-service" element={<WebinarServiceRoute />} />

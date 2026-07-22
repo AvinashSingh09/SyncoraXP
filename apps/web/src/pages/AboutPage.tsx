@@ -17,109 +17,82 @@ import {
   Smiley,
   Globe,
   ArrowRight,
-  ArrowUpRight
+  ArrowUpRight,
+  Buildings,
+  MapPinLine,
+  ShoppingBag,
+  Diamond,
+  FilmStrip,
+  Waves,
+  CookingPot
 } from "@phosphor-icons/react";
 import { MarketingHeader } from "../components/MarketingHeader";
 
-const MILESTONES = [
+const AWARDS = [
   {
-    year: "2012",
-    title: "The Beginning",
-    desc: "Started in 2012 with Ashutosh and Ankit Pandey with a vision to transform the event industry through technology and innovation.",
-    icon: FlagBanner,
-    colorClass: "pink",
-    image: "/images/about/founders.png"
+    id: "brand-storyz",
+    title: "afaqs! Brand Storyz Awards 2025",
+    image: "/images/awards/brand_storyz_2025.jpg"
   },
   {
-    year: "2014",
-    title: "Building Foundations",
-    desc: "Invested in research and development to build robust event tech solutions tailored for the Indian market.",
-    icon: BookOpenText,
-    colorClass: "orange",
-    image: "/images/about/foundations.png"
+    id: "creative-engine",
+    title: "Creative Engine Expo Awards 2025",
+    image: "/images/awards/creative_engine_expo_2025.jpg",
+    objectFit: "contain" as const,
+    objectPosition: "center"
   },
   {
-    year: "2016",
-    title: "Going Live",
-    desc: "Launched our live streaming platform and powered 1000+ events across India successfully.",
-    icon: Broadcast,
-    colorClass: "cyan",
-    image: "/images/about/going_live.png"
+    id: "communicon",
+    title: "afaqs! Communicon Awards 2025",
+    image: "/images/awards/communicon_2025.jpg"
   },
   {
-    year: "2019",
-    title: "Expanding Horizons",
-    desc: "Integrated ticketing and event management solutions and expanded our services nationwide.",
-    icon: Ticket,
-    colorClass: "green",
-    image: "/images/about/horizons.png"
+    id: "communicon-team",
+    title: "Communicon Team Excellence Awards",
+    image: "/images/awards/communicon_team.jpg"
   },
   {
-    year: "2023",
-    title: "Hybrid & Virtual Scaling",
-    desc: "Scaled virtual event rooms, live interactive webinars, and hybrid event technology across corporate summits.",
-    icon: RocketLaunch,
-    colorClass: "purple",
-    image: "/images/about/future.png"
+    id: "realtime",
+    title: "Real Time Advertising Awards 2024",
+    image: "/images/awards/realtime_ad_2024.jpg"
   },
   {
-    year: "2026",
-    title: "Sanranchana & SyncoraXP",
-    desc: "Unveiling Sanranchana & SyncoraXP — our flagship next-generation platforms powering 3D virtual halls, AI networking, and enterprise stage streaming.",
-    icon: Sparkle,
-    colorClass: "gold",
-    image: "/images/about/sanranchana_2026.png",
-    isFlagship: true
+    id: "exhibition",
+    title: "Exhibition Excellence Awards 2025 (EEA)",
+    image: "/images/awards/exhibition_excellence_2025.jpg"
   }
 ];
 
+function AwardCardItem({ award }: { award: { id: string; title: string; image: string; objectFit?: "cover" | "contain"; objectPosition?: string } }) {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div className="award-card">
+      <div className="award-card-img-wrap">
+        {!imgError ? (
+          <img
+            src={award.image}
+            alt={award.title}
+            style={{
+              objectFit: award.objectFit || "cover",
+              objectPosition: award.objectPosition || "center 30%"
+            }}
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="award-card-placeholder-text">
+            <Sparkle size={32} weight="duotone" />
+            <span>Upload {award.title} Photo</span>
+          </div>
+        )}
+      </div>
+      <h3 className="award-card-title">{award.title}</h3>
+    </div>
+  );
+}
+
 export function AboutPage() {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const isProgrammaticScroll = useRef(false);
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  const scrollToCard = (index: number) => {
-    const targetIndex = Math.min(MILESTONES.length - 1, Math.max(0, index));
-    setActiveIndex(targetIndex);
-    isProgrammaticScroll.current = true;
-
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-
-    if (scrollContainerRef.current) {
-      const container = scrollContainerRef.current;
-      const card = container.children[targetIndex] as HTMLElement;
-      if (card) {
-        // Calculate exact scroll position with comfortable padding offset
-        const targetLeft = card.offsetLeft - container.offsetLeft - 16;
-        container.scrollTo({
-          left: Math.max(0, targetLeft),
-          behavior: "smooth"
-        });
-      }
-    }
-
-    scrollTimeoutRef.current = setTimeout(() => {
-      isProgrammaticScroll.current = false;
-    }, 600);
-  };
-
-  const handleScroll = () => {
-    if (isProgrammaticScroll.current || !scrollContainerRef.current) return;
-    const container = scrollContainerRef.current;
-    const firstCard = container.children[0] as HTMLElement;
-    const cardWidth = firstCard ? firstCard.offsetWidth : 340;
-    const gap = 24;
-    const newIndex = Math.min(
-      MILESTONES.length - 1,
-      Math.max(0, Math.round(container.scrollLeft / (cardWidth + gap)))
-    );
-    if (newIndex !== activeIndex) {
-      setActiveIndex(newIndex);
-    }
-  };
+  const awardsScrollRef = useRef<HTMLDivElement>(null);
 
   return (
     <div className="landing-page about-page">
@@ -129,11 +102,7 @@ export function AboutPage() {
       <section className="about-hero-section">
         <div className="about-hero-container">
           <div className="about-hero-dark-card">
-            {/* Top Pill Tag */}
-            <div className="about-pill-tag">
-              <span className="pill-dot" />
-              <span>ABOUT SYNCORAXP</span>
-            </div>
+
 
             {/* Headline */}
             <h1 className="about-hero-title">
@@ -148,93 +117,26 @@ export function AboutPage() {
               experiences—whether in-person, virtual, or hybrid.
             </p>
 
-            {/* 4 Feature Highlights Box */}
-            <div className="about-features-card-box">
-              <div className="about-features-grid">
-                <div className="about-feature-item">
-                  <div className="about-feature-3d-icon">
-                    <Users size={22} weight="duotone" />
-                  </div>
-                  <div className="about-feature-info">
-                    <div className="about-feature-heading">10+ Years</div>
-                    <div className="about-feature-sub">of Experience</div>
-                  </div>
-                </div>
-
-                <div className="about-feature-item">
-                  <div className="about-feature-3d-icon">
-                    <ShieldCheck size={22} weight="duotone" />
-                  </div>
-                  <div className="about-feature-info">
-                    <div className="about-feature-heading">Enterprise</div>
-                    <div className="about-feature-sub">Grade Security</div>
-                  </div>
-                </div>
-
-                <div className="about-feature-item">
-                  <div className="about-feature-3d-icon">
-                    <Gear size={22} weight="duotone" />
-                  </div>
-                  <div className="about-feature-info">
-                    <div className="about-feature-heading">End-to-End</div>
-                    <div className="about-feature-sub">Event Solutions</div>
-                  </div>
-                </div>
-
-                <div className="about-feature-item">
-                  <div className="about-feature-3d-icon">
-                    <Headset size={22} weight="duotone" />
-                  </div>
-                  <div className="about-feature-info">
-                    <div className="about-feature-heading">24/7</div>
-                    <div className="about-feature-sub">Support</div>
-                  </div>
-                </div>
+            {/* Hero Inline Stats Bar */}
+            <div className="about-hero-stats-strip">
+              <div className="about-hero-stat-pill">
+                <span className="stat-pill-num">10+ Years</span>
+                <span className="stat-pill-label">Event Tech Leadership</span>
               </div>
-            </div>
-
-            {/* 4 Statistics Box */}
-            <div className="about-stats-card-box">
-              <div className="about-stats-grid">
-                <div className="about-stat-box">
-                  <div className="about-stat-3d-icon">
-                    <CalendarBlank size={22} weight="duotone" />
-                  </div>
-                  <div className="about-stat-info">
-                    <div className="about-stat-number">20,000+</div>
-                    <div className="about-stat-label">Events Powered</div>
-                  </div>
-                </div>
-
-                <div className="about-stat-box">
-                  <div className="about-stat-3d-icon">
-                    <Users size={22} weight="duotone" />
-                  </div>
-                  <div className="about-stat-info">
-                    <div className="about-stat-number">1M+</div>
-                    <div className="about-stat-label">Attendees Engaged</div>
-                  </div>
-                </div>
-
-                <div className="about-stat-box">
-                  <div className="about-stat-3d-icon">
-                    <Smiley size={22} weight="duotone" />
-                  </div>
-                  <div className="about-stat-info">
-                    <div className="about-stat-number">500+</div>
-                    <div className="about-stat-label">Happy Clients</div>
-                  </div>
-                </div>
-
-                <div className="about-stat-box">
-                  <div className="about-stat-3d-icon">
-                    <Globe size={22} weight="duotone" />
-                  </div>
-                  <div className="about-stat-info">
-                    <div className="about-stat-number">50+</div>
-                    <div className="about-stat-label">Countries Served</div>
-                  </div>
-                </div>
+              <div className="stat-pill-divider" />
+              <div className="about-hero-stat-pill">
+                <span className="stat-pill-num">20,000+</span>
+                <span className="stat-pill-label">Events Powered</span>
+              </div>
+              <div className="stat-pill-divider" />
+              <div className="about-hero-stat-pill">
+                <span className="stat-pill-num">1M+</span>
+                <span className="stat-pill-label">Attendees Engaged</span>
+              </div>
+              <div className="stat-pill-divider" />
+              <div className="about-hero-stat-pill">
+                <span className="stat-pill-num">50+</span>
+                <span className="stat-pill-label">Countries Served</span>
               </div>
             </div>
 
@@ -253,119 +155,134 @@ export function AboutPage() {
               </Link>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* Right Hero Image Wrap with Arc Cutout */}
-          <div className="about-hero-image-wrap">
-            <img
-              src="/images/about_us_control_room.png"
-              alt="SyncoraXP Live Event Production Control Center"
-              className="about-hero-img"
-            />
+      {/* RECOGNIZED FOR EXCELLENCE SECTION */}
+      <section className="awards-section">
+        <div className="awards-container">
+          <div className="awards-header-wrap">
+            <div className="awards-header-text">
+              <h2 className="awards-title">
+                Recognized for <span className="awards-title-gradient">Excellence</span>
+              </h2>
+              <p className="awards-subtitle">
+                Awards that highlight our dedication to innovation, performance, and delivering world-class solutions.
+              </p>
+            </div>
+
+            <div className="awards-nav-buttons">
+              <button
+                type="button"
+                className="awards-nav-btn"
+                onClick={() => {
+                  if (awardsScrollRef.current) {
+                    const scrollAmount = (awardsScrollRef.current.offsetWidth - 72) / 4 + 24;
+                    awardsScrollRef.current.scrollBy({ left: -scrollAmount, behavior: "smooth" });
+                  }
+                }}
+                aria-label="Previous award"
+              >
+                <CaretLeft size={18} weight="bold" />
+              </button>
+              <button
+                type="button"
+                className="awards-nav-btn"
+                onClick={() => {
+                  if (awardsScrollRef.current) {
+                    const scrollAmount = (awardsScrollRef.current.offsetWidth - 72) / 4 + 24;
+                    awardsScrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+                  }
+                }}
+                aria-label="Next award"
+              >
+                <CaretRight size={18} weight="bold" />
+              </button>
+            </div>
+          </div>
+
+          <div ref={awardsScrollRef} className="awards-grid-scrollable">
+            {AWARDS.map((award) => (
+              <AwardCardItem key={award.id} award={award} />
+            ))}
           </div>
         </div>
       </section>
 
-      {/* OUR JOURNEY - Our Story From India */}
-      <section className="our-story-section">
-        <div className="our-story-bg-wrap">
-          <img src="/images/about/india_bg.png" alt="India Landmarks & Event Stage" className="our-story-bg-img" />
-          <div className="our-story-bg-overlay" />
-        </div>
+      {/* OUR PRESENCE SECTION - DELHI, MUMBAI, DUBAI */}
+      <section className="presence-section">
+        <div className="presence-container">
+          <div className="presence-header">
+            <h2 className="presence-title">
+              Our Presence Across <span className="presence-gradient">Delhi, Mumbai & Dubai</span>
+            </h2>
+            <p className="presence-subtitle">
+              Powering exceptional event experiences with dedicated hubs across key international capitals.
+            </p>
+          </div>
 
-        <div className="our-story-container">
-          {/* Header text & Year Tabs */}
-          <div className="our-story-header-wrap">
-            <div className="our-story-header">
-              <div className="our-story-journey-tag">
-                OUR JOURNEY —
+          <div className="presence-grid">
+            {/* DELHI CARD */}
+            <div className="presence-city-card city-card-delhi">
+              <div className="presence-card-bg-wrap">
+                <img src="/images/cities/delhi.jpg" alt="Delhi India Gate Landmark" className="presence-card-bg-img" />
+                <div className="presence-card-gradient-overlay" />
               </div>
-              <h2 className="our-story-title">
-                Our Story <span className="our-story-gradient">From India</span>
-              </h2>
-              <p className="our-story-desc">
-                From a small idea to powering thousands of events across the country, here's how <strong className="text-white">SyncoraXP</strong> has grown with passion, innovation, and purpose.
-              </p>
+
+              <div className="presence-card-content">
+                {/* Top Badge */}
+                <div className="city-country-badge">
+                  <Buildings size={13} weight="bold" />
+                  <span>INDIA</span>
+                </div>
+
+                {/* Main Name Only */}
+                <div className="city-title-block">
+                  <h3 className="city-main-name">DELHI</h3>
+                </div>
+              </div>
             </div>
 
-            {/* Nav Arrows */}
-            <div className="story-nav-buttons">
-              <button
-                type="button"
-                className="story-nav-btn"
-                onClick={() => scrollToCard(Math.max(0, activeIndex - 1))}
-                aria-label="Previous milestone"
-              >
-                <CaretLeft size={20} weight="bold" />
-              </button>
-              <button
-                type="button"
-                className="story-nav-btn"
-                onClick={() => scrollToCard(Math.min(MILESTONES.length - 1, activeIndex + 1))}
-                aria-label="Next milestone"
-              >
-                <CaretRight size={20} weight="bold" />
-              </button>
-            </div>
-          </div>
+            {/* MUMBAI CARD */}
+            <div className="presence-city-card city-card-mumbai">
+              <div className="presence-card-bg-wrap">
+                <img src="/images/cities/mumbai.jpg" alt="Mumbai Marine Drive Skyline" className="presence-card-bg-img" />
+                <div className="presence-card-gradient-overlay" />
+              </div>
 
-          {/* Interactive Year Selector Tabs */}
-          <div className="story-year-tabs">
-            {MILESTONES.map((m, idx) => (
-              <button
-                key={m.year}
-                type="button"
-                className={`story-year-tab tab-${m.colorClass} ${activeIndex === idx ? "is-active" : ""}`}
-                onClick={() => scrollToCard(idx)}
-              >
-                <span className="tab-year">{m.year}</span>
-                {m.isFlagship && <span className="tab-flagship-badge">FLAGSHIP</span>}
-              </button>
-            ))}
-          </div>
+              <div className="presence-card-content">
+                {/* Top Badge */}
+                <div className="city-country-badge">
+                  <Buildings size={13} weight="bold" />
+                  <span>INDIA</span>
+                </div>
 
-          {/* Scrollable Timeline Track */}
-          <div className="story-timeline-scroll-wrap">
-            <div className="story-timeline-line-track">
-              <div
-                className="story-timeline-line-progress"
-                style={{ width: `${((activeIndex + 1) / MILESTONES.length) * 100}%` }}
-              />
+                {/* Main Name Only */}
+                <div className="city-title-block">
+                  <h3 className="city-main-name">MUMBAI</h3>
+                </div>
+              </div>
             </div>
 
-            <div
-              ref={scrollContainerRef}
-              onScroll={handleScroll}
-              className="story-timeline-grid-scrollable"
-            >
-              {MILESTONES.map((m, idx) => {
-                const IconComponent = m.icon;
-                const isActive = activeIndex === idx;
-                return (
-                  <div
-                    key={m.year}
-                    className={`story-card card-${m.colorClass} ${isActive ? "is-active-card" : ""} ${m.isFlagship ? "is-flagship-card" : ""}`}
-                    onClick={() => scrollToCard(idx)}
-                  >
-                    <div className={`story-icon-badge story-badge-${m.colorClass}`}>
-                      <IconComponent size={22} weight="bold" />
-                    </div>
-                    <div className={`story-year story-year-${m.colorClass}`}>
-                      {m.year}
-                    </div>
-                    <h3 className="story-card-title">{m.title}</h3>
-                    <p className="story-card-desc">{m.desc}</p>
-                    <div className="story-card-img-wrap">
-                      <img src={m.image} alt={m.title} />
-                      {m.isFlagship && (
-                        <div className="flagship-overlay-badge">
-                          <Sparkle size={14} weight="fill" />
-                          <span>Sanranchana & SyncoraXP</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+            {/* DUBAI CARD */}
+            <div className="presence-city-card city-card-dubai">
+              <div className="presence-card-bg-wrap">
+                <img src="/images/cities/dubai.jpg" alt="Dubai Burj Khalifa Skyline" className="presence-card-bg-img" />
+                <div className="presence-card-gradient-overlay" />
+              </div>
+
+              <div className="presence-card-content">
+                {/* Top Badge */}
+                <div className="city-country-badge">
+                  <Globe size={13} weight="bold" />
+                  <span>UAE</span>
+                </div>
+
+                {/* Main Name Only */}
+                <div className="city-title-block">
+                  <h3 className="city-main-name">DUBAI</h3>
+                </div>
+              </div>
             </div>
           </div>
         </div>
