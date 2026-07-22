@@ -1697,6 +1697,62 @@ textarea {
   margin-top: 8px;
 }
 
+.host-tools-advanced > summary {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--meeting-border);
+  color: var(--meeting-text);
+  cursor: pointer;
+  list-style: none;
+}
+
+.host-tools-advanced > summary::-webkit-details-marker {
+  display: none;
+}
+
+.host-tools-advanced > summary strong,
+.host-tools-advanced > summary small {
+  display: block;
+}
+
+.host-tools-advanced > summary strong {
+  font-size: 13px;
+}
+
+.host-tools-advanced > summary small {
+  margin-top: 3px;
+  color: var(--meeting-muted);
+  font-size: 10px;
+}
+
+.host-tools-advanced > summary:hover,
+.host-tools-advanced > summary:focus-visible {
+  color: #fff;
+}
+
+.host-tools-advanced > summary:focus-visible {
+  border-radius: 6px;
+  outline: 2px solid #aab4ff;
+  outline-offset: 2px;
+}
+
+.host-tools-advanced-caret {
+  flex: 0 0 auto;
+  color: var(--meeting-muted);
+  transition: transform .18s ease;
+}
+
+.host-tools-advanced[open] .host-tools-advanced-caret {
+  transform: rotate(180deg);
+}
+
+.host-tools-advanced-content {
+  display: grid;
+}
+
 .host-tool-row {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
@@ -3346,73 +3402,6 @@ textarea {
 .host-tools-toggle-button>span {
   font-size: 11px;
   line-height: 1;
-}
-
-.translation-provider-setting {
-  padding: 15px 0 17px;
-  border-bottom: 1px solid var(--meeting-border);
-}
-
-.translation-provider-heading strong,
-.translation-provider-heading small {
-  display: block;
-}
-
-.translation-provider-heading strong {
-  font-size: 12px;
-}
-
-.translation-provider-heading small {
-  margin-top: 3px;
-  color: var(--meeting-muted);
-  font-size: 10px;
-  line-height: 1.35;
-}
-
-.translation-provider-options {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-  margin-top: 11px;
-}
-
-.translation-provider-options button {
-  min-width: 0;
-  padding: 10px;
-  border: 1px solid var(--meeting-border);
-  border-radius: 10px;
-  color: var(--meeting-text);
-  text-align: left;
-  background: rgba(255, 255, 255, .035);
-}
-
-.translation-provider-options button:hover:not(:disabled),
-.translation-provider-options button.selected {
-  border-color: rgba(111, 126, 255, .7);
-  background: rgba(82, 100, 232, .18);
-}
-
-.translation-provider-options button:disabled {
-  cursor: not-allowed;
-  opacity: .58;
-}
-
-.translation-provider-options button strong,
-.translation-provider-options button small {
-  display: block;
-}
-
-.translation-provider-options button strong {
-  font-size: 11px;
-}
-
-.translation-provider-options button small {
-  margin-top: 3px;
-  overflow: hidden;
-  color: var(--meeting-muted);
-  font-size: 9px;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .interpretation-control {
