@@ -6,11 +6,13 @@ import {
 import type { FastifyInstance } from "fastify";
 import type { AuthService } from "../auth/auth-service";
 import type { MeetingRepository } from "../db/meeting-repository";
+import type { RoomTokenIssuer } from "../livekit/room-token-issuer";
 import type { TranslationRepository } from "../translation/translation-repository";
 
 interface TranslationRouteDependencies {
   auth: AuthService;
   repository: MeetingRepository;
+  roomTokens: RoomTokenIssuer;
   translations: TranslationRepository;
 }
 
@@ -79,6 +81,7 @@ export async function registerTranslationRoutes(
       }
 
       const settings = await dependencies.translations.updateSettings(meeting.id, parsed.data);
+      await dependencies.roomTokens.updateTranslationSettings(meeting.livekitRoomName, settings);
       if (settings.enabled && settings.designatedSpeakerIdentity) {
         await dependencies.translations.queueRun({
           id: randomUUID(),
