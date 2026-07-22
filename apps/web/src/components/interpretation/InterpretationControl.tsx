@@ -68,6 +68,7 @@ export function InterpretationControl({
   const [inactiveRunIds, setInactiveRunIds] = useState<ReadonlySet<string>>(() => new Set());
   const [subscriptionRevision, setSubscriptionRevision] = useState(0);
   const sequence = useRef(0);
+  const lastWorkerSequence = useRef<{ runId: string; sequence: number } | null>(null);
   const captionTimer = useRef<number | undefined>(undefined);
 
   const translator = useMemo(
@@ -115,6 +116,16 @@ export function InterpretationControl({
     setMenuOpen(false);
     setStatuses({});
   }, [liveSettings.enabled]);
+
+  useEffect(() => {
+    // Status from an earlier worker run must not affect routing for its
+    // replacement after interpretation is toggled off and back on.
+    setStatuses({});
+    lastWorkerSequence.current = translator
+      ? { runId: translator.runId, sequence: -1 }
+      : null;
+    setSubscriptionRevision((revision) => revision + 1);
+  }, [translator?.runId]);
 
   const sendPreference = useCallback(
     async (language: TranslationPreference) => {
@@ -166,21 +177,27 @@ export function InterpretationControl({
 
   useEffect(() => {
     const refreshSubscriptions = () => setSubscriptionRevision((revision) => revision + 1);
+    const handleReconnected = () => {
+      refreshSubscriptions();
+      void sendPreference(preference).catch(() => undefined);
+    };
     room.on(RoomEvent.TrackPublished, refreshSubscriptions);
+    room.on(RoomEvent.TrackUnpublished, refreshSubscriptions);
     room.on(RoomEvent.TrackSubscribed, refreshSubscriptions);
     room.on(RoomEvent.TrackUnsubscribed, refreshSubscriptions);
     room.on(RoomEvent.ParticipantConnected, refreshSubscriptions);
     room.on(RoomEvent.ParticipantDisconnected, refreshSubscriptions);
-    room.on(RoomEvent.Reconnected, refreshSubscriptions);
+    room.on(RoomEvent.Reconnected, handleReconnected);
     return () => {
       room.off(RoomEvent.TrackPublished, refreshSubscriptions);
+      room.off(RoomEvent.TrackUnpublished, refreshSubscriptions);
       room.off(RoomEvent.TrackSubscribed, refreshSubscriptions);
       room.off(RoomEvent.TrackUnsubscribed, refreshSubscriptions);
       room.off(RoomEvent.ParticipantConnected, refreshSubscriptions);
       room.off(RoomEvent.ParticipantDisconnected, refreshSubscriptions);
-      room.off(RoomEvent.Reconnected, refreshSubscriptions);
+      room.off(RoomEvent.Reconnected, handleReconnected);
     };
-  }, [room]);
+  }, [preference, room, sendPreference]);
 
   useEffect(() => {
     const onData = (
@@ -200,6 +217,15 @@ export function InterpretationControl({
           parsed.data.translationRunId !== translator?.runId
         ) return;
         const message = parsed.data;
+        const lastMessage = lastWorkerSequence.current;
+        if (
+          lastMessage?.runId === message.translationRunId &&
+          message.sequence <= lastMessage.sequence
+        ) return;
+        lastWorkerSequence.current = {
+          runId: message.translationRunId,
+          sequence: message.sequence,
+        };
         if (message.type === "translation.worker.status") {
           if (["stopping", "completed", "failed"].includes(message.status)) {
             setInactiveRunIds((current) => {
@@ -270,13 +296,16 @@ export function InterpretationControl({
     const selectedLanguage = preference === "original" ? null : preference;
 
     for (const participant of remoteParticipants.values()) {
-      const isTranslator = participant.attributes.role === "translator";
+      const isActiveTranslator = participant.identity === translator?.identity;
       for (const publication of participant.audioTrackPublications.values()) {
-        if (!isTranslator || !publication.trackName.startsWith("translation-")) continue;
+        if (
+          participant.attributes.role !== "translator" ||
+          !publication.trackName.startsWith("translation-")
+        ) continue;
         const language = publication.trackName.slice(
           "translation-".length,
         ) as TranslationLanguageCode;
-        const shouldSubscribe = language === selectedLanguage;
+        const shouldSubscribe = isActiveTranslator && language === selectedLanguage;
         publication.setSubscribed(shouldSubscribe);
       }
     }
@@ -284,10 +313,10 @@ export function InterpretationControl({
     // The listener's explicit selection is authoritative. Waiting for both a
     // status packet and TrackSubscribed before dropping source audio creates a
     // race where the original microphone can remain subscribed indefinitely.
-    // Keep the original only for "original" or when the provider explicitly
-    // reports that the selected translation is unavailable.
-    const shouldHearOriginal =
-      !selectedLanguage || !translator || statuses[selectedLanguage] === "unavailable";
+    // A target-language selection must never silently play the source channel.
+    // Keep the original while a replacement worker is joining, then suppress
+    // it as soon as the active translator is known.
+    const shouldHearOriginal = !selectedLanguage || !translator;
     const sourceIdentity = translator?.sourceParticipantIdentity;
     if (sourceIdentity) {
       const sourceParticipant = remoteParticipants.get(sourceIdentity);

@@ -19,6 +19,8 @@ export class OpenAITranslationSession implements TranslationSession {
   private socket: WebSocket | null = null;
   private opening: Promise<void> | null = null;
   private closing: Promise<void> | null = null;
+  private closedByClient = false;
+  private terminalErrorReported = false;
 
   constructor(
     readonly language: TranslationLanguageCode,
@@ -71,7 +73,7 @@ export class OpenAITranslationSession implements TranslationSession {
             clearTimeout(timeout);
             reject(providerError);
           }
-          this.handlers.onError(providerError);
+          this.reportTerminalError(providerError);
           return;
         }
         if (!settled && event.type === "session.updated") {
@@ -87,7 +89,7 @@ export class OpenAITranslationSession implements TranslationSession {
           clearTimeout(timeout);
           reject(error);
         }
-        this.handlers.onError(error);
+        this.reportTerminalError(error);
       });
       socket.once("close", (code, reason) => {
         clearTimeout(timeout);
@@ -96,6 +98,15 @@ export class OpenAITranslationSession implements TranslationSession {
           reject(
             new Error(
               `OpenAI ${this.language} translation session closed during startup (${code}: ${reason.toString()})`,
+            ),
+          );
+          return;
+        }
+        if (!this.closedByClient) {
+          const suffix = reason.length ? `: ${reason.toString()}` : "";
+          this.reportTerminalError(
+            new Error(
+              `OpenAI ${this.language} translation session disconnected (${code}${suffix})`,
             ),
           );
         }
@@ -117,6 +128,7 @@ export class OpenAITranslationSession implements TranslationSession {
 
   close(): Promise<void> {
     if (this.closing) return this.closing;
+    this.closedByClient = true;
     this.closing = new Promise<void>((resolve) => {
       const socket = this.socket;
       if (!socket || socket.readyState === WebSocket.CLOSED) {
@@ -188,5 +200,11 @@ export class OpenAITranslationSession implements TranslationSession {
       });
       return;
     }
+  }
+
+  private reportTerminalError(error: Error): void {
+    if (this.closedByClient || this.terminalErrorReported) return;
+    this.terminalErrorReported = true;
+    this.handlers.onError(error);
   }
 }

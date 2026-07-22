@@ -76,9 +76,7 @@ export class TranslationJobRunner {
             `publish ${language} translation transcript`,
           );
         },
-        onClosed: (language) => {
-          this.runInBackground(publisher.closeLanguage(language), `close ${language} audio track`);
-        },
+        onClosed: (language) => publisher.closeLanguage(language),
       },
       this.config.TRANSLATION_LANGUAGE_IDLE_GRACE_MS,
     );
