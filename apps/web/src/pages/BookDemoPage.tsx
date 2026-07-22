@@ -17,16 +17,15 @@ const COUNTRY_CODES = [
 ];
 
 const CATEGORIES = [
-  "SaaS / Technology",
-  "Marketing and Advertising",
-  "Education and EdTech",
-  "Healthcare",
-  "Finance and Banking",
-  "Retail and e-Commerce",
-  "Manufacturing",
-  "Non-Profit / NGO",
-  "Government",
-  "Other",
+  "Virtual Events",
+  "Hybrid Events",
+  "Webinars",
+  "Live Streaming",
+  "Mobile Event App",
+  "Event Check-In & Badges",
+  "Event CRM",
+  "Facial Recognition",
+  "Others",
 ];
 
 export function BookDemoPage() {

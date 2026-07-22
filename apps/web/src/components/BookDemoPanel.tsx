@@ -13,16 +13,15 @@ const COUNTRY_CODES = [
 ];
 
 const CATEGORIES = [
-  "SaaS / Technology",
-  "Marketing & Advertising",
-  "Education & EdTech",
-  "Healthcare",
-  "Finance & Banking",
-  "Retail & E-commerce",
-  "Manufacturing",
-  "Non-Profit / NGO",
-  "Government",
-  "Other",
+  "Virtual Events",
+  "Hybrid Events",
+  "Webinars",
+  "Live Streaming",
+  "Mobile Event App",
+  "Event Check-In & Badges",
+  "Event CRM",
+  "Facial Recognition",
+  "Others",
 ];
 
 interface BookDemoPanelProps {
