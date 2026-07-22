@@ -1,4 +1,8 @@
-import { Broadcast, CaretDown, List, MicrophoneStage, X } from "@phosphor-icons/react";
+import {
+  Broadcast, CaretDown, List, MicrophoneStage, X,
+  User, Briefcase, PhoneCall, GlobeHemisphereWest, CursorClick, ShieldCheck,
+  InstagramLogo, LinkedinLogo, YoutubeLogo, FacebookLogo, XLogo
+} from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
@@ -12,6 +16,10 @@ export function MarketingHeader() {
   const [solutionsOpen, setSolutionsOpen] = useState(false);
   const [solutionsPinned, setSolutionsPinned] = useState(false);
   const solutionsMenuRef = useRef<HTMLDivElement>(null);
+
+  const [companyOpen, setCompanyOpen] = useState(false);
+  const [companyPinned, setCompanyPinned] = useState(false);
+  const companyMenuRef = useRef<HTMLDivElement>(null);
   const landingAnchor = (hash: string) => location.pathname === "/" ? hash : `/${hash}`;
 
   useEffect(() => {
@@ -27,11 +35,17 @@ export function MarketingHeader() {
         setSolutionsOpen(false);
         setSolutionsPinned(false);
       }
+      if (!companyMenuRef.current?.contains(event.target as Node)) {
+        setCompanyOpen(false);
+        setCompanyPinned(false);
+      }
     };
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setSolutionsOpen(false);
         setSolutionsPinned(false);
+        setCompanyOpen(false);
+        setCompanyPinned(false);
       }
     };
 
@@ -115,7 +129,110 @@ export function MarketingHeader() {
         </div>
         <a href={landingAnchor("#solutions")}>Platform</a>
         <a href={landingAnchor("#capabilities")}>Resources</a>
-        <a href={landingAnchor("#company")}>Company</a>
+        <div
+          ref={companyMenuRef}
+          className={`solutions-menu${companyOpen ? " is-open" : ""}`}
+          onMouseEnter={() => setCompanyOpen(true)}
+          onMouseLeave={() => {
+            if (!companyPinned) setCompanyOpen(false);
+          }}
+          onFocus={() => setCompanyOpen(true)}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget as Node) && !companyPinned) {
+              setCompanyOpen(false);
+            }
+          }}
+        >
+          <button
+            className="solutions-trigger"
+            type="button"
+            aria-expanded={companyOpen}
+            aria-controls="desktop-company-menu"
+            onClick={() => {
+              setCompanyPinned((current) => {
+                const next = !current;
+                setCompanyOpen(next);
+                return next;
+              });
+            }}
+          >
+            Company <CaretDown size={14} weight="bold" aria-hidden="true" />
+          </button>
+
+          {companyOpen && (
+            <div className="solutions-dropdown company-dropdown" id="desktop-company-menu" role="menu">
+              <div className="company-dropdown-layout">
+                <div className="company-dropdown-left">
+                  <div className="company-section-title">COMPANY</div>
+                  <div className="company-grid">
+                    <Link className="mega-solution-row" to="/about" role="menuitem" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
+                      <span className="mega-solution-title">
+                        <User size={23} weight="duotone" />
+                        <div>
+                          <strong>About</strong>
+                          <small>Your Event-Tech Partner</small>
+                        </div>
+                      </span>
+                    </Link>
+                    <Link className="mega-solution-row" to="/careers" role="menuitem" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
+                      <span className="mega-solution-title">
+                        <Briefcase size={23} weight="duotone" />
+                        <div>
+                          <strong>Careers</strong>
+                          <small>Join us in creating cutting-edge solutions for events</small>
+                        </div>
+                      </span>
+                    </Link>
+                    <Link className="mega-solution-row" to="/contact" role="menuitem" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
+                      <span className="mega-solution-title">
+                        <PhoneCall size={23} weight="duotone" />
+                        <div>
+                          <strong>Contact Us</strong>
+                          <small>Got a Question? Get in touch now.</small>
+                        </div>
+                      </span>
+                    </Link>
+                    <div className="mega-solution-row company-social-row">
+                      <span className="mega-solution-title">
+                        <GlobeHemisphereWest size={23} weight="duotone" />
+                        <div>
+                          <strong>Find Us At</strong>
+                          <div className="company-social-icons">
+                            <a href="#" aria-label="Instagram"><InstagramLogo size={20} /></a>
+                            <a href="#" aria-label="LinkedIn"><LinkedinLogo size={20} /></a>
+                            <a href="#" aria-label="Youtube"><YoutubeLogo size={20} /></a>
+                            <a href="#" aria-label="Facebook"><FacebookLogo size={20} /></a>
+                            <a href="#" aria-label="X"><XLogo size={20} /></a>
+                          </div>
+                        </div>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="company-dropdown-right">
+                  <Link className="company-right-card" to="/why-syncoraxp" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
+                    <span className="mega-solution-title">
+                      <CursorClick size={23} weight="duotone" />
+                      <div>
+                        <strong>Why Choose SyncoraXP</strong>
+                        <small>Empower your events with SyncoraXP's comprehensive event-tech suite</small>
+                      </div>
+                    </span>
+                  </Link>
+                  <Link className="company-right-card" to="/trust-security" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
+                    <span className="mega-solution-title">
+                      <ShieldCheck size={23} weight="duotone" />
+                      <div>
+                        <strong>Trust and Security</strong>
+                        <small>SyncoraXP prioritizes trust and security, being your event's secure partner</small>
+                      </div>
+                    </span>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </nav>
 
       <div className="landing-header-actions">
