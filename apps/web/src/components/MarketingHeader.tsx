@@ -1,5 +1,5 @@
 import {
-  Broadcast, CaretDown, List, MicrophoneStage, X,
+  Broadcast, CaretDown, List, MicrophoneStage, X, Ticket,
   User, Briefcase, PhoneCall, GlobeHemisphereWest, CursorClick, ShieldCheck,
   InstagramLogo, LinkedinLogo, YoutubeLogo, FacebookLogo, XLogo
 } from "@phosphor-icons/react";
@@ -121,6 +121,20 @@ export function MarketingHeader() {
                   <span className="mega-solution-title">
                     <MicrophoneStage size={23} weight="duotone" />
                     <strong>Webinar service</strong>
+                  </span>
+                </Link>
+                <Link
+                  className="mega-solution-row"
+                  to="/event-registartion"
+                  role="menuitem"
+                  onClick={() => {
+                    setSolutionsOpen(false);
+                    setSolutionsPinned(false);
+                  }}
+                >
+                  <span className="mega-solution-title">
+                    <Ticket size={23} weight="duotone" />
+                    <strong>Event Registration</strong>
                   </span>
                 </Link>
               </div>
@@ -264,6 +278,9 @@ export function MarketingHeader() {
               </Link>
               <Link to="/webinar-service" onClick={() => setMobileMenuOpen(false)}>
                 <MicrophoneStage size={18} weight="duotone" /> Webinar service
+              </Link>
+              <Link to="/event-registartion" onClick={() => setMobileMenuOpen(false)}>
+                <Ticket size={18} weight="duotone" /> Event Registration
               </Link>
             </div>
           </details>

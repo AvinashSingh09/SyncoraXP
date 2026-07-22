@@ -23,6 +23,15 @@ FROM node:22-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 
+# @livekit/rtc-node performs TLS in its native runtime and reads the operating
+# system trust store. The slim image does not reliably include that store,
+# causing wss:// connections to fail with "no native root CA certificates".
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && update-ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
 # Copy built artifacts and production node_modules
 COPY --from=builder /app/package.json /app/pnpm-workspace.yaml ./
 COPY --from=builder /app/node_modules ./node_modules

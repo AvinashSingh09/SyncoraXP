@@ -206,6 +206,15 @@ export async function registerMeetingRoutes(
       if (!parsed.success) {
         return reply.status(400).send({ error: "Choose a valid host setting to update" });
       }
+      const previousMeeting = await dependencies.repository.findByIdForHost(
+        request.params.meetingId,
+        user.id,
+      );
+      if (!previousMeeting) return reply.status(404).send({ error: "Host meeting not found" });
+      const previousGuestMediaSettings = {
+        allowGuestCamera: previousMeeting.allowGuestCamera,
+        allowGuestMicrophone: previousMeeting.allowGuestMicrophone,
+      };
       const meeting = await dependencies.repository.updateSettingsForHost(
         request.params.meetingId,
         user.id,
@@ -221,6 +230,21 @@ export async function registerMeetingRoutes(
           );
         } catch (error) {
           request.log.warn({ error }, "Could not sync guest media permissions");
+          await dependencies.repository.updateSettingsForHost(request.params.meetingId, user.id, {
+            ...previousGuestMediaSettings,
+          });
+          try {
+            await dependencies.roomTokens.updateGuestMediaPermissions(
+              previousMeeting.livekitRoomName,
+              previousGuestMediaSettings.allowGuestCamera,
+              previousGuestMediaSettings.allowGuestMicrophone,
+            );
+          } catch (rollbackError) {
+            request.log.error({ error: rollbackError }, "Could not restore guest media permissions");
+          }
+          return reply.status(502).send({
+            error: "Guest media permissions could not be updated. The previous settings were restored.",
+          });
         }
       }
       const response: MeetingSettingsResponse = {
