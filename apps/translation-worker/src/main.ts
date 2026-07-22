@@ -8,12 +8,34 @@ import { TranslationJobStore } from "./jobs/translation-job-store";
 const config = loadTranslationWorkerConfig();
 const workerInstanceId =
   config.TRANSLATION_WORKER_ID ?? `${hostname()}:${process.pid}:${randomUUID()}`;
-const pool = new Pool({ connectionString: config.DATABASE_URL, max: 5 });
+const pool = new Pool({
+  connectionString: config.DATABASE_URL,
+  // The worker processes one job at a time. Keeping this pool small avoids
+  // reserving unnecessary Supavisor session-mode connections.
+  max: 2,
+  connectionTimeoutMillis: 10_000,
+  idleTimeoutMillis: 30_000,
+  keepAlive: true,
+  keepAliveInitialDelayMillis: 10_000,
+});
 const store = new TranslationJobStore(pool);
 let shuttingDown = false;
 let activeRunner: TranslationJobRunner | null = null;
+let consecutivePollingFailures = 0;
 
 const delay = (duration: number) => new Promise((resolve) => setTimeout(resolve, duration));
+const pollingRetryDelay = () =>
+  Math.min(
+    config.TRANSLATION_JOB_POLL_MS * 2 ** Math.min(consecutivePollingFailures - 1, 5),
+    30_000,
+  );
+
+// pg emits errors from idle clients on the Pool itself. Without a listener,
+// Node treats them as unhandled EventEmitter errors and terminates the worker.
+// pg removes the failed client from the pool; the next query creates a new one.
+pool.on("error", (error) => {
+  console.error("Translation worker database pool connection failed", error);
+});
 
 const shutdown = () => {
   if (shuttingDown) return;
@@ -33,6 +55,7 @@ console.log(
 while (!shuttingDown) {
   try {
     const job = await store.claimNext(workerInstanceId, config.TRANSLATION_WORKER_LEASE_MS);
+    consecutivePollingFailures = 0;
     if (!job) {
       await delay(config.TRANSLATION_JOB_POLL_MS);
       continue;
@@ -53,8 +76,13 @@ while (!shuttingDown) {
       activeRunner = null;
     }
   } catch (error) {
-    console.error("Translation worker polling failed", error);
-    await delay(config.TRANSLATION_JOB_POLL_MS);
+    consecutivePollingFailures += 1;
+    const retryDelay = pollingRetryDelay();
+    console.error(
+      `Translation worker polling failed; retrying in ${retryDelay}ms`,
+      error,
+    );
+    await delay(retryDelay);
   }
 }
 
