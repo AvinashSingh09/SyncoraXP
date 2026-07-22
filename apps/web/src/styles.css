@@ -6892,6 +6892,8 @@ textarea {
 .about-hero-section {
   position: relative;
   width: 100%;
+  min-height: 100vh;
+  min-height: 100svh;
   padding: 200px 40px 140px 40px;
   background: #eadeff;
   background-image: radial-gradient(rgba(147, 51, 234, 0.12) 1.5px, transparent 1.5px);
