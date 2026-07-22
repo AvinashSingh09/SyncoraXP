@@ -312,6 +312,10 @@ export async function registerMeetingRoutes(
         translation = await dependencies.translations.updateSettings(meeting.id, {
           designatedSpeakerIdentity: issued.participantIdentity,
         });
+        await dependencies.roomTokens.updateTranslationSettings(
+          meeting.livekitRoomName,
+          translation,
+        );
         await dependencies.translations.queueRun({
           id: randomUUID(),
           meetingId: meeting.id,

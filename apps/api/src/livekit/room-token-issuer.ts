@@ -1,9 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { AccessToken, RoomServiceClient, TrackSource } from "livekit-server-sdk";
+import type { MeetingTranslationSettings } from "@voice/shared";
 
 type RoomService = Pick<
   RoomServiceClient,
-  "listRooms" | "listParticipants" | "mutePublishedTrack" | "updateParticipant" | "deleteRoom"
+  "listRooms" | "listParticipants" | "mutePublishedTrack" | "updateParticipant" | "updateRoomMetadata" | "deleteRoom"
 >;
 
 type RoomServiceFactory = (serviceUrl: string, apiKey: string, apiSecret: string) => RoomService;
@@ -28,6 +29,7 @@ export interface RoomTokenIssuer {
   isConfigured(): boolean;
   issue(request: RoomTokenRequest): Promise<IssuedRoomToken>;
   updateGuestMediaPermissions(roomName: string, allowCamera: boolean, allowMicrophone: boolean): Promise<void>;
+  updateTranslationSettings(roomName: string, settings: MeetingTranslationSettings): Promise<void>;
   endRoom(roomName: string): Promise<void>;
 }
 
@@ -127,6 +129,35 @@ export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
         `Could not update media permissions for ${failures.length} guest(s)`,
       );
     }
+  }
+
+  async updateTranslationSettings(
+    roomName: string,
+    settings: MeetingTranslationSettings,
+  ): Promise<void> {
+    if (!this.config.serverUrl || !this.config.apiKey || !this.config.apiSecret) return;
+    const serviceUrl = this.config.serverUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+    const rooms = this.roomServiceFactory(serviceUrl, this.config.apiKey, this.config.apiSecret);
+    const room = (await rooms.listRooms([roomName]))[0];
+    if (!room) return;
+
+    let metadata: Record<string, unknown> = {};
+    if (room.metadata) {
+      try {
+        const parsed = JSON.parse(room.metadata);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) metadata = parsed;
+      } catch {
+        // Replace malformed room metadata with a valid SyncoraXP envelope.
+      }
+    }
+    const existingSyncora = metadata.syncoraxp;
+    metadata.syncoraxp = {
+      ...(existingSyncora && typeof existingSyncora === "object" && !Array.isArray(existingSyncora)
+        ? existingSyncora
+        : {}),
+      translation: { version: 1, settings },
+    };
+    await rooms.updateRoomMetadata(roomName, JSON.stringify(metadata));
   }
 
   async endRoom(roomName: string): Promise<void> {

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
-import type { CreateMeetingInput } from "@voice/shared";
+import type { CreateMeetingInput, MeetingTranslationSettings } from "@voice/shared";
 import { buildApp } from "../src/app";
 import { AuthService } from "../src/auth/auth-service";
 import { MemoryAuthRepository } from "../src/auth/memory-auth-repository";
@@ -30,6 +30,7 @@ class FakeRoomTokenIssuer implements RoomTokenIssuer {
   requests: RoomTokenRequest[] = [];
   endedRooms: string[] = [];
   mediaPermissionUpdates: Array<{ roomName: string; allowCamera: boolean; allowMicrophone: boolean }> = [];
+  translationSettingsUpdates: Array<{ roomName: string; settings: MeetingTranslationSettings }> = [];
   mediaPermissionFailuresRemaining = 0;
   constructor(private readonly configured = true) {}
   isConfigured() { return this.configured; }
@@ -50,6 +51,9 @@ class FakeRoomTokenIssuer implements RoomTokenIssuer {
       this.mediaPermissionFailuresRemaining -= 1;
       throw new Error("LiveKit permission update failed");
     }
+  }
+  async updateTranslationSettings(roomName: string, settings: MeetingTranslationSettings) {
+    this.translationSettingsUpdates.push({ roomName, settings });
   }
 }
 
@@ -798,7 +802,7 @@ test("rejects malformed demo request", async (t) => {
 });
 
 test("lets only the host configure and queue meeting interpretation", async (t) => {
-  const { app } = await setup();
+  const { app, roomTokens } = await setup();
   t.after(() => app.close());
   const ownerCookie = await registerHost(app);
   const created = await app.inject({
@@ -853,6 +857,7 @@ test("lets only the host configure and queue meeting interpretation", async (t) 
   assert.deepEqual(enabled.json().settings.allowedTargetLanguages, ["hi", "bn", "mr", "ta", "te"]);
   assert.equal(enabled.json().runtime.status, "queued");
   assert.ok(enabled.json().runtime.runId);
+  assert.equal(roomTokens.translationSettingsUpdates.at(-1)?.settings.enabled, true);
   const firstRunId = enabled.json().runtime.runId;
 
   const providerChangeWhileRunning = await app.inject({
@@ -902,6 +907,7 @@ test("lets only the host configure and queue meeting interpretation", async (t) 
   assert.equal(disabled.statusCode, 200);
   assert.equal(disabled.json().settings.enabled, false);
   assert.equal(disabled.json().runtime.status, "stopping");
+  assert.equal(roomTokens.translationSettingsUpdates.at(-1)?.settings.enabled, false);
 
   const openAISelected = await app.inject({
     method: "PATCH",
