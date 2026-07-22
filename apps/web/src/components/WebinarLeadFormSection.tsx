@@ -106,7 +106,10 @@ export function WebinarLeadFormSection() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+    if (name === "phone" || e.target.type === "tel") {
+      value = value.replace(/[^\d\s\-\+]/g, "");
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
 
     if (touchedFields[name]) {
