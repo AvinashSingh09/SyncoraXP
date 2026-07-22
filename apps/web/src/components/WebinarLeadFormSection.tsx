@@ -207,24 +207,30 @@ export function WebinarLeadFormSection() {
 
           <div className="brand-marquee-track-outer">
             <div className="brand-marquee-track">
-              {brandLogoFiles.map((file, idx) => (
-                <img
-                  key={`b1-${idx}`}
-                  src={`/brands/${file}`}
-                  alt={`Brand Logo ${idx + 1}`}
-                  className="brand-normal-logo-img"
-                  loading="lazy"
-                />
-              ))}
-              {brandLogoFiles.map((file, idx) => (
-                <img
-                  key={`b2-${idx}`}
-                  src={`/brands/${file}`}
-                  alt={`Brand Logo ${idx + 1}`}
-                  className="brand-normal-logo-img"
-                  loading="lazy"
-                />
-              ))}
+              <div className="brand-marquee-group">
+                {brandLogoFiles.map((file, idx) => (
+                  <img
+                    key={`b1-${idx}`}
+                    src={`/brands/${file}`}
+                    alt={`Brand Logo ${idx + 1}`}
+                    className="brand-normal-logo-img"
+                    loading="eager"
+                    height={52}
+                  />
+                ))}
+              </div>
+              <div className="brand-marquee-group" aria-hidden="true">
+                {brandLogoFiles.map((file, idx) => (
+                  <img
+                    key={`b2-${idx}`}
+                    src={`/brands/${file}`}
+                    alt={`Brand Logo ${idx + 1}`}
+                    className="brand-normal-logo-img"
+                    loading="eager"
+                    height={52}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>

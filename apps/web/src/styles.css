@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&family=Caveat:wght@600;700&display=swap");
 
 :root {
   font-family: "DM Sans", system-ui, sans-serif;
@@ -6440,7 +6440,7 @@ textarea {
 .webinar-lead-section {
   width: 100%;
   background: #ffffff;
-  padding: 80px 0 100px;
+  padding: 60px 0 80px;
   color: #0f172a;
   font-family: "Manrope", "DM Sans", sans-serif;
   box-sizing: border-box;
@@ -6479,43 +6479,57 @@ textarea {
   width: 100%;
   display: flex;
   position: relative;
-  mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%);
-  padding: 16px 0;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  padding: 20px 0;
+  contain: layout paint;
 }
 
 .brand-marquee-track {
   display: flex;
-  gap: 72px;
-  align-items: center;
   width: max-content;
-  animation: brandMarquee 42s linear infinite;
+  animation: brandMarquee 75s linear infinite;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  perspective: 1000px;
 }
 
 .brand-marquee-track:hover {
   animation-play-state: paused;
 }
 
-.brand-normal-logo-img {
-  height: 64px;
-  max-height: 72px;
-  width: auto;
-  max-width: 220px;
-  object-fit: contain;
-  opacity: 0.92;
-  filter: contrast(1.05);
-  transition: all 0.2s ease;
+.brand-marquee-group {
+  display: flex;
+  align-items: center;
+  gap: 72px;
+  padding-right: 72px;
   flex-shrink: 0;
+}
+
+.brand-normal-logo-img {
+  height: 52px;
+  max-height: 52px;
+  width: auto;
+  max-width: 185px;
+  object-fit: contain;
+  opacity: 0.88;
+  filter: contrast(1.05);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+  flex-shrink: 0;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .brand-normal-logo-img:hover {
   opacity: 1;
-  transform: scale(1.08);
+  transform: scale(1.08) translateZ(0);
 }
 
 @keyframes brandMarquee {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
 }
 
 /* Purple Contact Lead Form Card */
@@ -7968,7 +7982,6 @@ textarea {
 /* ==========================================================================
    OUR PRESENCE SECTION (DELHI, MUMBAI, DUBAI) - PREMIUM CARD ART
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&display=swap');
 
 .presence-section {
   position: relative;
