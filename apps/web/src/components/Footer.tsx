@@ -171,7 +171,7 @@ export function Footer() {
             </h4>
             <ul style={{ listStyle: "none", padding: 0, margin: 0, display: "flex", flexDirection: "column", gap: "12px", fontSize: "14px" }}>
               <li><span style={{ color: "#cbd5e1" }}>HD Live Broadcast Rooms</span></li>
-              <li><span style={{ color: "#cbd5e1" }}>Audience Q&A & Polls</span></li>
+              {/* <li><span style={{ color: "#cbd5e1" }}>Audience Q&A & Polls</span></li> */}
               <li><span style={{ color: "#cbd5e1" }}>Instant QR Ticket Badges</span></li>
               <li><span style={{ color: "#cbd5e1" }}>Real-time Live Translation</span></li>
               <li><span style={{ color: "#cbd5e1" }}>Analytics & Lead Capture</span></li>
