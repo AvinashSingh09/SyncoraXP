@@ -45,11 +45,6 @@ export function GlobalWebinarSection() {
         
         {/* Header Section */}
         <div className="global-webinar-header">
-          <div className="global-eyebrow-badge">
-            <Sparkle size={14} weight="fill" className="sparkle-icon" />
-            <span>Smarter Webinars. Global Impact.</span>
-            <Sparkle size={14} weight="fill" className="sparkle-icon" />
-          </div>
 
           <h2 className="global-main-headline">
             Built for <span className="gradient-pink-purple">Every Voice,</span><br />

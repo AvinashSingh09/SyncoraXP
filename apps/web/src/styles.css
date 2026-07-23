@@ -4988,17 +4988,22 @@ textarea {
   min-height: 100vh;
   padding-top: 0;
   background: #ffffff;
-  background-image: radial-gradient(rgba(147, 51, 234, 0.12) 1.5px, transparent 1.5px);
-  background-size: 24px 24px;
   font-family: "Manrope", "DM Sans", sans-serif;
   overflow-x: hidden;
   color: #1e1035;
 }
 .webinar-hero {
+  width: 100%;
+  margin: 0;
+  padding: 200px 0 88px;
+  box-sizing: border-box;
+  background: #eadeff;
+  background-image: radial-gradient(rgba(147, 51, 234, 0.12) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+}
+.webinar-hero-inner {
   width: min(1260px, calc(100% - 48px));
   margin: 0 auto;
-  padding: 130px 0 88px;
-  box-sizing: border-box;
 }
 .webinar-hero-container {
   display: grid;
@@ -8225,38 +8230,62 @@ textarea {
 }
 
 .presence-title {
-  font: 800 52px/1.15 "Manrope", sans-serif;
-  color: #2e1065;
-  margin: 0 0 18px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin: 0 0 20px 0;
+}
+
+.presence-title-top {
+  font: 850 clamp(32px, 3.8vw, 52px)/1.15 "Manrope", sans-serif;
+  color: #1e1035;
   letter-spacing: -0.025em;
 }
 
-.presence-gradient {
-  background: linear-gradient(135deg, #7e22ce 0%, #a855f7 100%);
+.presence-title-bottom {
+  font: 850 clamp(25px, 3.1vw, 44px)/1.2 "Manrope", sans-serif;
+  background: linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   display: inline-block;
+  white-space: nowrap;
+  letter-spacing: -0.015em;
+  margin-top: 4px;
 }
 
 .presence-subtitle {
-  font-size: 19px;
-  line-height: 1.65;
-  color: #6b21a8;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: #475569;
   font-weight: 500;
-  margin: 0;
+  max-width: 560px;
+  margin: 0 auto;
 }
 
 /* Grid Layout */
 .presence-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 1200px) {
+  .presence-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .presence-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* City Card */
 .presence-city-card {
   position: relative;
-  height: 480px;
+  height: 460px;
   border-radius: 28px;
   overflow: hidden;
   display: flex;
@@ -8299,7 +8328,7 @@ textarea {
 .presence-card-content {
   position: relative;
   z-index: 2;
-  padding: 32px 28px;
+  padding: 32px 24px;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -8329,10 +8358,10 @@ textarea {
 }
 
 .city-main-name {
-  font: 900 48px/1 "Manrope", sans-serif;
+  font: 900 40px/1 "Manrope", sans-serif;
   color: #ffffff;
   margin: 0;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
 }
@@ -8364,6 +8393,17 @@ textarea {
 }
 
 /* City Specific Border & Glow Themes */
+.city-card-gurgaon {
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+
+.city-card-gurgaon:hover {
+  transform: translateY(-8px);
+  border-color: #a855f7;
+  box-shadow: 0 20px 45px rgba(168, 85, 247, 0.25);
+}
+
 .city-card-delhi {
   border: 1px solid rgba(245, 158, 11, 0.4);
   box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
@@ -8384,6 +8424,17 @@ textarea {
   transform: translateY(-8px);
   border-color: #38bdf8;
   box-shadow: 0 20px 45px rgba(56, 189, 248, 0.25);
+}
+
+.city-card-bangalore {
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+}
+
+.city-card-bangalore:hover {
+  transform: translateY(-8px);
+  border-color: #22c55e;
+  box-shadow: 0 20px 45px rgba(34, 197, 94, 0.25);
 }
 
 .city-card-dubai {

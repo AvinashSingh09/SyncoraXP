@@ -33,13 +33,6 @@ export function HostWebinarSection() {
     <section className="host-webinar-section" aria-label="Host A Webinar Showcase">
       <div className="host-webinar-container">
         
-        {/* Top Section Header */}
-        <div className="host-webinar-top-bar">
-          <div className="host-webinar-label">
-            <VideoCamera size={18} weight="fill" />
-            <span>Host A Webinar</span>
-          </div>
-        </div>
 
         {/* 3-Column Main Showcase Grid */}
         <div className="host-webinar-grid">

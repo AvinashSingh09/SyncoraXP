@@ -21,24 +21,14 @@ import { Footer } from "../components/Footer";
 export function WebinarServicePage() {
   return (
     <main className="landing-page webinar-service-page">
-      {/* ── TOP HERO HALF (Lavender Purple-Dotted Background matching Book a Demo) ── */}
-      <div style={{
-        background: "#eadeff",
-        backgroundImage: "radial-gradient(rgba(147, 51, 234, 0.12) 1.5px, transparent 1.5px)",
-        backgroundSize: "24px 24px",
-        width: "100%",
-      }}>
-        <MarketingHeader />
+      <MarketingHeader />
 
       <section className="webinar-hero" aria-labelledby="webinar-title">
+        <div className="webinar-hero-inner">
         <div className="webinar-hero-container">
           
           {/* Left Column: Information & Details */}
           <div className="webinar-hero-info">
-            <div className="webinar-badge">
-              <span className="webinar-badge-dot" />
-              All-in-One Webinar Platform
-            </div>
 
             <h1 id="webinar-title">
               Deliver World-Class<br />
@@ -145,8 +135,8 @@ export function WebinarServicePage() {
             </div>
 
           </div>
+        </div>
         </section>
-      </div>
 
       {/* Host A Webinar Showcase Section */}
       <HostWebinarSection />
