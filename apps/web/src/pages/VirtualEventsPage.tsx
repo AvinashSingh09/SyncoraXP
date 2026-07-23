@@ -21,7 +21,7 @@ import {
 import { Link } from "react-router-dom";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { Footer } from "../components/Footer";
-import { apiFetch } from "../backend";
+import { apiFetch } from "../api";
 
 const eventArtwork = "/virtual-events/syncoraxp-virtual-events-hero.png";
 const hostArtwork = "/virtual-events/host-live-v1.png";

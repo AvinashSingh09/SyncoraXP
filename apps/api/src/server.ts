@@ -1,19 +1,13 @@
 import { Pool } from "pg";
 import { buildApp } from "./app";
 import { loadConfig } from "./config";
-import { MemoryMeetingRepository } from "./db/memory-meeting-repository";
-import type { MeetingRepository } from "./db/meeting-repository";
 import { PostgresMeetingRepository } from "./db/postgres-meeting-repository";
 import { ConsoleInvitationMailer } from "./email/console-mailer";
 import type { InvitationMailer } from "./email/invitation-mailer";
 import { ZeptoMailInvitationMailer } from "./email/zeptomail-mailer";
 import { AuthService } from "./auth/auth-service";
-import { MemoryAuthRepository } from "./auth/memory-auth-repository";
 import { PostgresAuthRepository } from "./auth/postgres-auth-repository";
-import type { AuthRepository } from "./auth/auth-repository";
 import { LiveKitRoomTokenIssuer } from "./livekit/room-token-issuer";
-import type { TranslationRepository } from "./translation/translation-repository";
-import { MemoryTranslationRepository } from "./translation/memory-translation-repository";
 import { PostgresTranslationRepository } from "./translation/postgres-translation-repository";
 
 const config = loadConfig();
@@ -24,15 +18,9 @@ const pool = new Pool({
   connectionTimeoutMillis: 5_000,
   ...(isRemotePg ? { ssl: { rejectUnauthorized: false } } : {}),
 });
-let repository: MeetingRepository = new PostgresMeetingRepository(pool);
-let authRepository: AuthRepository = new PostgresAuthRepository(pool);
-let translations: TranslationRepository = new PostgresTranslationRepository(pool);
-if (config.DATABASE_MODE === "memory") {
-  repository = new MemoryMeetingRepository();
-  authRepository = new MemoryAuthRepository();
-  translations = new MemoryTranslationRepository();
-}
-const auth = new AuthService(authRepository, config.SESSION_DAYS);
+const repository = new PostgresMeetingRepository(pool);
+const auth = new AuthService(new PostgresAuthRepository(pool), config.SESSION_DAYS);
+const translations = new PostgresTranslationRepository(pool);
 const roomTokens = new LiveKitRoomTokenIssuer({
   serverUrl: config.LIVEKIT_URL,
   apiKey: config.LIVEKIT_API_KEY,
@@ -55,7 +43,7 @@ try {
 
   const shutdown = async () => {
     await app.close();
-    if (config.DATABASE_MODE === "postgres") await pool.end();
+    await pool.end();
   };
 
   process.on("SIGINT", () => void shutdown());

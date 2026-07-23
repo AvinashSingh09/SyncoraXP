@@ -11,13 +11,13 @@ import {
 import type {
   StoredTranslationRun,
   TranslationRepository,
-} from "./translation-repository";
+} from "../../src/translation/translation-repository";
 
 function cloneSettings(settings: MeetingTranslationSettings): MeetingTranslationSettings {
   return { ...settings, allowedTargetLanguages: [...settings.allowedTargetLanguages] };
 }
 
-export class MemoryTranslationRepository implements TranslationRepository {
+export class TestTranslationRepository implements TranslationRepository {
   private readonly settings = new Map<string, MeetingTranslationSettings>();
   private readonly runs = new Map<string, StoredTranslationRun>();
 

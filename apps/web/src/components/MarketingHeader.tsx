@@ -73,11 +73,19 @@ export function MarketingHeader() {
         <div
           ref={solutionsMenuRef}
           className={`solutions-menu${solutionsOpen ? " is-open" : ""}`}
-          onMouseEnter={() => setSolutionsOpen(true)}
+          onMouseEnter={() => {
+            setSolutionsOpen(true);
+            setCompanyOpen(false);
+            setCompanyPinned(false);
+          }}
           onMouseLeave={() => {
             if (!solutionsPinned) setSolutionsOpen(false);
           }}
-          onFocus={() => setSolutionsOpen(true)}
+          onFocus={() => {
+            setSolutionsOpen(true);
+            setCompanyOpen(false);
+            setCompanyPinned(false);
+          }}
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget as Node) && !solutionsPinned) {
               setSolutionsOpen(false);
@@ -93,6 +101,10 @@ export function MarketingHeader() {
               setSolutionsPinned((current) => {
                 const next = !current;
                 setSolutionsOpen(next);
+                if (next) {
+                  setCompanyOpen(false);
+                  setCompanyPinned(false);
+                }
                 return next;
               });
             }}
@@ -101,64 +113,195 @@ export function MarketingHeader() {
           </button>
 
           {solutionsOpen && (
-            <div className="solutions-dropdown" id="desktop-solutions-menu" role="menu">
-              <div className="mega-solution-list">
-                <Link
-                  className="mega-solution-row"
-                  to="/virtual-events-platform"
-                  role="menuitem"
-                  onClick={() => {
-                    setSolutionsOpen(false);
-                    setSolutionsPinned(false);
-                  }}
-                >
-                  <span className="mega-solution-title">
-                    <Broadcast size={23} weight="duotone" />
-                    <strong>Virtual Events Platform</strong>
+            <div
+              className="solutions-dropdown-bar"
+              id="desktop-solutions-menu"
+              role="menu"
+              style={{
+                position: "absolute",
+                top: "calc(100% + 14px)",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "min(920px, calc(100vw - 48px))",
+                background: "linear-gradient(135deg, rgba(243, 232, 255, 0.94) 0%, rgba(255, 255, 255, 0.98) 50%, rgba(243, 232, 255, 0.94) 100%)",
+                borderRadius: "22px",
+                border: "1.5px solid rgba(147, 51, 234, 0.18)",
+                boxShadow: "0 20px 50px rgba(91, 20, 189, 0.16)",
+                padding: "16px 20px",
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "0",
+                boxSizing: "border-box",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                zIndex: 1000,
+              }}
+            >
+              {/* Item 1: Virtual Events Platform */}
+              <Link
+                to="/virtual-events-platform"
+                role="menuitem"
+                onClick={() => {
+                  setSolutionsOpen(false);
+                  setSolutionsPinned(false);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  padding: "14px 18px",
+                  textDecoration: "none",
+                  borderRight: "1px solid rgba(147, 51, 234, 0.12)",
+                  transition: "all 0.2s ease",
+                  borderRadius: "14px 0 0 14px",
+                }}
+                className="solutions-hover-col"
+              >
+                {/* Icon Badge */}
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  background: "#f3e8ff",
+                  border: "1px solid rgba(147, 51, 234, 0.2)",
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: "0 4px 14px rgba(91, 20, 189, 0.08)",
+                  flexShrink: 0,
+                }}>
+                  <Broadcast size={22} weight="regular" color="#7c3aed" />
+                </div>
+
+                {/* Text Group */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <strong style={{ fontSize: "15.5px", fontWeight: 850, color: "#1e1035", lineHeight: 1.2 }}>
+                    Virtual Events Platform
+                  </strong>
+                  <span style={{ fontSize: "11.5px", color: "#64748b", fontWeight: 500, lineHeight: 1.3 }}>
+                    Host immersive virtual events
                   </span>
-                </Link>
-                <Link
-                  className="mega-solution-row"
-                  to="/webinar-service"
-                  role="menuitem"
-                  onClick={() => {
-                    setSolutionsOpen(false);
-                    setSolutionsPinned(false);
-                  }}
-                >
-                  <span className="mega-solution-title">
-                    <MicrophoneStage size={23} weight="duotone" />
-                    <strong>Webinar service</strong>
+                </div>
+
+                {/* Arrow Icon */}
+                <CaretRight size={16} weight="bold" color="#7c3aed" style={{ flexShrink: 0, transition: "transform 0.2s ease" }} />
+              </Link>
+
+              {/* Item 2: Event Registration */}
+              <Link
+                to="/event-registration"
+                role="menuitem"
+                onClick={() => {
+                  setSolutionsOpen(false);
+                  setSolutionsPinned(false);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  padding: "14px 18px",
+                  textDecoration: "none",
+                  borderRight: "1px solid rgba(147, 51, 234, 0.12)",
+                  transition: "all 0.2s ease",
+                }}
+                className="solutions-hover-col"
+              >
+                {/* Icon Badge */}
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  background: "#f3e8ff",
+                  border: "1px solid rgba(147, 51, 234, 0.2)",
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: "0 4px 14px rgba(91, 20, 189, 0.08)",
+                  flexShrink: 0,
+                }}>
+                  <Ticket size={22} weight="regular" color="#7c3aed" />
+                </div>
+
+                {/* Text Group */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <strong style={{ fontSize: "15.5px", fontWeight: 850, color: "#1e1035", lineHeight: 1.2 }}>
+                    Event Registration
+                  </strong>
+                  <span style={{ fontSize: "11.5px", color: "#64748b", fontWeight: 500, lineHeight: 1.3 }}>
+                    Seamless registration & ticketing
                   </span>
-                </Link>
-                <Link
-                  className="mega-solution-row"
-                  to="/event-registration"
-                  role="menuitem"
-                  onClick={() => {
-                    setSolutionsOpen(false);
-                    setSolutionsPinned(false);
-                  }}
-                >
-                  <span className="mega-solution-title">
-                    <Ticket size={23} weight="duotone" />
-                    <strong>Event Registration</strong>
+                </div>
+
+                {/* Arrow Icon */}
+                <CaretRight size={16} weight="bold" color="#7c3aed" style={{ flexShrink: 0, transition: "transform 0.2s ease" }} />
+              </Link>
+
+              {/* Item 3: Webinar service */}
+              <Link
+                to="/webinar-service"
+                role="menuitem"
+                onClick={() => {
+                  setSolutionsOpen(false);
+                  setSolutionsPinned(false);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  padding: "14px 18px",
+                  textDecoration: "none",
+                  transition: "all 0.2s ease",
+                  borderRadius: "0 14px 14px 0",
+                }}
+                className="solutions-hover-col"
+              >
+                {/* Icon Badge */}
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  background: "#f3e8ff",
+                  border: "1px solid rgba(147, 51, 234, 0.2)",
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: "0 4px 14px rgba(91, 20, 189, 0.08)",
+                  flexShrink: 0,
+                }}>
+                  <MicrophoneStage size={22} weight="regular" color="#7c3aed" />
+                </div>
+
+                {/* Text Group */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
+                  <strong style={{ fontSize: "15.5px", fontWeight: 850, color: "#1e1035", lineHeight: 1.2 }}>
+                    Webinar service
+                  </strong>
+                  <span style={{ fontSize: "11.5px", color: "#64748b", fontWeight: 500, lineHeight: 1.3 }}>
+                    Run impactful webinars
                   </span>
-                </Link>
-              </div>
+                </div>
+
+                {/* Arrow Icon */}
+                <CaretRight size={16} weight="bold" color="#7c3aed" style={{ flexShrink: 0, transition: "transform 0.2s ease" }} />
+              </Link>
             </div>
           )}
         </div>
-        <a href={landingAnchor("#solutions")}>Platform</a>
-        <a href={landingAnchor("#capabilities")}>Resources</a>
+        <a href={landingAnchor("#solutions")} onMouseEnter={() => { setSolutionsOpen(false); setSolutionsPinned(false); setCompanyOpen(false); setCompanyPinned(false); }}>Platform</a>
+        <a href={landingAnchor("#capabilities")} onMouseEnter={() => { setSolutionsOpen(false); setSolutionsPinned(false); setCompanyOpen(false); setCompanyPinned(false); }}>Resources</a>
         <div
           ref={companyMenuRef}
           className={`solutions-menu${companyOpen ? " is-open" : ""}`}
-          onMouseEnter={() => setCompanyOpen(true)}
+          onMouseEnter={() => {
+            setCompanyOpen(true);
+            setSolutionsOpen(false);
+            setSolutionsPinned(false);
+          }}
           onMouseLeave={() => {
             if (!companyPinned) setCompanyOpen(false);
           }}
-          onFocus={() => setCompanyOpen(true)}
+          onFocus={() => {
+            setCompanyOpen(true);
+            setSolutionsOpen(false);
+            setSolutionsPinned(false);
+          }}
           onBlur={(event) => {
             if (!event.currentTarget.contains(event.relatedTarget as Node) && !companyPinned) {
               setCompanyOpen(false);
@@ -174,6 +317,10 @@ export function MarketingHeader() {
               setCompanyPinned((current) => {
                 const next = !current;
                 setCompanyOpen(next);
+                if (next) {
+                  setSolutionsOpen(false);
+                  setSolutionsPinned(false);
+                }
                 return next;
               });
             }}
@@ -502,7 +649,7 @@ export function MarketingHeader() {
       </nav>
 
       <div className="landing-header-actions">
-        <Link className="landing-sign-in" to={user ? "/webinar-service" : "/login"}>
+        <Link className="landing-sign-in" to={user ? "/webinar-service/meetings" : "/login"}>
           {user ? "Dashboard" : "Sign in"}
         </Link>
         <Link className="landing-button compact" to="/book-demo">
@@ -538,7 +685,7 @@ export function MarketingHeader() {
           </details>
           <a href={landingAnchor("#solutions")} onClick={() => setMobileMenuOpen(false)}>Platform</a>
           <a href={landingAnchor("#capabilities")} onClick={() => setMobileMenuOpen(false)}>Resources</a>
-          <Link to={user ? "/webinar-service" : "/login"} onClick={() => setMobileMenuOpen(false)}>
+          <Link to={user ? "/webinar-service/meetings" : "/login"} onClick={() => setMobileMenuOpen(false)}>
             {user ? "Open dashboard" : "Sign in"}
           </Link>
           <Link className="landing-button" to="/book-demo" onClick={() => setMobileMenuOpen(false)}>

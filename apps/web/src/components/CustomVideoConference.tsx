@@ -119,6 +119,8 @@ export function CustomVideoConference({
   });
 
   const [showParticipants, setShowParticipants] = React.useState(false);
+  const [captionsOpen, setCaptionsOpen] = React.useState(false);
+  const [panelHost, setPanelHost] = React.useState<HTMLDivElement | null>(null);
   const [participantPermissionBusy, setParticipantPermissionBusy] = React.useState<string | null>(null);
   const [participantPermissionError, setParticipantPermissionError] = React.useState("");
   const [, refreshParticipantPermissions] = React.useReducer((revision) => revision + 1, 0);
@@ -181,6 +183,7 @@ export function CustomVideoConference({
     setWidgetState(state);
     if (state.showChat) {
       setShowParticipants(false);
+      setCaptionsOpen(false);
       onCloseHostPanel?.();
     }
   }, [onCloseHostPanel]);
@@ -200,6 +203,7 @@ export function CustomVideoConference({
   React.useEffect(() => {
     if (isHostPanelOpen) {
       setShowParticipants(false);
+      setCaptionsOpen(false);
       layoutContext.widget.dispatch?.({ msg: "hide_chat" });
     }
   }, [isHostPanelOpen]);
@@ -248,11 +252,20 @@ export function CustomVideoConference({
     setShowParticipants((prev) => {
       const next = !prev;
       if (next) {
+        setCaptionsOpen(false);
         layoutContext.widget.dispatch?.({ msg: "hide_chat" });
         onCloseHostPanel?.();
       }
       return next;
     });
+  }, [layoutContext.widget, onCloseHostPanel]);
+
+  const setCaptionPanel = React.useCallback((open: boolean) => {
+    setCaptionsOpen(open);
+    if (!open) return;
+    setShowParticipants(false);
+    layoutContext.widget.dispatch?.({ msg: "hide_chat" });
+    onCloseHostPanel?.();
   }, [layoutContext.widget, onCloseHostPanel]);
 
   const toggleParticipantPermission = React.useCallback(
@@ -283,7 +296,7 @@ export function CustomVideoConference({
   );
 
   return (
-    <div className="lk-video-conference" {...props}>
+    <div className="lk-video-conference" ref={setPanelHost} {...props}>
       <LayoutContextProvider
         value={layoutContext}
         onWidgetChange={widgetUpdate}
@@ -343,6 +356,9 @@ export function CustomVideoConference({
                 meetingId={meetingId}
                 settings={translationSettings}
                 showControl={participantRole === "guest"}
+                captionsOpen={captionsOpen}
+                panelHost={panelHost}
+                onCaptionsOpenChange={setCaptionPanel}
               />
               <button
                 type="button"

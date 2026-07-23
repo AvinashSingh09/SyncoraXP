@@ -82,7 +82,7 @@ export async function registerTranslationRoutes(
 
       const settings = await dependencies.translations.updateSettings(meeting.id, parsed.data);
       await dependencies.roomTokens.updateTranslationSettings(meeting.livekitRoomName, settings);
-      if (settings.enabled && settings.designatedSpeakerIdentity) {
+      if (settings.designatedSpeakerIdentity) {
         await dependencies.translations.queueRun({
           id: randomUUID(),
           meetingId: meeting.id,
@@ -91,8 +91,6 @@ export async function registerTranslationRoutes(
           provider: settings.provider,
           model: settings.model,
         });
-      } else {
-        await dependencies.translations.requestStop(meeting.id);
       }
 
       const response: MeetingTranslationResponse = {

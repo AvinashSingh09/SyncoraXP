@@ -11,7 +11,6 @@ const EnvironmentSchema = z
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     PORT: z.coerce.number().int().positive().default(3000),
     SESSION_DAYS: z.coerce.number().int().min(1).max(30).default(7),
-    DATABASE_MODE: z.enum(["postgres", "memory"]).default("postgres"),
     DATABASE_URL: z
       .string()
       .default("postgres://postgres:postgres@localhost:5432/voice_meetings"),
@@ -28,13 +27,6 @@ const EnvironmentSchema = z
     ZEPTOMAIL_DEMO_RECEIVER: z.string().email().default("pictureofevent360@gmail.com"),
   })
   .superRefine((environment, context) => {
-    if (environment.NODE_ENV === "production" && environment.DATABASE_MODE === "memory") {
-      context.addIssue({
-        code: "custom",
-        path: ["DATABASE_MODE"],
-        message: "In-memory storage is not allowed in production",
-      });
-    }
     const liveKitValues = [
       environment.LIVEKIT_URL,
       environment.LIVEKIT_API_KEY,

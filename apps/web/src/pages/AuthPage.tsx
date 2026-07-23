@@ -12,7 +12,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  if (!loading && user) return <Navigate to="/webinar-service" replace />;
+  if (!loading && user) return <Navigate to="/webinar-service/meetings" replace />;
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
@@ -21,7 +21,7 @@ export function AuthPage({ mode }: { mode: "login" | "register" }) {
     try {
       if (mode === "register") await register({ name, email, password });
       else await login({ email, password });
-      navigate("/webinar-service");
+      navigate("/webinar-service/meetings");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Authentication failed");
     } finally {

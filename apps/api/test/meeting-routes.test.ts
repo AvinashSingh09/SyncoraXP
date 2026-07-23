@@ -4,14 +4,14 @@ import test from "node:test";
 import type { CreateMeetingInput, MeetingTranslationSettings, ParticipantMediaPermissionsResponse } from "@voice/shared";
 import { buildApp } from "../src/app";
 import { AuthService } from "../src/auth/auth-service";
-import { MemoryAuthRepository } from "../src/auth/memory-auth-repository";
-import { MemoryMeetingRepository } from "../src/db/memory-meeting-repository";
+import { TestMeetingRepository } from "./support/test-meeting-repository";
 import type { InvitationMailer, InvitationMessage, DemoMessage } from "../src/email/invitation-mailer";
 import type {
   RoomTokenIssuer,
   RoomTokenRequest,
 } from "../src/livekit/room-token-issuer";
-import { MemoryTranslationRepository } from "../src/translation/memory-translation-repository";
+import { TestAuthRepository } from "./support/test-auth-repository";
+import { TestTranslationRepository } from "./support/test-translation-repository";
 
 class FakeMailer implements InvitationMailer {
   messages: InvitationMessage[] = [];
@@ -88,7 +88,6 @@ const config = {
   NODE_ENV: "test" as const,
   PORT: 3000,
   SESSION_DAYS: 7,
-  DATABASE_MODE: "memory" as const,
   DATABASE_URL: "postgres://unused",
   APP_BASE_URL: "https://meet.example.com",
   CORS_ORIGIN: "https://meet.example.com",
@@ -105,12 +104,12 @@ const validMeeting: CreateMeetingInput = {
 };
 
 async function setup(liveKitConfigured = true) {
-  const repository = new MemoryMeetingRepository();
-  const authRepository = new MemoryAuthRepository();
+  const repository = new TestMeetingRepository();
+  const authRepository = new TestAuthRepository();
   const mailer = new FakeMailer();
   const roomTokens = new FakeRoomTokenIssuer(liveKitConfigured);
   const auth = new AuthService(authRepository, 7);
-  const translations = new MemoryTranslationRepository();
+  const translations = new TestTranslationRepository();
   const app = await buildApp({
     config: config as any,
     repository,
@@ -980,7 +979,7 @@ test("lets only the host configure and queue meeting interpretation", async (t) 
   });
   assert.equal(disabled.statusCode, 200);
   assert.equal(disabled.json().settings.enabled, false);
-  assert.equal(disabled.json().runtime.status, "stopping");
+  assert.equal(disabled.json().runtime.status, "queued");
   assert.equal(roomTokens.translationSettingsUpdates.at(-1)?.settings.enabled, false);
 
   const openAISelected = await app.inject({

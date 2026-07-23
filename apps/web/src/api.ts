@@ -18,7 +18,12 @@ import type {
   UpdateParticipantMediaPermissionsInput,
   UpdateMeetingTranslationInput,
 } from "@voice/shared";
-import { apiFetch } from "./backend";
+
+const API_ORIGIN = import.meta.env.VITE_API_URL?.trim().replace(/\/+$/, "") || window.location.origin;
+
+export function apiFetch(path: string, init?: RequestInit): Promise<Response> {
+  return fetch(`${API_ORIGIN}${path.startsWith("/") ? path : `/${path}`}`, init);
+}
 
 async function readJson<T>(response: Response): Promise<T> {
   const body = (await response.json().catch(() => ({}))) as T & { error?: string };
