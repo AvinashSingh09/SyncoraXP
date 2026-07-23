@@ -25,34 +25,38 @@ export function WebinarServicePage() {
 
       <section className="webinar-hero" aria-labelledby="webinar-title">
         <div className="webinar-hero-inner">
-        <div className="webinar-hero-container">
-          
-          {/* Left Column: Information & Details */}
-          <div className="webinar-hero-info">
+          <div className="webinar-hero-container">
 
-            <h1 id="webinar-title">
-              Deliver World-Class<br />
-              <span className="webinar-highlight">Webinar Experiences</span>
-            </h1>
-
-            <p className="webinar-description">
-              Host highly interactive &amp; informative live webinars – the ultimate webinar platform. 
-              Unleash the true potential of your organization and reach the set objective by 
-              conceptualizing webinars in no time with the world's best webinar services &amp; solutions!
-            </p>
-
-            <Link to="/webinar-service/meetings" className="webinar-cta-button">
-              Get Started <ArrowRight size={18} weight="bold" />
-            </Link>
-
-            <div className="webinar-features">
-              <div className="webinar-feature-col">
-                <div className="webinar-feature-icon-wrapper">
-                  <Users size={22} weight="regular" />
-                </div>
-                <h3>Highly Interactive</h3>
-                <p>Engage your audience in real-time</p>
+            {/* Left Column: Information & Details */}
+            <div className="webinar-hero-info">
+              <div className="webinar-badge">
+                <span className="webinar-badge-dot" />
+                All-in-One Webinar Platform
               </div>
+
+              <h1 id="webinar-title">
+                Deliver World-Class<br />
+                <span className="webinar-highlight">Webinar Experiences</span>
+              </h1>
+
+              <p className="webinar-description">
+                Host highly interactive &amp; informative live webinars – the ultimate webinar platform.
+                Unleash the true potential of your organization and reach the set objective by
+                conceptualizing webinars in no time with the world's best webinar services &amp; solutions!
+              </p>
+
+              <Link to="/webinar-service/meetings" className="webinar-cta-button">
+                Get Started <ArrowRight size={18} weight="bold" />
+              </Link>
+
+              <div className="webinar-features">
+                <div className="webinar-feature-col">
+                  <div className="webinar-feature-icon-wrapper">
+                    <Users size={22} weight="regular" />
+                  </div>
+                  <h3>Highly Interactive</h3>
+                  <p>Engage your audience in real-time</p>
+                </div>
 
                 <div className="webinar-feature-col">
                   <div className="webinar-feature-icon-wrapper">
@@ -76,9 +80,9 @@ export function WebinarServicePage() {
             <div className="webinar-showcase">
               <div className="webinar-video-card">
                 {/* Presenter Background Image */}
-                <img 
-                  src="/landing/webinar-speaker.png" 
-                  alt="Webinar live speaker hosting session" 
+                <img
+                  src="/landing/webinar-speaker.png"
+                  alt="Webinar live speaker hosting session"
                   className="webinar-speaker-img"
                 />
 

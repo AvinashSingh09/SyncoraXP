@@ -6,6 +6,7 @@ import {
   type TranslationLanguageStatus,
 } from "@voice/shared";
 import {
+  AudioResampler,
   AudioStream,
   Room,
   RoomEvent,
@@ -22,6 +23,7 @@ import { TranslationTrackPublisher } from "../livekit/translation-track-publishe
 import { FakeTranslationSession } from "../providers/fake-translation-session";
 import { GeminiTranslationSession } from "../providers/gemini-translation-session";
 import { OpenAITranslationSession } from "../providers/openai-translation-session";
+import { OpenAITranscriptionSession } from "../providers/openai-transcription-session";
 import type { TranslationSessionFactory } from "../providers/translation-session";
 import { LanguageSessionManager } from "../sessions/language-session-manager";
 import type { ClaimedTranslationJob } from "./translation-job-store";
@@ -45,7 +47,8 @@ export class TranslationJobRunner {
   ) {}
 
   async run(): Promise<void> {
-    const sourceCaptionLanguage = this.job.settings.allowedTargetLanguages[0]!;
+    const transcription = this.createTranscriptionSession();
+    await transcription.open();
     const sessionManager = new LanguageSessionManager(
       this.job.settings.allowedTargetLanguages,
       this.createSessionFactory(),
@@ -63,18 +66,14 @@ export class TranslationJobRunner {
           if (sessionManager.getStatus(language).listenerCount > 0) publisher.capture(language, pcm16);
         },
         onTranscript: (language, delta) => {
-          if (delta.kind === "source" && language !== sourceCaptionLanguage) return;
+          if (delta.kind !== "target") return;
           this.runInBackground(
             this.publishMessage({
               ...this.messageBase(),
-              type: delta.kind === "source"
-                ? delta.final
-                  ? "translation.caption.source.final"
-                  : "translation.caption.source.delta"
-                : delta.final
-                  ? "translation.caption.target.final"
-                  : "translation.caption.target.delta",
-              ...(delta.kind === "target" ? { language } : {}),
+              type: delta.final
+                ? "translation.caption.target.final"
+                : "translation.caption.target.delta",
+              language,
               text: delta.text,
             }),
             `publish ${language} translation transcript`,
@@ -104,7 +103,7 @@ export class TranslationJobRunner {
     });
     this.room.on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
       if (this.isSourceTrack(publication, participant)) {
-        void this.consumeSourceAudio(track, sessionManager).catch((error) => {
+        void this.consumeSourceAudio(track, sessionManager, transcription).catch((error) => {
           console.error(`Translation source audio failed for run ${this.job.id}`, error);
           this.stop();
         });
@@ -120,26 +119,26 @@ export class TranslationJobRunner {
     });
     this.room.on(RoomEvent.Disconnected, () => this.stop());
 
-    const token = await this.createLiveKitToken();
-    await this.room.connect(this.config.LIVEKIT_WORKER_URL ?? this.config.LIVEKIT_URL, token, {
-      autoSubscribe: false,
-      dynacast: false,
-    });
-    for (const participant of this.room.remoteParticipants.values()) {
-      for (const publication of participant.trackPublications.values()) {
-        if ("setSubscribed" in publication) {
-          this.subscribeIfSource(publication as RemoteTrackPublication, participant);
+    try {
+      const token = await this.createLiveKitToken();
+      await this.room.connect(this.config.LIVEKIT_WORKER_URL ?? this.config.LIVEKIT_URL, token, {
+        autoSubscribe: false,
+        dynacast: false,
+      });
+      for (const participant of this.room.remoteParticipants.values()) {
+        for (const publication of participant.trackPublications.values()) {
+          if ("setSubscribed" in publication) {
+            this.subscribeIfSource(publication as RemoteTrackPublication, participant);
+          }
         }
       }
-    }
-    await this.publishMessage({
-      ...this.messageBase(),
-      type: "translation.worker.status",
-      status: "active",
-      sourceParticipantIdentity: this.job.speakerParticipantIdentity,
-    });
+      await this.publishMessage({
+        ...this.messageBase(),
+        type: "translation.worker.status",
+        status: "active",
+        sourceParticipantIdentity: this.job.speakerParticipantIdentity,
+      });
 
-    try {
       while (!this.stopped) {
         const control = await this.store.heartbeat(
           this.job.id,
@@ -147,7 +146,11 @@ export class TranslationJobRunner {
           "active",
           this.config.TRANSLATION_WORKER_LEASE_MS,
         );
-        if (!control || control.status === "stopping") break;
+        if (
+          !control ||
+          control.status === "stopping" ||
+          control.status === "stopping_scoped"
+        ) break;
         await this.delay(this.config.TRANSLATION_WORKER_HEARTBEAT_MS);
       }
     } finally {
@@ -161,6 +164,7 @@ export class TranslationJobRunner {
         }).catch(() => undefined);
       }
       await this.sourceReader?.cancel().catch(() => undefined);
+      await transcription.close();
       await sessionManager.close();
       await this.drainBackgroundTasks();
       await publisher.close();
@@ -207,6 +211,46 @@ export class TranslationJobRunner {
         safetyIdentifier: createHash("sha256").update(this.job.meetingId).digest("hex"),
       });
     };
+  }
+
+  private createTranscriptionSession(): OpenAITranscriptionSession {
+    if (!this.config.OPENAI_API_KEY) {
+      throw this.providerConfigurationError("OpenAI transcription is not configured");
+    }
+    return new OpenAITranscriptionSession(
+      {
+        onTranscript: (text, final) => {
+          if (final) {
+            this.runInBackground(
+              this.store.appendTranscript(
+                this.job.meetingId,
+                this.job.id,
+                this.job.speakerParticipantIdentity,
+                text,
+              ),
+              "save meeting transcript",
+            );
+          }
+          this.runInBackground(
+            this.publishMessage({
+              ...this.messageBase(),
+              type: final
+                ? "translation.transcript.source.final"
+                : "translation.transcript.source.delta",
+              text,
+            }),
+            "publish meeting transcript",
+          );
+        },
+        onError: (error) => {
+          if (!this.stopped) console.error(`Meeting transcription failed for run ${this.job.id}`, error);
+        },
+      },
+      {
+        apiKey: this.config.OPENAI_API_KEY,
+        model: this.config.OPENAI_TRANSCRIPTION_MODEL,
+      },
+    );
   }
 
   private async createLiveKitToken(): Promise<string> {
@@ -259,6 +303,7 @@ export class TranslationJobRunner {
   private async consumeSourceAudio(
     track: RemoteTrack,
     manager: LanguageSessionManager,
+    transcription: OpenAITranscriptionSession,
   ): Promise<void> {
     if (this.sourceReader) return;
     const inputSampleRate =
@@ -268,15 +313,30 @@ export class TranslationJobRunner {
     this.sourceStream = new AudioStream(track, { sampleRate: inputSampleRate, numChannels: 1 });
     this.sourceReader = this.sourceStream.getReader();
     const pump = new RealtimePcmPump(inputSampleRate);
+    const transcriptionResampler =
+      inputSampleRate === 24_000 ? null : new AudioResampler(inputSampleRate, 24_000);
     let inputEnded = false;
     const readInput = (async () => {
       try {
         while (!this.stopped) {
           const frame = await this.sourceReader!.read();
           if (frame.done) break;
+          if (transcriptionResampler) {
+            for (const output of transcriptionResampler.push(frame.value)) {
+              transcription.appendAudio(output.data);
+            }
+          } else {
+            transcription.appendAudio(frame.value.data);
+          }
           pump.push(frame.value.data);
         }
       } finally {
+        if (transcriptionResampler) {
+          for (const output of transcriptionResampler.flush()) {
+            transcription.appendAudio(output.data);
+          }
+          transcriptionResampler.close();
+        }
         inputEnded = true;
       }
     })();
@@ -310,7 +370,13 @@ export class TranslationJobRunner {
         parsed.data.translationRunId !== this.job.id
       ) return;
       if (parsed.data.type === "translation.captions.set") {
-        void manager.setSourceCaptions(participant.identity, parsed.data.enabled).catch(() => undefined);
+        // Compatibility with clients deployed before transcription became always-on.
+        return;
+      }
+      if (parsed.data.type === "translation.caption.preference.set") {
+        void manager
+          .setCaptionPreference(participant.identity, parsed.data.language)
+          .catch(() => undefined);
         return;
       }
       if (parsed.data.type !== "translation.preference.set") return;

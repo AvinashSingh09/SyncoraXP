@@ -12,6 +12,7 @@ import {
 import type { Pool, PoolClient } from "pg";
 import type {
   StoredTranslationRun,
+  StoredTranscriptSegment,
   TranslationRepository,
 } from "./translation-repository";
 
@@ -28,7 +29,13 @@ interface TranslationRunRow {
   id: string;
   meeting_id: string;
   livekit_room_name: string;
-  status: StoredTranslationRun["status"];
+  status:
+    | StoredTranslationRun["status"]
+    | "queued_scoped"
+    | "starting_scoped"
+    | "active_scoped"
+    | "reconnecting_scoped"
+    | "stopping_scoped";
   worker_instance_id: string | null;
   lease_expires_at: Date | null;
   speaker_participant_identity: string;
@@ -58,11 +65,14 @@ function mapSettings(row?: TranslationSettingsRow): MeetingTranslationSettings {
 }
 
 function mapRun(row: TranslationRunRow): StoredTranslationRun {
+  const status = row.status.endsWith("_scoped")
+    ? row.status.slice(0, -"_scoped".length)
+    : row.status;
   return {
     id: row.id,
     meetingId: row.meeting_id,
     livekitRoomName: row.livekit_room_name,
-    status: row.status,
+    status: status as StoredTranslationRun["status"],
     workerInstanceId: row.worker_instance_id,
     leaseExpiresAt: row.lease_expires_at,
     speakerParticipantIdentity: row.speaker_participant_identity,
@@ -76,7 +86,10 @@ function mapRun(row: TranslationRunRow): StoredTranslationRun {
 }
 
 export class PostgresTranslationRepository implements TranslationRepository {
-  constructor(private readonly pool: Pool) {}
+  constructor(
+    private readonly pool: Pool,
+    private readonly workerScope: string,
+  ) {}
 
   async getSettings(meetingId: string): Promise<MeetingTranslationSettings> {
     const result = await this.pool.query<TranslationSettingsRow>(
@@ -165,6 +178,22 @@ export class PostgresTranslationRepository implements TranslationRepository {
     try {
       await client.query("BEGIN");
       await client.query("SELECT pg_advisory_xact_lock(hashtext($1))", [record.meetingId]);
+      await client.query(
+        `UPDATE meeting_translation_runs
+         SET status = 'completed',
+             ended_at = COALESCE(ended_at, now()),
+             lease_expires_at = NULL,
+             updated_at = now(),
+             error_code = COALESCE(error_code, 'superseded_by_worker_scope')
+         WHERE meeting_id = $1
+           AND worker_scope <> $2
+           AND status IN (
+             'queued', 'queued_scoped', 'starting', 'starting_scoped',
+             'active', 'active_scoped', 'reconnecting', 'reconnecting_scoped',
+             'stopping', 'stopping_scoped'
+           )`,
+        [record.meetingId, this.workerScope],
+      );
       const existing = await this.findLiveRun(client, record.meetingId);
       if (
         existing &&
@@ -196,8 +225,9 @@ export class PostgresTranslationRepository implements TranslationRepository {
       }
       const result = await client.query<TranslationRunRow>(
         `INSERT INTO meeting_translation_runs (
-           id, meeting_id, livekit_room_name, speaker_participant_identity, provider, model
-         ) VALUES ($1, $2, $3, $4, $5, $6)
+           id, meeting_id, livekit_room_name, speaker_participant_identity, provider, model,
+           status, worker_scope
+         ) VALUES ($1, $2, $3, $4, $5, $6, 'queued_scoped', $7)
          RETURNING *`,
         [
           record.id,
@@ -206,6 +236,7 @@ export class PostgresTranslationRepository implements TranslationRepository {
           record.speakerParticipantIdentity,
           record.provider,
           record.model,
+          this.workerScope,
         ],
       );
       await client.query("COMMIT");
@@ -227,10 +258,15 @@ export class PostgresTranslationRepository implements TranslationRepository {
     const result = await client.query<TranslationRunRow>(
       `SELECT * FROM meeting_translation_runs
        WHERE meeting_id = $1
-         AND status IN ('queued', 'starting', 'active', 'reconnecting', 'stopping')
+         AND worker_scope = $2
+         AND status IN (
+           'queued', 'queued_scoped', 'starting', 'starting_scoped',
+           'active', 'active_scoped', 'reconnecting', 'reconnecting_scoped',
+           'stopping', 'stopping_scoped'
+         )
        ORDER BY created_at DESC
        LIMIT 1`,
-      [meetingId],
+      [meetingId, this.workerScope],
     );
     return result.rows[0] ? mapRun(result.rows[0]) : null;
   }
@@ -238,10 +274,36 @@ export class PostgresTranslationRepository implements TranslationRepository {
   async requestStop(meetingId: string): Promise<void> {
     await this.pool.query(
       `UPDATE meeting_translation_runs
-       SET status = 'stopping', updated_at = now()
+       SET status = CASE
+             WHEN worker_scope = 'legacy' THEN 'stopping'
+             ELSE 'stopping_scoped'
+           END,
+           updated_at = now()
        WHERE meeting_id = $1
-         AND status IN ('queued', 'starting', 'active', 'reconnecting')`,
+         AND status IN (
+           'queued', 'queued_scoped', 'starting', 'starting_scoped',
+           'active', 'active_scoped', 'reconnecting', 'reconnecting_scoped'
+         )`,
       [meetingId],
     );
+  }
+
+  async listTranscript(meetingId: string): Promise<StoredTranscriptSegment[]> {
+    const result = await this.pool.query<{
+      id: string;
+      text: string;
+      spoken_at: Date;
+    }>(
+      `SELECT id, text, spoken_at
+       FROM meeting_transcript_segments
+       WHERE meeting_id = $1
+       ORDER BY spoken_at, id`,
+      [meetingId],
+    );
+    return result.rows.map((row) => ({
+      id: row.id,
+      text: row.text,
+      spokenAt: row.spoken_at,
+    }));
   }
 }

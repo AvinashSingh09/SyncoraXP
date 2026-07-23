@@ -9,6 +9,7 @@ import {
   type HostMeetingResponse,
   type HostAdmissionListResponse,
   type MeetingSettingsResponse,
+  type MeetingTranscriptResponse,
   type MyMeetingsResponse,
   GuestRoomSessionInputSchema,
   type RoomSessionResponse,
@@ -195,6 +196,31 @@ export async function registerMeetingRoutes(
           allowGuestMicrophone: meeting.allowGuestMicrophone,
           allowGuestScreenShare: meeting.allowGuestScreenShare,
         },
+      };
+      return response;
+    },
+  );
+
+  app.get<{ Params: { meetingId: string } }>(
+    "/api/meetings/:meetingId/transcript",
+    async (request, reply) => {
+      const user = await requireUser(dependencies, request, reply);
+      if (!user) return;
+      const meeting = await dependencies.repository.findByIdForHost(request.params.meetingId, user.id);
+      if (!meeting) return reply.status(404).send({ error: "Meeting transcript not found" });
+      const response: MeetingTranscriptResponse = {
+        meeting: {
+          id: meeting.id,
+          title: meeting.title,
+          organizerName: meeting.organizerName,
+          status: meeting.status,
+        },
+        segments: (await dependencies.translations.listTranscript(meeting.id)).map((segment) => ({
+          id: segment.id,
+          speakerName: meeting.organizerName,
+          text: segment.text,
+          spokenAt: segment.spokenAt.toISOString(),
+        })),
       };
       return response;
     },

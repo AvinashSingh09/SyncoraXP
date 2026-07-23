@@ -142,6 +142,11 @@ export const TranslationPreferenceSetMessageSchema = TranslationMessageBaseSchem
   language: TranslationPreferenceSchema,
 });
 
+export const TranslationCaptionPreferenceSetMessageSchema = TranslationMessageBaseSchema.extend({
+  type: z.literal("translation.caption.preference.set"),
+  language: TranslationPreferenceSchema,
+});
+
 export const TranslationPreferenceAckMessageSchema = TranslationMessageBaseSchema.extend({
   type: z.literal("translation.preference.ack"),
   language: TranslationPreferenceSchema,
@@ -165,12 +170,27 @@ export const TranslationLanguageStatusMessageSchema = TranslationMessageBaseSche
 
 export const TranslationCaptionMessageSchema = TranslationMessageBaseSchema.extend({
   type: z.enum([
-    "translation.caption.source.delta",
-    "translation.caption.source.final",
     "translation.caption.target.delta",
     "translation.caption.target.final",
   ]),
-  language: TranslationLanguageCodeSchema.optional(),
+  language: TranslationLanguageCodeSchema,
+  text: z.string(),
+});
+
+export const TranslationTranscriptMessageSchema = TranslationMessageBaseSchema.extend({
+  type: z.enum([
+    "translation.transcript.source.delta",
+    "translation.transcript.source.final",
+  ]),
+  text: z.string(),
+});
+
+// Accept source-caption packets from workers deployed before transcripts became independent.
+export const LegacyTranslationSourceCaptionMessageSchema = TranslationMessageBaseSchema.extend({
+  type: z.enum([
+    "translation.caption.source.delta",
+    "translation.caption.source.final",
+  ]),
   text: z.string(),
 });
 
@@ -182,10 +202,13 @@ export const TranslationWorkerStatusMessageSchema = TranslationMessageBaseSchema
 
 export const TranslationDataMessageSchema = z.discriminatedUnion("type", [
   TranslationPreferenceSetMessageSchema,
+  TranslationCaptionPreferenceSetMessageSchema,
   TranslationPreferenceAckMessageSchema,
   TranslationCaptionsSetMessageSchema,
   TranslationLanguageStatusMessageSchema,
   TranslationCaptionMessageSchema,
+  TranslationTranscriptMessageSchema,
+  LegacyTranslationSourceCaptionMessageSchema,
   TranslationWorkerStatusMessageSchema,
 ]);
 

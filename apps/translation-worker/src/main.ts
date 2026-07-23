@@ -54,7 +54,11 @@ console.log(
 
 while (!shuttingDown) {
   try {
-    const job = await store.claimNext(workerInstanceId, config.TRANSLATION_WORKER_LEASE_MS);
+    const job = await store.claimNext(
+      workerInstanceId,
+      config.TRANSLATION_WORKER_LEASE_MS,
+      config.LIVEKIT_URL,
+    );
     consecutivePollingFailures = 0;
     if (!job) {
       await delay(config.TRANSLATION_JOB_POLL_MS);
@@ -63,10 +67,13 @@ while (!shuttingDown) {
     activeRunner = new TranslationJobRunner(job, workerInstanceId, config, store);
     try {
       await activeRunner.run();
-      if (!shuttingDown) await store.complete(job.id, workerInstanceId, "completed");
+      if (shuttingDown) await store.release(job.id, workerInstanceId);
+      else await store.complete(job.id, workerInstanceId, "completed");
     } catch (error) {
       console.error(`Translation run ${job.id} failed`, error);
-      if (!shuttingDown) {
+      if (shuttingDown) {
+        await store.release(job.id, workerInstanceId);
+      } else {
         await store.complete(job.id, workerInstanceId, "failed", {
           code: error instanceof Error ? error.name || "translation_job_failed" : "translation_job_failed",
           detail: error instanceof Error ? error.message.slice(0, 1_000) : "Unknown translation error",

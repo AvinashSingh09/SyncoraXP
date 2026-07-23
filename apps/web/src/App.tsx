@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { lazy, Suspense, type ReactNode } from "react";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { RequestCallbackModal } from "./components/RequestCallbackModal";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 const CreateMeetingPage = lazy(() => import("./pages/CreateMeetingPage").then((module) => ({ default: module.CreateMeetingPage })));
 const HomePage = lazy(() => import("./pages/HomePage").then((module) => ({ default: module.HomePage })));
@@ -25,6 +26,7 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
 export function App() {
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <AuthProvider>
         <RequestCallbackModal />
         <Suspense fallback={<main className="site-shell"><div className="loading-card">Loading SyncoraXP...</div></main>}>

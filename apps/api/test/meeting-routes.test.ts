@@ -118,7 +118,7 @@ async function setup(liveKitConfigured = true) {
     roomTokens,
     translations,
   });
-  return { app, mailer, roomTokens };
+  return { app, mailer, roomTokens, translations };
 }
 
 async function registerHost(app: Awaited<ReturnType<typeof buildApp>>, email = "asha@example.com") {
@@ -244,6 +244,45 @@ test("prevents another host from opening an owned host room", async (t) => {
     headers: { cookie: otherCookie },
   });
   assert.equal(response.statusCode, 404);
+});
+
+test("returns persisted transcripts only to the meeting owner", async (t) => {
+  const { app, translations } = await setup();
+  t.after(() => app.close());
+  const ownerCookie = await registerHost(app);
+  const created = await app.inject({
+    method: "POST",
+    url: "/api/meetings",
+    headers: { cookie: ownerCookie },
+    payload: validMeeting,
+  });
+  const meetingId = created.json().meeting.id;
+  translations.transcript.set(meetingId, [{
+    id: "1",
+    text: "Hello नमस्ते",
+    spokenAt: new Date("2026-07-20T10:00:05.000Z"),
+  }]);
+
+  const otherCookie = await registerHost(app, "transcript-other@example.com");
+  const forbidden = await app.inject({
+    method: "GET",
+    url: `/api/meetings/${meetingId}/transcript`,
+    headers: { cookie: otherCookie },
+  });
+  assert.equal(forbidden.statusCode, 404);
+
+  const transcript = await app.inject({
+    method: "GET",
+    url: `/api/meetings/${meetingId}/transcript`,
+    headers: { cookie: ownerCookie },
+  });
+  assert.equal(transcript.statusCode, 200);
+  assert.deepEqual(transcript.json().segments, [{
+    id: "1",
+    speakerName: "Asha Rao",
+    text: "Hello नमस्ते",
+    spokenAt: "2026-07-20T10:00:05.000Z",
+  }]);
 });
 
 test("allows only the owner to delete a meeting and invalidates its guest link", async (t) => {

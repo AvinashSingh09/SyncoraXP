@@ -23,7 +23,8 @@ The five-language list is the proposed starting set. Before enabling a language 
 - Host controls to enable or disable interpretation.
 - Participant control to select Original or one translated language.
 - Translation status, latency, failure, and usage metrics.
-- No recording of raw audio or transcript retention by default.
+- No raw-audio recording; finalized source transcript segments are retained while the meeting
+  worker is active.
 
 ### Deliberately deferred
 
@@ -438,7 +439,8 @@ The model page lists limits in minutes of audio per minute. Capacity planning mu
 - Show a pre-join and in-meeting notice that speech is processed by an automated translation service.
 - State that translations may contain mistakes.
 - Do not store raw audio.
-- Do not persist transcripts in the MVP.
+- Store only finalized source transcript text, expose it only to the meeting owner, and delete it
+  when the meeting is deleted.
 - Do not log transcript contents.
 - Encrypt traffic in transit to both LiveKit and OpenAI.
 - Use stock/default translation audio; do not imply it is the speaker's real voice.

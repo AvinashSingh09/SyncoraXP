@@ -19,6 +19,7 @@ const EnvironmentSchema = z
     OPENAI_REALTIME_TRANSLATION_MODEL: z
       .literal("gpt-realtime-translate")
       .default("gpt-realtime-translate"),
+    OPENAI_TRANSCRIPTION_MODEL: z.literal("gpt-4o-transcribe").default("gpt-4o-transcribe"),
     GEMINI_API_KEY: z.string().trim().optional(),
     GEMINI_LIVE_TRANSLATION_MODEL: z
       .literal("gemini-3.5-live-translate-preview")
