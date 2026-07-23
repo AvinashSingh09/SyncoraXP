@@ -86,9 +86,9 @@ const virtualSpaces = [
   { name: "Lobby", image: "/virtual-events-assets/lobby-bg.png" },
   { name: "Booth", image: "/virtual-events-assets/default-booth-bg.png" },
   { name: "Booth", image: "/virtual-events-assets/meeting-room-bg.png" },
-  { name: "Exhibition Hall", image: "https://cdn5.godcstatic.com/dreamcast/solutions/virtual-event-platform/Slider_09.png" },
-  { name: "Main Stage", image: "https://cdn5.godcstatic.com/dreamcast/solutions/virtual-event-platform/Slider_08.png" },
-  { name: "Conference Hall", image: "https://cdn5.godcstatic.com/dreamcast/solutions/virtual-event-platform/Slider_06.png" },
+  { name: "Exhibition Hall", image: "/virtual-events-assets/exhibition-hall-v2.jpg" },
+  { name: "Main Stage", image: "/virtual-events-assets/main-stage-v2.png" },
+  { name: "Conference Hall", image: "/virtual-events-assets/keynote-v2.jpg" },
 ];
 
 function EventPhoto({ className, alt, src = eventArtwork }: { className: string; alt: string; src?: string }) {
@@ -268,13 +268,13 @@ export function VirtualEventsPage() {
       padding: "14px 16px",
       borderRadius: "10px",
       fontSize: "13.5px",
-      color: "#ffffff",
+      color: "#1e1035",
       outline: "none",
       boxSizing: "border-box",
       fontFamily: "inherit",
       transition: "all 0.2s ease",
-      border: hasError ? "1.5px solid #ef4444" : "1.5px solid rgba(255, 255, 255, 0.15)",
-      background: hasError ? "rgba(239, 68, 68, 0.1)" : "rgba(255, 255, 255, 0.05)",
+      border: hasError ? "1.5px solid #ef4444" : "1.5px solid rgba(126, 34, 206, 0.25)",
+      background: hasError ? "rgba(239, 68, 68, 0.1)" : "rgba(255, 255, 255, 0.9)",
       boxShadow: hasError ? "0 0 0 3px rgba(239, 68, 68, 0.2)" : "none",
     };
   };
@@ -301,8 +301,8 @@ export function VirtualEventsPage() {
   return (
     <main className="landing-page virtual-events-page">
       <MarketingHeader />
-
-      <section className="virtual-events-hero" id="platform" aria-labelledby="virtual-events-title">
+      <div className="landing-theme-pink-dots">
+        <section className="virtual-events-hero" id="platform" aria-labelledby="virtual-events-title">
         <p className="virtual-events-kicker"><span /> Your virtual events, elevated</p>
         <h1 id="virtual-events-title">Virtual events that<br />feel truly together.</h1>
         <p className="virtual-events-intro">Create branded live experiences that bring every session, conversation, and connection into one seamless place.</p>
@@ -358,6 +358,7 @@ export function VirtualEventsPage() {
           </article>
         </section>
       </section>
+      </div>
 
       <section className="virtual-events-capabilities" id="capabilities" aria-labelledby="virtual-events-capabilities-title">
         <div className="virtual-events-capability-intro"><p>Built for powerful experiences</p><h2 id="virtual-events-capabilities-title">Everything you need to run remarkable virtual events.</h2></div>
@@ -408,11 +409,7 @@ export function VirtualEventsPage() {
       </section>
 
       {/* ── DOT MATRIX BACKGROUND GRID ── */}
-      <div style={{
-        backgroundImage: "radial-gradient(rgba(255, 255, 255, 0.06) 1.5px, transparent 1.5px)",
-        backgroundSize: "24px 24px",
-        width: "100%",
-      }}>
+      <div className="landing-theme-pink-dots">
 
       {/* ── CONTACT/DEMO FORM CARD ── */}
       <section ref={formRef} style={{
@@ -426,16 +423,16 @@ export function VirtualEventsPage() {
         <div style={{
           width: "100%",
           maxWidth: "1100px",
-          background: "linear-gradient(135deg, rgba(30, 27, 75, 0.8) 0%, rgba(91, 20, 189, 0.2) 100%)",
+          background: "rgba(255, 255, 255, 0.68)",
           backdropFilter: "blur(20px)",
-          border: "1px solid rgba(255, 255, 255, 0.08)",
+          border: "1px solid rgba(126, 34, 206, 0.15)",
           borderRadius: "24px",
           padding: "54px 48px",
           display: "grid",
           gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
           gap: "48px",
           alignItems: "center",
-          boxShadow: "0 24px 60px rgba(0, 0, 0, 0.25)",
+          boxShadow: "0 24px 60px rgba(91, 33, 182, 0.05)",
           boxSizing: "border-box",
         }}>
           {/* Left Column Info */}
@@ -443,7 +440,7 @@ export function VirtualEventsPage() {
             <h2 style={{
               fontSize: "clamp(30px, 4vw, 44px)",
               fontWeight: 850,
-              color: "#ffffff",
+              color: "#1e1035",
               margin: 0,
               lineHeight: 1.15,
               letterSpacing: "-0.02em",
@@ -452,7 +449,7 @@ export function VirtualEventsPage() {
             </h2>
             <p style={{
               fontSize: "16px",
-              color: "rgba(255, 255, 255, 0.7)",
+              color: "#3b2166",
               margin: 0,
               fontWeight: 500,
             }}>
@@ -461,14 +458,14 @@ export function VirtualEventsPage() {
 
             <div style={{
               marginTop: "24px",
-              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+              borderTop: "1px solid rgba(126, 34, 206, 0.15)",
               paddingTop: "24px",
               display: "flex",
               flexDirection: "column",
               gap: "8px",
             }}>
-              <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>Let's talk!</span>
-              <a href="tel:+919509936100" style={{ fontSize: "22px", fontWeight: 800, color: "#fbbf24", textDecoration: "none" }}>
+              <span style={{ fontSize: "13px", color: "#6b7280", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>Let's talk!</span>
+              <a href="tel:+919509936100" style={{ fontSize: "22px", fontWeight: 800, color: "#7e22ce", textDecoration: "none" }}>
                 +91 90000000000
               </a>
             </div>
@@ -639,7 +636,7 @@ export function VirtualEventsPage() {
                         ...inputStyle("category"),
                         appearance: "none",
                         cursor: "pointer",
-                        color: form.category ? "#ffffff" : "rgba(255, 255, 255, 0.5)",
+                        color: form.category ? "#1e1035" : "rgba(30, 27, 75, 0.5)",
                         width: "100%",
                       }}
                     >
@@ -658,7 +655,7 @@ export function VirtualEventsPage() {
                       top: "50%",
                       transform: "translateY(-50%)",
                       fontSize: "8px",
-                      color: "rgba(255, 255, 255, 0.5)",
+                      color: "rgba(30, 27, 75, 0.5)",
                       pointerEvents: "none",
                     }}>▼</span>
                   </div>
@@ -687,8 +684,8 @@ export function VirtualEventsPage() {
                   type="submit"
                   disabled={loading}
                   style={{
-                    background: loading ? "rgba(255, 255, 255, 0.5)" : "#ffffff",
-                    color: "#7c3aed",
+                    background: loading ? "rgba(126, 34, 206, 0.5)" : "#7e22ce",
+                    color: "#ffffff",
                     border: "none",
                     borderRadius: "10px",
                     padding: "14px 20px",
@@ -697,7 +694,7 @@ export function VirtualEventsPage() {
                     cursor: loading ? "not-allowed" : "pointer",
                     transition: "all 0.2s ease",
                     marginTop: "6px",
-                    boxShadow: loading ? "none" : "0 4px 14px rgba(0, 0, 0, 0.2)",
+                    boxShadow: loading ? "none" : "0 4px 14px rgba(126, 34, 206, 0.28)",
                   }}
                 >
                   {loading ? "Submitting…" : "Submit"}
@@ -729,7 +726,7 @@ export function VirtualEventsPage() {
             <p style={{
               fontSize: "12px",
               fontWeight: 700,
-              color: "#fbbf24",
+              color: "#7e22ce",
               textTransform: "uppercase",
               letterSpacing: "1.5px",
               margin: "0 0 8px 0",
@@ -739,7 +736,7 @@ export function VirtualEventsPage() {
             <h2 style={{
               fontSize: "clamp(24px, 3.5vw, 36px)",
               fontWeight: 850,
-              color: "#ffffff",
+              color: "#1e1035",
               margin: 0,
               letterSpacing: "-0.02em",
             }}>
@@ -755,17 +752,17 @@ export function VirtualEventsPage() {
                 width: "40px",
                 height: "40px",
                 borderRadius: "50%",
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "#ffffff",
+                background: "rgba(126, 34, 206, 0.08)",
+                border: "1px solid rgba(126, 34, 206, 0.18)",
+                color: "#7e22ce",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.18)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; }}
             >
               ←
             </button>
@@ -775,17 +772,17 @@ export function VirtualEventsPage() {
                 width: "40px",
                 height: "40px",
                 borderRadius: "50%",
-                background: "rgba(255, 255, 255, 0.05)",
-                border: "1px solid rgba(255, 255, 255, 0.15)",
-                color: "#ffffff",
+                background: "rgba(126, 34, 206, 0.08)",
+                border: "1px solid rgba(126, 34, 206, 0.18)",
+                color: "#7e22ce",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 cursor: "pointer",
                 transition: "all 0.2s ease",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255, 255, 255, 0.05)"; }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.18)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; }}
             >
               →
             </button>
@@ -1393,12 +1390,13 @@ export function VirtualEventsPage() {
           boxSizing: "border-box",
         }}>
           <div style={{
-            background: "linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)",
+            background: "rgba(255, 255, 255, 0.68)",
+            border: "1px solid rgba(126, 34, 206, 0.15)",
             borderRadius: "24px",
             padding: "60px 48px",
             position: "relative",
             overflow: "hidden",
-            boxShadow: "0 24px 60px rgba(124, 58, 237, 0.2)",
+            boxShadow: "0 24px 60px rgba(91, 33, 182, 0.05)",
             textAlign: "left",
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
@@ -1409,7 +1407,7 @@ export function VirtualEventsPage() {
               <h2 style={{
                 fontSize: "clamp(28px, 4vw, 40px)",
                 fontWeight: 850,
-                color: "#ffffff",
+                color: "#1e1035",
                 lineHeight: 1.15,
                 letterSpacing: "-0.01em",
                 margin: 0,
@@ -1419,14 +1417,14 @@ export function VirtualEventsPage() {
               <h3 style={{
                 fontSize: "18px",
                 fontWeight: 700,
-                color: "rgba(255, 255, 255, 0.9)",
+                color: "#581c87",
                 margin: 0,
               }}>
                 Host engaging virtual events & connect with global attendees
               </h3>
               <p style={{
                 fontSize: "14px",
-                color: "rgba(255, 255, 255, 0.75)",
+                color: "#3b2166",
                 lineHeight: 1.6,
                 margin: "8px 0 20px 0",
               }}>
@@ -1435,7 +1433,7 @@ export function VirtualEventsPage() {
               <Link
                 to="/book-demo"
                 style={{
-                  color: "#ffffff",
+                  color: "#7e22ce",
                   fontSize: "14.5px",
                   fontWeight: "bold",
                   textDecoration: "none",
@@ -1452,8 +1450,8 @@ export function VirtualEventsPage() {
                 <Link
                   to="/book-demo"
                   style={{
-                    background: "#ffffff",
-                    color: "#7c3aed",
+                    background: "#7e22ce",
+                    color: "#ffffff",
                     border: "none",
                     borderRadius: "10px",
                     padding: "14px 24px",
@@ -1461,7 +1459,7 @@ export function VirtualEventsPage() {
                     fontSize: "14px",
                     textDecoration: "none",
                     display: "inline-block",
-                    boxShadow: "0 4px 14px rgba(0, 0, 0, 0.1)",
+                    boxShadow: "0 4px 14px rgba(126, 34, 206, 0.28)",
                     textAlign: "center",
                   }}
                 >
@@ -1471,8 +1469,8 @@ export function VirtualEventsPage() {
                   to="/book-demo"
                   style={{
                     background: "transparent",
-                    color: "#ffffff",
-                    border: "2px solid #ffffff",
+                    color: "#7e22ce",
+                    border: "2px solid rgba(126, 34, 206, 0.4)",
                     borderRadius: "10px",
                     padding: "12px 24px",
                     fontWeight: 800,

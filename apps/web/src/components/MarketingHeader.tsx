@@ -57,7 +57,7 @@ export function MarketingHeader() {
     };
   }, []);
 
-  const isAboutPage = location.pathname.startsWith("/about");
+  const isAboutPage = location.pathname.startsWith("/about") || location.pathname === "/" || location.pathname.startsWith("/virtual-events-platform");
 
   return (
     <header className={`landing-header${headerScrolled ? " is-scrolled" : ""}${isAboutPage ? " is-about-header" : ""}`}>
