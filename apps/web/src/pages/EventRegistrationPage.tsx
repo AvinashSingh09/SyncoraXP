@@ -1139,27 +1139,30 @@ export function EventRegistrationPage() {
                     key={`${space.name}-${offset}`}
                     style={{
                       width: "100%",
-                      height: "480px",
-                      borderRadius: "20px",
+                      background: "rgba(255, 255, 255, 0.68)",
+                      border: "1px solid rgba(126, 34, 206, 0.15)",
+                      borderRadius: "24px",
                       overflow: "hidden",
-                      position: "relative",
-                      boxShadow: "0 10px 30px rgba(109, 40, 217, 0.1)",
-                      border: "1px solid rgba(109, 40, 217, 0.08)",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
                       transition: "all 0.3s ease",
+                      boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)",
                       cursor: "pointer",
                     }}
-                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.2)"; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.08)"; }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.15)"; }}
                   >
-                    <img
-                      src={space.image}
-                      alt={space.name}
-                      style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "cover",
-                      }}
-                    />
+                    <div style={{ width: "100%", height: "380px", overflow: "hidden" }}>
+                      <img
+                        src={space.image}
+                        alt={space.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    </div>
+                    <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#1e1035", margin: "20px 0" }}>
+                      {space.name}
+                    </h3>
                   </div>
                 );
               })}
