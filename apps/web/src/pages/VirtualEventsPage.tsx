@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   ArrowRight,
   Broadcast,
@@ -43,14 +43,14 @@ const brandLogoFiles = [
 ];
 
 const COUNTRY_CODES = [
-  { code: "IN", dial: "+91", flag: "🇮🇳" },
-  { code: "US", dial: "+1", flag: "🇺🇸" },
-  { code: "GB", dial: "+44", flag: "🇬🇧" },
-  { code: "AE", dial: "+971", flag: "🇦🇪" },
-  { code: "SG", dial: "+65", flag: "🇸🇬" },
-  { code: "AU", dial: "+61", flag: "🇦🇺" },
-  { code: "CA", dial: "+1", flag: "🇨🇦" },
-  { code: "DE", dial: "+49", flag: "🇩🇪" },
+  { code: "IN", dial: "+91", flagUrl: "https://flagcdn.com/w40/in.png" },
+  { code: "US", dial: "+1", flagUrl: "https://flagcdn.com/w40/us.png" },
+  { code: "GB", dial: "+44", flagUrl: "https://flagcdn.com/w40/gb.png" },
+  { code: "AE", dial: "+971", flagUrl: "https://flagcdn.com/w40/ae.png" },
+  { code: "SG", dial: "+65", flagUrl: "https://flagcdn.com/w40/sg.png" },
+  { code: "AU", dial: "+61", flagUrl: "https://flagcdn.com/w40/au.png" },
+  { code: "CA", dial: "+1", flagUrl: "https://flagcdn.com/w40/ca.png" },
+  { code: "DE", dial: "+49", flagUrl: "https://flagcdn.com/w40/de.png" },
 ];
 
 const CATEGORIES = [
@@ -98,6 +98,18 @@ function EventPhoto({ className, alt, src = eventArtwork }: { className: string;
 export function VirtualEventsPage() {
   const formRef = useRef<HTMLDivElement>(null);
   const [carouselIndex, setCarouselIndex] = useState(0);
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsCountryOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
   const [activeTabRow1, setActiveTabRow1] = useState(1);
   const [activeTabRow2, setActiveTabRow2] = useState(1);
   const [activeFaqIndex, setActiveFaqIndex] = useState<number | null>(0);
@@ -268,14 +280,14 @@ export function VirtualEventsPage() {
       padding: "14px 16px",
       borderRadius: "10px",
       fontSize: "13.5px",
-      color: "#1e1035",
+      color: "#0f172a",
       outline: "none",
       boxSizing: "border-box",
       fontFamily: "inherit",
       transition: "all 0.2s ease",
-      border: hasError ? "1.5px solid #ef4444" : "1.5px solid rgba(126, 34, 206, 0.25)",
-      background: hasError ? "rgba(239, 68, 68, 0.1)" : "rgba(255, 255, 255, 0.9)",
-      boxShadow: hasError ? "0 0 0 3px rgba(239, 68, 68, 0.2)" : "none",
+      border: hasError ? "1.5px solid #ef4444" : "1.5px solid #e2e8f0",
+      background: hasError ? "#fff5f5" : "#ffffff",
+      boxShadow: hasError ? "0 0 0 3px rgba(239, 68, 68, 0.1)" : "none",
     };
   };
 
@@ -420,27 +432,13 @@ export function VirtualEventsPage() {
         alignItems: "center",
         boxSizing: "border-box",
       }}>
-        <div style={{
-          width: "100%",
-          maxWidth: "1100px",
-          background: "rgba(255, 255, 255, 0.68)",
-          backdropFilter: "blur(20px)",
-          border: "1px solid rgba(126, 34, 206, 0.15)",
-          borderRadius: "24px",
-          padding: "54px 48px",
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "48px",
-          alignItems: "center",
-          boxShadow: "0 24px 60px rgba(91, 33, 182, 0.05)",
-          boxSizing: "border-box",
-        }}>
+        <div className="webinar-form-card">
           {/* Left Column Info */}
           <div style={{ display: "flex", flexDirection: "column", gap: "20px", textAlign: "left" }}>
             <h2 style={{
               fontSize: "clamp(30px, 4vw, 44px)",
               fontWeight: 850,
-              color: "#1e1035",
+              color: "#ffffff",
               margin: 0,
               lineHeight: 1.15,
               letterSpacing: "-0.02em",
@@ -449,7 +447,7 @@ export function VirtualEventsPage() {
             </h2>
             <p style={{
               fontSize: "16px",
-              color: "#3b2166",
+              color: "rgba(255, 255, 255, 0.7)",
               margin: 0,
               fontWeight: 500,
             }}>
@@ -458,14 +456,14 @@ export function VirtualEventsPage() {
 
             <div style={{
               marginTop: "24px",
-              borderTop: "1px solid rgba(126, 34, 206, 0.15)",
+              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
               paddingTop: "24px",
               display: "flex",
               flexDirection: "column",
               gap: "8px",
             }}>
-              <span style={{ fontSize: "13px", color: "#6b7280", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>Let's talk!</span>
-              <a href="tel:+919509936100" style={{ fontSize: "22px", fontWeight: 800, color: "#7e22ce", textDecoration: "none" }}>
+              <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>Let's talk!</span>
+              <a href="tel:+919509936100" style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", textDecoration: "none" }}>
                 +91 90000000000
               </a>
             </div>
@@ -507,7 +505,7 @@ export function VirtualEventsPage() {
                 </p>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} noValidate style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+              <form onSubmit={handleSubmit} className="webinar-contact-form" noValidate>
                 {submitError && (
                   <div style={{
                     background: "rgba(239, 68, 68, 0.1)",
@@ -523,82 +521,145 @@ export function VirtualEventsPage() {
                   </div>
                 )}
 
-                {/* Full Name */}
-                <div>
-                  <input
-                    name="fullName"
-                    value={form.fullName}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    maxLength={60}
-                    placeholder="Full Name* (Max 60 chars)"
-                    style={inputStyle("fullName")}
-                  />
-                  {renderError("fullName")}
-                </div>
-
-                {/* Work Email */}
-                <div>
-                  <input
-                    name="workEmail"
-                    type="email"
-                    value={form.workEmail}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    placeholder="Your Work Email*"
-                    style={inputStyle("workEmail")}
-                  />
-                  {renderError("workEmail")}
-                </div>
-
-                {/* Phone */}
-                <div>
-                  <div style={{ display: "flex", gap: "8px" }}>
-                    <div style={{ position: "relative", flexShrink: 0 }}>
-                      <select
-                        name="countryCode"
-                        value={form.countryCode}
-                        onChange={handleChange}
-                        style={{
-                          ...inputStyle("phone"),
-                          minWidth: "85px",
-                          paddingRight: "24px",
-                          appearance: "none",
-                          cursor: "pointer",
-                        }}
-                      >
-                        {COUNTRY_CODES.map((c) => (
-                          <option key={c.code} value={c.dial} style={{ color: "#000" }}>
-                            {c.code} {c.dial}
-                          </option>
-                        ))}
-                      </select>
-                      <span style={{
-                        position: "absolute",
-                        right: "10px",
-                        top: "50%",
-                        transform: "translateY(-50%)",
-                        fontSize: "8px",
-                        color: "rgba(255, 255, 255, 0.5)",
-                        pointerEvents: "none",
-                      }}>▼</span>
-                    </div>
+                {/* Form Row 1 */}
+                <div className="form-row three-cols">
+                  {/* Full Name */}
+                  <div className="form-field">
                     <input
-                      name="phone"
-                      type="tel"
-                      value={form.phone}
+                      name="fullName"
+                      value={form.fullName}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      placeholder="Phone No.*"
-                      style={{ ...inputStyle("phone"), flex: 1 }}
+                      maxLength={60}
+                      placeholder="Full Name* (Max 60 chars)"
+                      style={inputStyle("fullName")}
                     />
+                    {renderError("fullName")}
                   </div>
-                  {renderError("phone")}
+
+                  {/* Work Email */}
+                  <div className="form-field">
+                    <input
+                      name="workEmail"
+                      type="email"
+                      value={form.workEmail}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      placeholder="Your Work Email*"
+                      style={inputStyle("workEmail")}
+                    />
+                    {renderError("workEmail")}
+                  </div>
+
+                  {/* Phone */}
+                  <div className="form-field">
+                    <div className="phone-combo-field">
+                      <div className="country-custom-dropdown-container" ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
+                        <button
+                          type="button"
+                          className="country-dropdown-btn"
+                          onClick={() => setIsCountryOpen((prev) => !prev)}
+                          style={{
+                            ...inputStyle("phone"),
+                            minWidth: "85px",
+                            paddingRight: "24px",
+                            appearance: "none",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            position: "relative",
+                          }}
+                        >
+                          <img
+                            src={COUNTRY_CODES.find((c) => c.dial === form.countryCode)?.flagUrl || "https://flagcdn.com/w40/in.png"}
+                            alt={form.countryCode}
+                            className="country-btn-flag-img"
+                            style={{ width: "20px", height: "auto", borderRadius: "2px" }}
+                          />
+                          <span className="country-btn-code">
+                            {COUNTRY_CODES.find((c) => c.dial === form.countryCode)?.code || "IN"}
+                          </span>
+                          <span style={{
+                            position: "absolute",
+                            right: "10px",
+                            top: "50%",
+                            transform: "translateY(-50%)",
+                            fontSize: "8px",
+                            color: "rgba(255, 255, 255, 0.5)",
+                            pointerEvents: "none",
+                          }}>▼</span>
+                        </button>
+
+                        {isCountryOpen && (
+                          <div className="custom-country-menu" style={{
+                            position: "absolute",
+                            top: "calc(100% + 8px)",
+                            left: 0,
+                            background: "#0c1033",
+                            border: "1px solid rgba(255, 255, 255, 0.15)",
+                            borderRadius: "12px",
+                            boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
+                            zIndex: 100,
+                            width: "160px",
+                            maxHeight: "220px",
+                            overflowY: "auto",
+                            padding: "6px",
+                            boxSizing: "border-box",
+                          }}>
+                            {COUNTRY_CODES.map((c) => (
+                              <button
+                                key={c.code}
+                                type="button"
+                                className={`country-menu-item ${c.dial === form.countryCode ? "active" : ""}`}
+                                onClick={() => {
+                                  setForm((prev) => ({
+                                    ...prev,
+                                    countryCode: c.dial,
+                                  }));
+                                  setIsCountryOpen(false);
+                                }}
+                                style={{
+                                  width: "100%",
+                                  padding: "8px 10px",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  background: c.dial === form.countryCode ? "rgba(255,255,255,0.1)" : "transparent",
+                                  border: "none",
+                                  borderRadius: "8px",
+                                  cursor: "pointer",
+                                  textAlign: "left",
+                                  fontSize: "13.5px",
+                                  color: "#ffffff",
+                                }}
+                              >
+                                <img src={c.flagUrl} alt={c.code} style={{ width: "18px", height: "auto", borderRadius: "1px" }} />
+                                <span style={{ fontWeight: 600 }}>{c.code}</span>
+                                <span style={{ color: "rgba(255,255,255,0.6)", marginLeft: "auto" }}>{c.dial}</span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <input
+                        name="phone"
+                        type="tel"
+                        value={form.phone}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Phone No.*"
+                        style={{ ...inputStyle("phone"), border: "none", paddingLeft: "10px" }}
+                      />
+                    </div>
+                    {renderError("phone")}
+                  </div>
                 </div>
 
-                {/* City & Company (2 columns on wider screens) */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "10px" }}>
-                  <div>
+                {/* Form Row 2 */}
+                <div className="form-row three-cols">
+                  {/* City */}
+                  <div className="form-field">
                     <input
                       name="city"
                       value={form.city}
@@ -610,7 +671,9 @@ export function VirtualEventsPage() {
                     />
                     {renderError("city")}
                   </div>
-                  <div>
+
+                  {/* Company */}
+                  <div className="form-field">
                     <input
                       name="company"
                       value={form.company}
@@ -622,83 +685,81 @@ export function VirtualEventsPage() {
                     />
                     {renderError("company")}
                   </div>
-                </div>
 
-                {/* Category of Business */}
-                <div>
-                  <div style={{ position: "relative" }}>
-                    <select
-                      name="category"
-                      value={form.category}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      style={{
-                        ...inputStyle("category"),
-                        appearance: "none",
-                        cursor: "pointer",
-                        color: form.category ? "#1e1035" : "rgba(30, 27, 75, 0.5)",
-                        width: "100%",
-                      }}
-                    >
-                      <option value="" disabled style={{ color: "#000" }}>
-                        Category of Business*
-                      </option>
-                      {CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat} style={{ color: "#000" }}>
-                          {cat}
+                  {/* Category of Business */}
+                  <div className="form-field">
+                    <div style={{ position: "relative" }}>
+                      <select
+                        name="category"
+                        value={form.category}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        style={{
+                          ...inputStyle("category"),
+                          appearance: "none",
+                          cursor: "pointer",
+                          color: form.category ? "#0f172a" : "rgba(15, 23, 42, 0.5)",
+                          width: "100%",
+                          backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundPosition: "right 16px center",
+                          backgroundSize: "16px",
+                        }}
+                      >
+                        <option value="" disabled>
+                          Category of Business*
                         </option>
-                      ))}
-                    </select>
-                    <span style={{
-                      position: "absolute",
-                      right: "12px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      fontSize: "8px",
-                      color: "rgba(30, 27, 75, 0.5)",
-                      pointerEvents: "none",
-                    }}>▼</span>
+                        {CATEGORIES.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    {renderError("category")}
                   </div>
-                  {renderError("category")}
                 </div>
 
-                {/* Message */}
-                <div>
-                  <textarea
-                    name="message"
-                    value={form.message}
-                    onChange={handleChange}
-                    maxLength={2000}
-                    rows={3}
-                    placeholder="Message (Max 2000 chars)"
+                {/* Form Row 3 */}
+                <div className="form-row single-col">
+                  <div className="form-field">
+                    <textarea
+                      name="message"
+                      value={form.message}
+                      onChange={handleChange}
+                      maxLength={2000}
+                      rows={3}
+                      placeholder="Message (Max 2000 chars)"
+                      style={{
+                        ...inputStyle("message"),
+                        resize: "vertical",
+                        minHeight: "80px",
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Form Row 4: Submit Button */}
+                <div className="form-row button-row">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="form-submit-btn"
                     style={{
-                      ...inputStyle("message"),
-                      resize: "vertical",
-                      minHeight: "80px",
+                      background: loading ? "rgba(255, 255, 255, 0.5)" : "#ffffff",
+                      color: "#6d28d9",
+                      border: "none",
+                      borderRadius: "10px",
+                      padding: "14px 20px",
+                      fontWeight: 800,
+                      fontSize: "14.5px",
+                      cursor: loading ? "not-allowed" : "pointer",
+                      transition: "all 0.2s ease",
                     }}
-                  />
+                  >
+                    {loading ? "Submitting…" : "Submit"}
+                  </button>
                 </div>
-
-                {/* Submit Button */}
-                <button
-                  type="submit"
-                  disabled={loading}
-                  style={{
-                    background: loading ? "rgba(126, 34, 206, 0.5)" : "#7e22ce",
-                    color: "#ffffff",
-                    border: "none",
-                    borderRadius: "10px",
-                    padding: "14px 20px",
-                    fontWeight: 800,
-                    fontSize: "14.5px",
-                    cursor: loading ? "not-allowed" : "pointer",
-                    transition: "all 0.2s ease",
-                    marginTop: "6px",
-                    boxShadow: loading ? "none" : "0 4px 14px rgba(126, 34, 206, 0.28)",
-                  }}
-                >
-                  {loading ? "Submitting…" : "Submit"}
-                </button>
               </form>
             )}
           </div>
@@ -1483,30 +1544,6 @@ export function VirtualEventsPage() {
                   Free Demo
                 </Link>
               </div>
-            </div>
-
-            {/* Right Backdrop Logo Design */}
-            <div style={{
-              position: "absolute",
-              right: "40px",
-              top: "50%",
-              transform: "translateY(-50%)",
-              width: "220px",
-              height: "220px",
-              zIndex: 2,
-              pointerEvents: "none",
-            }}>
-              <img
-                src="/favicon_io/android-chrome-192x192.png"
-                alt="SyncoraXP Logo Backdrop"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "contain",
-                  opacity: 0.15,
-                  filter: "drop-shadow(0 0 20px rgba(255, 255, 255, 0.2))",
-                }}
-              />
             </div>
           </div>
         </section>

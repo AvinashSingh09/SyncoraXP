@@ -62,7 +62,8 @@ export function MarketingHeader() {
     location.pathname === "/" ||
     location.pathname.startsWith("/virtual-events-platform") ||
     location.pathname.startsWith("/book-demo") ||
-    location.pathname.startsWith("/webinar-service");
+    location.pathname.startsWith("/webinar-service") ||
+    location.pathname.startsWith("/event-registration");
 
   return (
     <header className={`landing-header${headerScrolled ? " is-scrolled" : ""}${isAboutPage ? " is-about-header" : ""}`}>

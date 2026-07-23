@@ -2,17 +2,17 @@ import { useState, useRef, useEffect } from "react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { Footer } from "../components/Footer";
 import { apiFetch } from "../backend";
-import { CheckCircle } from "@phosphor-icons/react";
+import { CheckCircle, CaretDown } from "@phosphor-icons/react";
 
 const COUNTRY_CODES = [
-  { code: "IN", dial: "+91", flag: "🇮🇳" },
-  { code: "US", dial: "+1", flag: "🇺🇸" },
-  { code: "GB", dial: "+44", flag: "🇬🇧" },
-  { code: "AE", dial: "+971", flag: "🇦🇪" },
-  { code: "SG", dial: "+65", flag: "🇸🇬" },
-  { code: "AU", dial: "+61", flag: "🇦🇺" },
-  { code: "CA", dial: "+1", flag: "🇨🇦" },
-  { code: "DE", dial: "+49", flag: "🇩🇪" },
+  { code: "IN", dial: "+91", flagUrl: "https://flagcdn.com/w40/in.png" },
+  { code: "US", dial: "+1", flagUrl: "https://flagcdn.com/w40/us.png" },
+  { code: "GB", dial: "+44", flagUrl: "https://flagcdn.com/w40/gb.png" },
+  { code: "AE", dial: "+971", flagUrl: "https://flagcdn.com/w40/ae.png" },
+  { code: "SG", dial: "+65", flagUrl: "https://flagcdn.com/w40/sg.png" },
+  { code: "AU", dial: "+61", flagUrl: "https://flagcdn.com/w40/au.png" },
+  { code: "CA", dial: "+1", flagUrl: "https://flagcdn.com/w40/ca.png" },
+  { code: "DE", dial: "+49", flagUrl: "https://flagcdn.com/w40/de.png" },
 ];
 
 const CATEGORIES = [
@@ -47,6 +47,18 @@ export function EventRegistrationPage() {
   const [smartIndex, setSmartIndex] = useState(0);
   const [activeFeatureTab, setActiveFeatureTab] = useState(0);
   const [tabProgress, setTabProgress] = useState(0);
+  const [isCountryOpen, setIsCountryOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsCountryOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     let progress = 0;
@@ -235,7 +247,7 @@ export function EventRegistrationPage() {
       fontFamily: "inherit",
       transition: "all 0.2s ease",
       border: hasError ? "1.5px solid #ef4444" : "1.5px solid rgba(109, 40, 217, 0.15)",
-      background: hasError ? "rgba(239, 68, 68, 0.05)" : "#ffffff",
+      background: hasError ? "#fff5f5" : "#ffffff",
       boxShadow: hasError ? "0 0 0 3px rgba(239, 68, 68, 0.1)" : "none",
     };
   };
@@ -260,73 +272,74 @@ export function EventRegistrationPage() {
   };
 
   return (
-    <main className="landing-page virtual-events-page event-registration-page">
+    <main className="landing-page event-registration-page">
       <MarketingHeader />
 
-      {/* ── HERO SECTION ── */}
-      <section style={{
-        padding: "160px 24px 80px",
-        width: "100%",
-        maxWidth: "1200px",
-        margin: "0 auto",
-        boxSizing: "border-box",
-        textAlign: "center",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}>
-        <p style={{
-          color: "#ffffff",
-          fontSize: "clamp(16px, 2.2vw, 22px)",
-          fontWeight: 600,
-          margin: "0 0 16px 0",
-          letterSpacing: "-0.01em",
-          opacity: 0.95,
-        }}>
-          Empower Your Event Growth with SyncoraXP's
-        </p>
-
-        <h1 style={{
-          fontSize: "clamp(44px, 6.8vw, 78px)",
-          fontWeight: 800,
-          color: "#ffffff",
-          lineHeight: 1.05,
-          letterSpacing: "-0.04em",
-          maxWidth: "1000px",
-          margin: "0 auto 24px",
-        }}>
-          Event Registration<br />Platform & Solutions
-        </h1>
-
-        <p style={{
-          fontSize: "clamp(15px, 1.8vw, 18.5px)",
-          color: "rgba(255, 255, 255, 0.85)",
-          lineHeight: 1.6,
-          maxWidth: "900px",
-          margin: "0 auto 48px",
-        }}>
-          With our event registration platform & solution, you can bring convenience to all formats of events. Capture valuable data and deploy easy check-ins with self-check-in kiosks and volunteer-based services to maximize the success and revenue of your events.
-        </p>
-
-        {/* ── COLLAGE HERO IMAGE ── */}
-        <div style={{
+      <div className="landing-theme-pink-dots">
+        {/* ── HERO SECTION ── */}
+        <section style={{
+          padding: "160px 24px 80px",
           width: "100%",
-          maxWidth: "950px",
-          marginTop: "20px",
+          maxWidth: "1200px",
+          margin: "0 auto",
           boxSizing: "border-box",
+          textAlign: "center",
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
         }}>
-          <img
-            src="/virtual-events-assets/event-registration.png"
-            alt="Event Registration Platform & Solutions Collage"
-            style={{
-              width: "100%",
-              height: "auto",
-              borderRadius: "20px",
-              boxShadow: "0 20px 50px rgba(0, 0, 0, 0.3)",
-            }}
-          />
-        </div>
-      </section>
+          <p style={{
+            color: "#581c87",
+            fontSize: "clamp(16px, 2.2vw, 22px)",
+            fontWeight: 600,
+            margin: "0 0 16px 0",
+            letterSpacing: "-0.01em",
+          }}>
+            Empower Your Event Growth with SyncoraXP's
+          </p>
+
+          <h1 style={{
+            fontSize: "clamp(44px, 6.8vw, 78px)",
+            fontWeight: 800,
+            color: "#1e1035",
+            lineHeight: 1.05,
+            letterSpacing: "-0.04em",
+            maxWidth: "1000px",
+            margin: "0 auto 24px",
+          }}>
+            Event Registration<br />Platform & Solutions
+          </h1>
+
+          <p style={{
+            fontSize: "clamp(15px, 1.8vw, 18.5px)",
+            color: "#3b2166",
+            lineHeight: 1.6,
+            maxWidth: "900px",
+            margin: "0 auto 48px",
+          }}>
+            With our event registration platform & solution, you can bring convenience to all formats of events. Capture valuable data and deploy easy check-ins with self-check-in kiosks and volunteer-based services to maximize the success and revenue of your events.
+          </p>
+
+          {/* ── COLLAGE HERO IMAGE ── */}
+          <div style={{
+            width: "100%",
+            maxWidth: "950px",
+            marginTop: "20px",
+            boxSizing: "border-box",
+          }}>
+            <img
+              src="/virtual-events-assets/event-registration.png"
+              alt="Event Registration Platform & Solutions Collage"
+              style={{
+                width: "100%",
+                height: "auto",
+                borderRadius: "20px",
+                boxShadow: "0 20px 50px rgba(0, 0, 0, 0.15)",
+              }}
+            />
+          </div>
+        </section>
+      </div>
 
       {/* ── WHITE DOT MATRIX BACKGROUND SECTION (Includes Logos & Form) ── */}
       <div style={{
@@ -391,21 +404,6 @@ export function EventRegistrationPage() {
           boxSizing: "border-box",
         }}>
           <div className="webinar-form-card">
-            {/* Watermark Backdrop Favicon Logo */}
-            <div style={{
-              position: "absolute",
-              right: "4%",
-              bottom: "4%",
-              width: "250px",
-              height: "250px",
-              backgroundImage: "url('/favicon_io/android-chrome-192x192.png')",
-              backgroundSize: "contain",
-              backgroundRepeat: "no-repeat",
-              opacity: 0.08,
-              pointerEvents: "none",
-              zIndex: 1,
-              filter: "drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3))",
-            }} />
 
             {/* Left Column Info */}
             <div className="form-card-left" style={{ zIndex: 2 }}>
@@ -514,34 +512,85 @@ export function EventRegistrationPage() {
                     {/* Phone */}
                     <div className="form-field">
                       <div className="phone-combo-field">
-                        <div style={{ position: "relative", flexShrink: 0 }}>
-                          <select
-                            name="countryCode"
-                            value={form.countryCode}
-                            onChange={handleChange}
+                        <div className="country-custom-dropdown-container" ref={dropdownRef}>
+                          <button
+                            type="button"
+                            className="country-dropdown-btn"
+                            onClick={() => setIsCountryOpen((prev) => !prev)}
                             style={{
                               height: "100%",
-                              padding: "0 28px 0 12px",
-                              borderRadius: "14px",
-                              fontSize: "15px",
-                              color: "#0f172a",
-                              background: "#ffffff",
+                              background: "transparent",
                               border: "none",
-                              outline: "none",
+                              color: "#0f172a",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
                               cursor: "pointer",
-                              appearance: "none",
-                              backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                              backgroundRepeat: "no-repeat",
-                              backgroundPosition: "right 10px center",
-                              backgroundSize: "14px",
+                              outline: "none",
                             }}
                           >
-                            {COUNTRY_CODES.map((c) => (
-                              <option key={c.code} value={c.dial}>
-                                {c.code} {c.dial}
-                              </option>
-                            ))}
-                          </select>
+                            <img
+                              src={COUNTRY_CODES.find((c) => c.dial === form.countryCode)?.flagUrl || "https://flagcdn.com/w40/in.png"}
+                              alt={form.countryCode}
+                              className="country-btn-flag-img"
+                              style={{ width: "20px", height: "auto", borderRadius: "2px" }}
+                            />
+                            <span className="country-btn-code" style={{ fontSize: "14.5px", fontWeight: 600 }}>
+                              {COUNTRY_CODES.find((c) => c.dial === form.countryCode)?.code || "IN"}
+                            </span>
+                            <CaretDown size={12} weight="bold" className={`dropdown-caret ${isCountryOpen ? "open" : ""}`} />
+                          </button>
+
+                          {isCountryOpen && (
+                            <div className="custom-country-menu" style={{
+                              position: "absolute",
+                              top: "calc(100% + 8px)",
+                              left: 0,
+                              background: "#ffffff",
+                              border: "1px solid #e2e8f0",
+                              borderRadius: "12px",
+                              boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
+                              zIndex: 100,
+                              width: "160px",
+                              maxHeight: "220px",
+                              overflowY: "auto",
+                              padding: "6px",
+                              boxSizing: "border-box",
+                            }}>
+                              {COUNTRY_CODES.map((c) => (
+                                <button
+                                  key={c.code}
+                                  type="button"
+                                  className={`country-menu-item ${c.dial === form.countryCode ? "active" : ""}`}
+                                  onClick={() => {
+                                    setForm((prev) => ({
+                                      ...prev,
+                                      countryCode: c.dial,
+                                    }));
+                                    setIsCountryOpen(false);
+                                  }}
+                                  style={{
+                                    width: "100%",
+                                    padding: "8px 10px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                    background: c.dial === form.countryCode ? "#f1f5f9" : "transparent",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    cursor: "pointer",
+                                    textAlign: "left",
+                                    fontSize: "13.5px",
+                                    color: "#0f172a",
+                                  }}
+                                >
+                                  <img src={c.flagUrl} alt={c.code} style={{ width: "18px", height: "auto", borderRadius: "1px" }} />
+                                  <span style={{ fontWeight: 600 }}>{c.code}</span>
+                                  <span style={{ color: "#64748b", marginLeft: "auto" }}>{c.dial}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
                         </div>
                         <input
                           name="phone"
@@ -645,6 +694,7 @@ export function EventRegistrationPage() {
                         fontWeight: 800,
                         fontSize: "14.5px",
                         cursor: loading ? "not-allowed" : "pointer",
+                        boxShadow: loading ? "none" : "0 4px 14px rgba(109, 40, 217, 0.28)",
                       }}
                     >
                       {loading ? "Submitting..." : "Submit"}
@@ -987,8 +1037,7 @@ export function EventRegistrationPage() {
       </div>
 
       {/* ── KEY USPS OF EVENT REGISTRATION SUITE ── */}
-      <div style={{
-        background: "linear-gradient(180deg, #1e0b36 0%, #0d061f 100%)",
+      <div className="landing-theme-pink-dots" style={{
         padding: "100px 24px",
         width: "100%",
         boxSizing: "border-box",
@@ -1001,7 +1050,7 @@ export function EventRegistrationPage() {
           <h2 style={{
             fontSize: "clamp(28px, 4.5vw, 44px)",
             fontWeight: 800,
-            color: "#ffffff",
+            color: "#1e1035",
             margin: "0 auto 16px",
             lineHeight: 1.15,
             letterSpacing: "-0.02em",
@@ -1011,7 +1060,7 @@ export function EventRegistrationPage() {
           </h2>
           <p style={{
             fontSize: "clamp(14px, 1.8vw, 16px)",
-            color: "rgba(255, 255, 255, 0.7)",
+            color: "#3b2166",
             maxWidth: "750px",
             margin: "0 auto 60px",
             lineHeight: 1.6,
@@ -1028,18 +1077,19 @@ export function EventRegistrationPage() {
           }}>
             {/* Card 1: Facial Recognition */}
             <div style={{
-              background: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.06)",
+              background: "rgba(255, 255, 255, 0.68)",
+              border: "1px solid rgba(126, 34, 206, 0.15)",
               borderRadius: "24px",
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               transition: "transform 0.3s ease, border-color 0.3s ease",
+              boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)",
               cursor: "pointer",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.06)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.15)"; }}
             >
               <div style={{ width: "100%", height: "360px", overflow: "hidden" }}>
                 <img
@@ -1048,25 +1098,26 @@ export function EventRegistrationPage() {
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </div>
-              <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", margin: "24px 0" }}>
+              <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#1e1035", margin: "24px 0" }}>
                 Facial Recognition Check-in
               </h3>
             </div>
 
             {/* Card 2: On-Spot Registration */}
             <div style={{
-              background: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.06)",
+              background: "rgba(255, 255, 255, 0.68)",
+              border: "1px solid rgba(126, 34, 206, 0.15)",
               borderRadius: "24px",
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               transition: "transform 0.3s ease, border-color 0.3s ease",
+              boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)",
               cursor: "pointer",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.06)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.15)"; }}
             >
               <div style={{ width: "100%", height: "360px", overflow: "hidden" }}>
                 <img
@@ -1075,25 +1126,26 @@ export function EventRegistrationPage() {
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </div>
-              <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", margin: "24px 0" }}>
+              <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#1e1035", margin: "24px 0" }}>
                 On-Spot Registration
               </h3>
             </div>
 
             {/* Card 3: Badge Printing */}
             <div style={{
-              background: "rgba(255, 255, 255, 0.03)",
-              border: "1px solid rgba(255, 255, 255, 0.06)",
+              background: "rgba(255, 255, 255, 0.68)",
+              border: "1px solid rgba(126, 34, 206, 0.15)",
               borderRadius: "24px",
               overflow: "hidden",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               transition: "transform 0.3s ease, border-color 0.3s ease",
+              boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)",
               cursor: "pointer",
             }}
             onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.06)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.15)"; }}
             >
               <div style={{ width: "100%", height: "360px", overflow: "hidden" }}>
                 <img
@@ -1102,7 +1154,7 @@ export function EventRegistrationPage() {
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </div>
-              <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#ffffff", margin: "24px 0" }}>
+              <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#1e1035", margin: "24px 0" }}>
                 Badge Printing Solutions
               </h3>
             </div>
