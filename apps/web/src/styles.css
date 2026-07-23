@@ -3913,7 +3913,7 @@ textarea {
 .company-hover-col:hover {
   background: rgba(255, 255, 255, 0.75) !important;
 }
-.company-hover-col:hover > div:last-child {
+.company-hover-col:hover .company-arrow-btn {
   background: #7c3aed !important;
   color: #ffffff !important;
   border-color: #7c3aed !important;

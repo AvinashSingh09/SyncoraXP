@@ -255,17 +255,21 @@ export function MarketingHeader() {
                 </div>
 
                 {/* Arrow Circle */}
-                <div style={{
-                  width: "30px",
-                  height: "30px",
-                  borderRadius: "50%",
-                  background: "#ffffff",
-                  border: "1.5px solid rgba(124, 58, 237, 0.25)",
-                  display: "grid",
-                  placeItems: "center",
-                  color: "#7c3aed",
-                  flexShrink: 0,
-                }}>
+                <div
+                  className="company-arrow-btn"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    borderRadius: "50%",
+                    background: "#ffffff",
+                    border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                    display: "grid",
+                    placeItems: "center",
+                    color: "#7c3aed",
+                    flexShrink: 0,
+                    transition: "all 0.2s ease",
+                  }}
+                >
                   <CaretRight size={14} weight="bold" />
                 </div>
               </Link>
@@ -319,17 +323,21 @@ export function MarketingHeader() {
                 </div>
 
                 {/* Arrow Circle */}
-                <div style={{
-                  width: "30px",
-                  height: "30px",
-                  borderRadius: "50%",
-                  background: "#ffffff",
-                  border: "1.5px solid rgba(124, 58, 237, 0.25)",
-                  display: "grid",
-                  placeItems: "center",
-                  color: "#7c3aed",
-                  flexShrink: 0,
-                }}>
+                <div
+                  className="company-arrow-btn"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    borderRadius: "50%",
+                    background: "#ffffff",
+                    border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                    display: "grid",
+                    placeItems: "center",
+                    color: "#7c3aed",
+                    flexShrink: 0,
+                    transition: "all 0.2s ease",
+                  }}
+                >
                   <CaretRight size={14} weight="bold" />
                 </div>
               </Link>
