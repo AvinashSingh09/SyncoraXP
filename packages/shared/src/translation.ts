@@ -148,6 +148,11 @@ export const TranslationPreferenceAckMessageSchema = TranslationMessageBaseSchem
   status: TranslationLanguageStatusSchema,
 });
 
+export const TranslationCaptionsSetMessageSchema = TranslationMessageBaseSchema.extend({
+  type: z.literal("translation.captions.set"),
+  enabled: z.boolean(),
+});
+
 export const TranslationLanguageStatusMessageSchema = TranslationMessageBaseSchema.extend({
   type: z.literal("translation.language.status"),
   language: TranslationLanguageCodeSchema,
@@ -178,6 +183,7 @@ export const TranslationWorkerStatusMessageSchema = TranslationMessageBaseSchema
 export const TranslationDataMessageSchema = z.discriminatedUnion("type", [
   TranslationPreferenceSetMessageSchema,
   TranslationPreferenceAckMessageSchema,
+  TranslationCaptionsSetMessageSchema,
   TranslationLanguageStatusMessageSchema,
   TranslationCaptionMessageSchema,
   TranslationWorkerStatusMessageSchema,

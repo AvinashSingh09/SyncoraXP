@@ -47,10 +47,10 @@ export function HostMeetingPage() {
         meetingId={result.meeting.id}
         meeting={result.meeting}
         initialHostSettings={result.settings}
-        onLeave={() => navigate("/webinar-service", { replace: true })}
+        onLeave={() => navigate("/webinar-service/meetings", { replace: true })}
         onEndMeeting={async () => {
           await endMeeting(meetingId);
-          navigate("/webinar-service", { replace: true });
+          navigate("/webinar-service/meetings", { replace: true });
         }}
       />
     );

@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { CheckCircle } from "@phosphor-icons/react";
+import { CheckCircle, Cube, TrendUp, Lightbulb, UsersThree } from "@phosphor-icons/react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { Footer } from "../components/Footer";
-import { apiFetch } from "../backend";
+import { apiFetch } from "../api";
 
 const COUNTRY_CODES = [
   { code: "IN", dial: "+91", flag: "🇮🇳" },
@@ -17,16 +17,16 @@ const COUNTRY_CODES = [
 ];
 
 const CATEGORIES = [
-  "SaaS / Technology",
-  "Marketing and Advertising",
-  "Education and EdTech",
-  "Healthcare",
-  "Finance and Banking",
-  "Retail and e-Commerce",
-  "Manufacturing",
-  "Non-Profit / NGO",
-  "Government",
-  "Other",
+  "Virtual Events",
+  "Hybrid Events",
+  "Webinars",
+  "Live Streaming",
+  "Registration",
+  "Mobile Event App",
+  "Event Check-In & Badges",
+  "Event CRM",
+  "Facial Recognition",
+  "Others",
 ];
 
 export function BookDemoPage() {
@@ -95,16 +95,31 @@ export function BookDemoPage() {
     return error;
   };
 
+  const getMaxDigitsForCountry = (cc: string) => {
+    if (cc === "+91" || cc === "+1") return 10;
+    if (cc === "+971") return 9;
+    if (cc === "+65") return 8;
+    if (cc === "+61") return 9;
+    if (cc === "+44" || cc === "+49") return 11;
+    return 12;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     let { name, value } = e.target;
     if (name === "phone" || e.target.type === "tel") {
-      value = value.replace(/[^\d\s\-\+]/g, "");
+      const maxDigits = getMaxDigitsForCountry(form.countryCode);
+      value = value.replace(/\D/g, "").slice(0, maxDigits);
     }
     setForm((p) => {
       const nextForm = { ...p, [name]: value };
-      if (name === "countryCode" && touched["phone"]) {
-        const err = validateField("phone", p.phone, value);
-        setErrors((prev) => ({ ...prev, phone: err }));
+      if (name === "countryCode") {
+        const max = getMaxDigitsForCountry(value);
+        const trimmedPhone = p.phone.replace(/\D/g, "").slice(0, max);
+        nextForm.phone = trimmedPhone;
+        if (touched["phone"]) {
+          const err = validateField("phone", trimmedPhone, value);
+          setErrors((prev) => ({ ...prev, phone: err }));
+        }
       }
       return nextForm;
     });
@@ -223,148 +238,192 @@ export function BookDemoPage() {
       display: "flex",
       flexDirection: "column",
       fontFamily: "'Manrope', 'Inter', sans-serif",
-      background: "radial-gradient(circle at 83% 38%, rgba(90, 108, 255, .44), transparent 22%), radial-gradient(circle at 9% 77%, rgba(123, 37, 255, .32), transparent 26%), linear-gradient(145deg, #07122e 3%, #1a0870 57%, #5d0df2 100%)",
-      color: "#fff",
+      background: "#ffffff",
+      color: "#1e1035",
       overflowX: "hidden",
     }}>
-      <MarketingHeader />
-
-      {/* ── MAIN CONTENT (Split Column Layout matching Reference Image) ── */}
-      <main style={{
-        flex: 1,
-        width: "min(1260px, calc(100% - 48px))",
-        margin: "0 auto",
-        padding: "130px 0 80px",
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-        gap: "48px",
-        alignItems: "center",
-        minHeight: "calc(100vh - 80px)",
-        boxSizing: "border-box",
+      {/* ── TOP HERO HALF (Lavender Purple-Dotted Background) ── */}
+      <div style={{
+        background: "#eadeff",
+        backgroundImage: "radial-gradient(rgba(147, 51, 234, 0.12) 1.5px, transparent 1.5px)",
+        backgroundSize: "24px 24px",
+        width: "100%",
       }}>
+        <MarketingHeader />
+
+        {/* ── MAIN CONTENT (Split Column Layout matching Reference Image) ── */}
+        <main style={{
+          flex: 1,
+          width: "min(1280px, calc(100% - 48px))",
+          margin: "0 auto",
+          padding: "145px 0 90px",
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+          gap: "64px",
+          alignItems: "center",
+          minHeight: "calc(100vh - 80px)",
+          boxSizing: "border-box",
+        }}>
         {/* Left Info Column */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: "32px", justifyContent: "center" }}>
           <h1 style={{
-            fontSize: "clamp(34px, 4.5vw, 56px)",
+            fontSize: "clamp(38px, 4.4vw, 56px)",
             fontWeight: 850,
-            lineHeight: 1.12,
+            lineHeight: 1.14,
             margin: 0,
             letterSpacing: "-0.03em",
+            color: "#1e1035",
           }}>
-            Book Your<br />Interactive 1:1 Demo
+            Let's Build<br />
+            <span style={{
+              background: "linear-gradient(135deg, #a855f7 0%, #2563eb 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              display: "inline-block",
+            }}>
+              Extraordinary
+            </span><br />
+            Events Together
           </h1>
 
           <p style={{
-            fontSize: "clamp(15px, 1.6vw, 18px)",
-            color: "#d8c5ff",
+            fontSize: "clamp(15.5px, 1.55vw, 18px)",
+            color: "#4c1d95",
             margin: 0,
-            lineHeight: 1.5,
+            lineHeight: 1.6,
             fontWeight: 500,
+            maxWidth: "560px",
           }}>
-            Explore Your Event's Limitless Potential With SyncoraXP's Event Tech
+            Experience how SyncoraXP's interactive event technology can engage your audience, amplify your brand and deliver measurable results.
           </p>
 
-          <ul style={{
-            listStyleType: "none",
-            padding: 0,
-            margin: 0,
-            display: "flex",
-            flexDirection: "column",
-            gap: "18px",
-          }}>
-            {[
-              "Make the event hosting process simple and easy with our powerful event tech stack.",
-              "Extract maximum value from smart analytics. Boost your event ROI and attendee satisfaction.",
-              "Get detailed industry case studies for insights and creative ideas to make your next event flawless.",
-              "Ask away all that you wish to in a personalised demo plus Q&A session with our team."
-            ].map((bullet, index) => (
-              <li key={index} style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: "12px",
-                fontSize: "14.5px",
-                lineHeight: "1.6",
-                color: "rgba(255,255,255,0.9)",
-              }}>
-                <span style={{
-                  color: "#fbbf24",
-                  fontSize: "18px",
-                  lineHeight: "1",
-                  marginTop: "2px",
-                }}>•</span>
-                <span>{bullet}</span>
-              </li>
-            ))}
-          </ul>
-
-          {/* G2 rating & badge row */}
+          {/* In This Demo, You'll Discover Section */}
           <div style={{
             display: "flex",
             flexDirection: "column",
-            gap: "16px",
-            marginTop: "16px",
-            borderTop: "1px solid rgba(255, 255, 255, 0.12)",
-            paddingTop: "24px",
+            gap: "20px",
+            marginTop: "-4px",
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-              <div style={{
-                background: "#ea580c",
-                color: "#fff",
-                fontWeight: 900,
-                fontSize: "16px",
-                width: "36px",
-                height: "36px",
-                borderRadius: "8px",
-                display: "grid",
-                placeItems: "center",
-                fontFamily: "sans-serif"
-              }}>
-                G₂
-              </div>
-              <div>
-                <div style={{ display: "flex", gap: "2px" }}>
-                  {"★★★★★".split("").map((star, i) => (
-                    <span key={i} style={{ color: "#facc15", fontSize: "16px" }}>{star}</span>
-                  ))}
-                </div>
-                <div style={{ fontSize: "12.5px", color: "#d8c5ff", marginTop: "2px" }}>
-                  Rated 4.8/5 on G2
-                </div>
-              </div>
-            </div>
-
-            {/* Badges Container */}
+            {/* Title Header with subtle ornaments */}
             <div style={{
               display: "flex",
-              gap: "8px",
-              flexWrap: "wrap",
-              marginTop: "8px"
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "12px",
+            }}>
+              <span style={{ color: "#7c3aed", fontSize: "14px", opacity: 0.65 }}>⟡──────</span>
+              <h3 style={{
+                fontSize: "clamp(18px, 2.2vw, 22px)",
+                fontWeight: 800,
+                color: "#1e1035",
+                margin: 0,
+                textAlign: "center",
+                letterSpacing: "-0.01em",
+                whiteSpace: "nowrap",
+              }}>
+                In This Demo, You'll Discover
+              </h3>
+              <span style={{ color: "#7c3aed", fontSize: "14px", opacity: 0.65 }}>──────⟡</span>
+            </div>
+
+            {/* 4 Cards Row - Compact single horizontal row */}
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+              gap: "14px",
+              width: "100%",
             }}>
               {[
-                { title: "High Performer", subtitle: "SPRING 2026" },
-                { title: "High Performer", subtitle: "ASIA PACIFIC" },
-                { title: "High Performer", subtitle: "INDIA" },
-                { title: "High Performer", subtitle: "ENTERPRISE" },
-                { title: "Momentum Leader", subtitle: "SPRING 2026" }
-              ].map((badge, idx) => (
-                <div key={idx} style={{
-                  background: "#fff",
-                  color: "#1e1b4b",
-                  borderRadius: "6px",
-                  padding: "6px 8px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderTop: "4px solid #ea580c",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
-                  width: "72px",
-                  height: "76px",
-                  textAlign: "center",
-                }}>
-                  <span style={{ fontSize: "7px", fontWeight: 800, color: "#ea580c", letterSpacing: "0.5px" }}>G2</span>
-                  <span style={{ fontSize: "8px", fontWeight: 900, lineHeight: "1.15", margin: "4px 0", color: "#1e1b4b" }}>{badge.title}</span>
-                  <span style={{ fontSize: "5.5px", fontWeight: 700, color: "#64748b" }}>{badge.subtitle}</span>
+                {
+                  icon: <Cube size={22} weight="fill" color="#7e22ce" />,
+                  title: "Interactive Solutions",
+                  desc: "Explore cutting-edge event tech built for immersive experiences.",
+                  accent: "#7e22ce",
+                  glowBg: "#f3e8ff",
+                  glowBorder: "rgba(126, 34, 206, 0.25)",
+                },
+                {
+                  icon: <TrendUp size={22} weight="bold" color="#2563eb" />,
+                  title: "Smart Analytics",
+                  desc: "See real-time data & insights to maximize engagement and ROI.",
+                  accent: "#2563eb",
+                  glowBg: "#eff6ff",
+                  glowBorder: "rgba(37, 99, 235, 0.25)",
+                },
+                {
+                  icon: <Lightbulb size={22} weight="fill" color="#db2777" />,
+                  title: "Creative Ideas",
+                  desc: "Get inspired with unique concepts tailored to your audience.",
+                  accent: "#db2777",
+                  glowBg: "#fce7f3",
+                  glowBorder: "rgba(219, 39, 119, 0.25)",
+                },
+                {
+                  icon: <UsersThree size={22} weight="fill" color="#0d9488" />,
+                  title: "Expert Guidance",
+                  desc: "Our event specialists are here to help plan your next big success.",
+                  accent: "#0d9488",
+                  glowBg: "#ccfbf1",
+                  glowBorder: "rgba(13, 148, 136, 0.25)",
+                },
+              ].map((card, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    background: "#ffffff",
+                    borderRadius: "14px",
+                    borderTop: `4px solid ${card.accent}`,
+                    borderLeft: "1.5px solid #000000",
+                    borderRight: "1.5px solid #000000",
+                    borderBottom: "1.5px solid #000000",
+                    padding: "16px 10px 14px",
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    textAlign: "center",
+                    boxShadow: "0 8px 20px rgba(0,0,0,0.07)",
+                    position: "relative",
+                    overflow: "hidden",
+                    minHeight: "155px",
+                    boxSizing: "border-box",
+                  }}
+                >
+                  {/* Glowing Icon Container */}
+                  <div style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    background: card.glowBg,
+                    border: `1.5px solid ${card.glowBorder}`,
+                    display: "grid",
+                    placeItems: "center",
+                    marginBottom: "10px",
+                    flexShrink: 0,
+                  }}>
+                    {card.icon}
+                  </div>
+
+                  {/* Title */}
+                  <h4 style={{
+                    fontSize: "12px",
+                    fontWeight: 900,
+                    color: "#000000",
+                    margin: "0 0 5px 0",
+                    lineHeight: 1.25,
+                  }}>
+                    {card.title}
+                  </h4>
+
+                  {/* Description */}
+                  <p style={{
+                    fontSize: "10.5px",
+                    color: "#1e293b",
+                    margin: 0,
+                    lineHeight: 1.4,
+                    fontWeight: 600,
+                  }}>
+                    {card.desc}
+                  </p>
                 </div>
               ))}
             </div>
@@ -509,6 +568,7 @@ export function BookDemoPage() {
                         value={form.phone}
                         onChange={handleChange}
                         onBlur={handleBlur}
+                        maxLength={getMaxDigitsForCountry(form.countryCode)}
                         placeholder="Phone No.*"
                         style={{ ...getInputStyle("phone"), flex: 1 }}
                       />
@@ -632,11 +692,14 @@ export function BookDemoPage() {
           </div>
         </div>
       </main>
+      </div>
 
-      {/* ── SUPPORT PANEL SECTION ── */}
+      {/* ── SECOND HALF: SUPPORT PANEL SECTION (White Dotted Background) ── */}
       <section style={{
         background: "#ffffff",
-        padding: "40px 24px 24px",
+        backgroundImage: "radial-gradient(rgba(147, 51, 234, 0.12) 1.5px, transparent 1.5px)",
+        backgroundSize: "24px 24px",
+        padding: "60px 24px 40px",
         color: "#1e1b4b",
         textAlign: "center",
         width: "100%",

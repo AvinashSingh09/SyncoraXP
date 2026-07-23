@@ -22,6 +22,7 @@ interface ManagedLanguage {
 
 const RETRY_BASE_MS = 1_000;
 const RETRY_MAX_MS = 10_000;
+const CAPTION_LISTENER_PREFIX = "captions:";
 
 export interface LanguageSessionManagerHooks {
   onStatus(
@@ -38,6 +39,7 @@ export interface LanguageSessionManagerHooks {
 export class LanguageSessionManager {
   private readonly preferences = new Map<string, TranslationPreference>();
   private readonly languages = new Map<TranslationLanguageCode, ManagedLanguage>();
+  private readonly captionLanguage: TranslationLanguageCode;
   private closed = false;
 
   constructor(
@@ -46,6 +48,7 @@ export class LanguageSessionManager {
     private readonly hooks: LanguageSessionManagerHooks,
     private readonly idleGraceMs: number,
   ) {
+    this.captionLanguage = allowedLanguages[0]!;
     for (const language of allowedLanguages) {
       this.languages.set(language, {
         listeners: new Set(),
@@ -69,9 +72,22 @@ export class LanguageSessionManager {
     }
     if (preference === "original") return;
 
-    const managed = this.languages.get(preference);
-    if (!managed) throw new Error(`Translation language ${preference} is not enabled`);
-    managed.listeners.add(participantIdentity);
+    await this.addListener(preference, participantIdentity);
+  }
+
+  async setSourceCaptions(participantIdentity: string, enabled: boolean): Promise<void> {
+    const listener = `${CAPTION_LISTENER_PREFIX}${participantIdentity}`;
+    if (enabled) {
+      await this.addListener(this.captionLanguage, listener);
+    } else {
+      this.removeListener(this.captionLanguage, listener);
+    }
+  }
+
+  private async addListener(language: TranslationLanguageCode, listener: string): Promise<void> {
+    const managed = this.languages.get(language);
+    if (!managed) throw new Error(`Translation language ${language} is not enabled`);
+    managed.listeners.add(listener);
     if (managed.idleTimer) {
       clearTimeout(managed.idleTimer);
       managed.idleTimer = null;
@@ -80,16 +96,17 @@ export class LanguageSessionManager {
       clearTimeout(managed.retryTimer);
       managed.retryTimer = null;
     }
-    this.emitStatus(preference, managed);
+    this.emitStatus(language, managed);
     await managed.stopPromise;
-    if (this.closed || !managed.listeners.has(participantIdentity)) return;
-    if (!managed.session) await this.start(preference, managed);
+    if (this.closed || !managed.listeners.has(listener)) return;
+    if (!managed.session) await this.start(language, managed);
   }
 
   removeParticipant(participantIdentity: string): void {
     const previous = this.preferences.get(participantIdentity);
     this.preferences.delete(participantIdentity);
     if (previous && previous !== "original") this.removeListener(previous, participantIdentity);
+    this.removeListener(this.captionLanguage, `${CAPTION_LISTENER_PREFIX}${participantIdentity}`);
   }
 
   appendAudio(pcm16: Int16Array): void {
@@ -102,7 +119,7 @@ export class LanguageSessionManager {
   getStatus(language: TranslationLanguageCode) {
     const managed = this.languages.get(language);
     return managed
-      ? { status: managed.status, listenerCount: managed.listeners.size }
+      ? { status: managed.status, listenerCount: this.listenerCount(managed) }
       : { status: "unavailable" as const, listenerCount: 0 };
   }
 
@@ -274,6 +291,12 @@ export class LanguageSessionManager {
     managed: ManagedLanguage,
     errorCode?: string,
   ): void {
-    this.hooks.onStatus(language, managed.status, managed.listeners.size, errorCode);
+    this.hooks.onStatus(language, managed.status, this.listenerCount(managed), errorCode);
+  }
+
+  private listenerCount(managed: ManagedLanguage): number {
+    return Array.from(managed.listeners).filter(
+      (listener) => !listener.startsWith(CAPTION_LISTENER_PREFIX),
+    ).length;
   }
 }

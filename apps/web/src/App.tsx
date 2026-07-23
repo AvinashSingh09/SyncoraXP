@@ -22,11 +22,6 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return user ? children : <Navigate to="/login" replace />;
 }
 
-function WebinarServiceRoute() {
-  const { user } = useAuth();
-  return user ? <ProtectedRoute><HomePage /></ProtectedRoute> : <WebinarServicePage />;
-}
-
 export function App() {
   return (
     <BrowserRouter>
@@ -43,7 +38,8 @@ export function App() {
             <Route path="/contact" element={<Navigate to="/book-demo" replace />} />
             <Route path="/virtual-events-platform/book-demo" element={<Navigate to="/book-demo" replace />} />
             <Route path="/virtual-events-platform/app/*" element={<VirtualEventsApp />} />
-            <Route path="/webinar-service" element={<WebinarServiceRoute />} />
+            <Route path="/webinar-service" element={<WebinarServicePage />} />
+            <Route path="/webinar-service/meetings" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
             <Route path="/event-registration" element={<EventRegistrationPage />} />
             <Route path="/meetings/new" element={<ProtectedRoute><CreateMeetingPage /></ProtectedRoute>} />
             <Route path="/meetings/:meetingId/host" element={<ProtectedRoute><HostMeetingPage /></ProtectedRoute>} />

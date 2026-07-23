@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { X, CheckCircle, User, EnvelopeSimple, Phone, ShieldCheck, CaretDown } from "@phosphor-icons/react";
-import { apiFetch } from "../backend";
+import { apiFetch } from "../api";
 
 const ALL_COUNTRIES = [
   { code: "IN", name: "India", dial: "+91", min: 10, max: 10 },
@@ -154,7 +154,7 @@ export function RequestCallbackModal() {
   ) => {
     let { name, value } = e.target;
     if (name === "phone" || e.target.type === "tel") {
-      value = value.replace(/[^\d\s\-\+]/g, "");
+      value = value.replace(/\D/g, "").slice(0, selectedCountry.max);
     }
     setForm((prev) => ({ ...prev, [name]: value }));
     validateField(name as any, value);

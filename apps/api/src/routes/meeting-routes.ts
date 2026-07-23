@@ -355,23 +355,21 @@ export async function registerMeetingRoutes(
         allowMicrophone: true,
       });
       let translation = await dependencies.translations.getSettings(meeting.id);
-      if (translation.enabled) {
-        translation = await dependencies.translations.updateSettings(meeting.id, {
-          designatedSpeakerIdentity: issued.participantIdentity,
-        });
-        await dependencies.roomTokens.updateTranslationSettings(
-          meeting.livekitRoomName,
-          translation,
-        );
-        await dependencies.translations.queueRun({
-          id: randomUUID(),
-          meetingId: meeting.id,
-          livekitRoomName: meeting.livekitRoomName,
-          speakerParticipantIdentity: issued.participantIdentity,
-          provider: translation.provider,
-          model: translation.model,
-        });
-      }
+      translation = await dependencies.translations.updateSettings(meeting.id, {
+        designatedSpeakerIdentity: issued.participantIdentity,
+      });
+      await dependencies.roomTokens.updateTranslationSettings(
+        meeting.livekitRoomName,
+        translation,
+      );
+      await dependencies.translations.queueRun({
+        id: randomUUID(),
+        meetingId: meeting.id,
+        livekitRoomName: meeting.livekitRoomName,
+        speakerParticipantIdentity: issued.participantIdentity,
+        provider: translation.provider,
+        model: translation.model,
+      });
       const response: RoomSessionResponse = {
         serverUrl: issued.serverUrl,
         participantToken: issued.participantToken,

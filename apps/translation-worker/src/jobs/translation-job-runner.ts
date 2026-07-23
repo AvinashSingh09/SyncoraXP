@@ -45,12 +45,13 @@ export class TranslationJobRunner {
   ) {}
 
   async run(): Promise<void> {
+    const sourceCaptionLanguage = this.job.settings.allowedTargetLanguages[0]!;
     const sessionManager = new LanguageSessionManager(
       this.job.settings.allowedTargetLanguages,
       this.createSessionFactory(),
       {
         onStatus: (language, status, listenerCount, errorCode) => {
-          if (status === "starting") {
+          if (status === "starting" && listenerCount > 0) {
             this.runInBackground(publisher.ensure(language), `publish ${language} audio track`);
           }
           this.runInBackground(
@@ -58,8 +59,11 @@ export class TranslationJobRunner {
             `publish ${language} translation status`,
           );
         },
-        onAudio: (language, pcm16) => publisher.capture(language, pcm16),
+        onAudio: (language, pcm16) => {
+          if (sessionManager.getStatus(language).listenerCount > 0) publisher.capture(language, pcm16);
+        },
         onTranscript: (language, delta) => {
+          if (delta.kind === "source" && language !== sourceCaptionLanguage) return;
           this.runInBackground(
             this.publishMessage({
               ...this.messageBase(),
@@ -143,7 +147,7 @@ export class TranslationJobRunner {
           "active",
           this.config.TRANSLATION_WORKER_LEASE_MS,
         );
-        if (!control || !control.enabled || control.status === "stopping") break;
+        if (!control || control.status === "stopping") break;
         await this.delay(this.config.TRANSLATION_WORKER_HEARTBEAT_MS);
       }
     } finally {
@@ -300,11 +304,16 @@ export class TranslationJobRunner {
       const parsed = TranslationDataMessageSchema.safeParse(
         JSON.parse(new TextDecoder().decode(payload)),
       );
-      if (!parsed.success || parsed.data.type !== "translation.preference.set") return;
+      if (!parsed.success) return;
       if (
         parsed.data.meetingId !== this.job.meetingId ||
         parsed.data.translationRunId !== this.job.id
       ) return;
+      if (parsed.data.type === "translation.captions.set") {
+        void manager.setSourceCaptions(participant.identity, parsed.data.enabled).catch(() => undefined);
+        return;
+      }
+      if (parsed.data.type !== "translation.preference.set") return;
       const preferenceMessage = parsed.data;
       void manager
         .setPreference(participant.identity, preferenceMessage.language)

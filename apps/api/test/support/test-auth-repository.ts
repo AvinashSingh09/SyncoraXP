@@ -4,9 +4,9 @@ import {
   type NewSessionRecord,
   type NewUserRecord,
   type StoredUser,
-} from "./auth-repository";
+} from "../../src/auth/auth-repository";
 
-export class MemoryAuthRepository implements AuthRepository {
+export class TestAuthRepository implements AuthRepository {
   private readonly users = new Map<string, StoredUser>();
   private readonly sessions = new Map<string, NewSessionRecord>();
 

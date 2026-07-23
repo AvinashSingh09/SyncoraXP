@@ -13,16 +13,16 @@ const COUNTRY_CODES = [
 ];
 
 const CATEGORIES = [
-  "SaaS / Technology",
-  "Marketing and Advertising",
-  "Education and EdTech",
-  "Healthcare",
-  "Finance and Banking",
-  "Retail and e-Commerce",
-  "Manufacturing",
-  "Non-Profit / NGO",
-  "Government",
-  "Other",
+  "Virtual Events",
+  "Hybrid Events",
+  "Webinars",
+  "Live Streaming",
+  "Registration",
+  "Mobile Event App",
+  "Event Check-In & Badges",
+  "Event CRM",
+  "Facial Recognition",
+  "Others",
 ];
 
 const brandLogoFiles = [
@@ -105,10 +105,20 @@ export function WebinarLeadFormSection() {
     return error;
   };
 
+  const getMaxDigitsForCountry = (cc: string) => {
+    if (cc === "+91" || cc === "+1") return 10;
+    if (cc === "+971") return 9;
+    if (cc === "+65") return 8;
+    if (cc === "+61") return 9;
+    if (cc === "+44" || cc === "+49") return 11;
+    return 12;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     let { name, value } = e.target;
     if (name === "phone" || e.target.type === "tel") {
-      value = value.replace(/[^\d\s\-\+]/g, "");
+      const maxDigits = getMaxDigitsForCountry(formData.countryCode);
+      value = value.replace(/\D/g, "").slice(0, maxDigits);
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
 

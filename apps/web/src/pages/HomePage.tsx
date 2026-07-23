@@ -16,14 +16,6 @@ import { Brand } from "../components/Brand";
 import { createMeeting, deleteMeeting, getMyMeetings } from "../api";
 import { useAuth } from "../auth/AuthContext";
 
-function occursToday(meeting: MeetingSummary, now: Date) {
-  if (!meeting.scheduledFor) return false;
-  const scheduled = new Date(meeting.scheduledFor);
-  return scheduled.getFullYear() === now.getFullYear()
-    && scheduled.getMonth() === now.getMonth()
-    && scheduled.getDate() === now.getDate();
-}
-
 // get meeting time for today's meetings
 function meetingTime(meeting: MeetingSummary) {
   if (!meeting.scheduledFor) return "Available now";
@@ -43,17 +35,7 @@ function meetingDate(meeting: MeetingSummary) {
 }
 
 function parseJoinCode(value: string) {
-  const trimmed = value.trim();
-  if (!trimmed) return "";
-
-  try {
-    const url = new URL(trimmed);
-    const match = url.pathname.match(/\/join\/([^/?#]+)/);
-    return match?.[1] ? decodeURIComponent(match[1]) : "";
-  } catch {
-    const match = trimmed.match(/(?:^|\/join\/)([^/?#\s]+)$/);
-    return match?.[1] ?? "";
-  }
+  return value.trim().match(/(?:^|\/join\/)([^/?#\s]+)(?:[?#].*)?$/)?.[1] ?? "";
 }
 
 export function HomePage() {
@@ -83,7 +65,8 @@ export function HomePage() {
 
   const todayMeetings = useMemo(
     () => meetings
-      .filter((meeting) => occursToday(meeting, now))
+      .filter((meeting) => !!meeting.scheduledFor
+        && new Date(meeting.scheduledFor).toDateString() === now.toDateString())
       .sort((left, right) => new Date(left.scheduledFor ?? 0).getTime() - new Date(right.scheduledFor ?? 0).getTime()),
     [meetings, now],
   );
