@@ -9,10 +9,15 @@ import type { Pool } from "pg";
 
 export type WorkerRunStatus =
   | "queued"
+  | "queued_scoped"
   | "starting"
+  | "starting_scoped"
   | "active"
+  | "active_scoped"
   | "reconnecting"
+  | "reconnecting_scoped"
   | "stopping"
+  | "stopping_scoped"
   | "completed"
   | "failed";
 
@@ -47,7 +52,11 @@ export interface ClaimedTranslationJob {
 export class TranslationJobStore {
   constructor(private readonly pool: Pool) {}
 
-  async claimNext(workerInstanceId: string, leaseMs: number): Promise<ClaimedTranslationJob | null> {
+  async claimNext(
+    workerInstanceId: string,
+    leaseMs: number,
+    workerScope: string,
+  ): Promise<ClaimedTranslationJob | null> {
     const client = await this.pool.connect();
     try {
       await client.query("BEGIN");
@@ -57,14 +66,16 @@ export class TranslationJobStore {
            FROM meeting_translation_runs run
            JOIN meeting_translation_settings settings
              ON settings.meeting_id = run.meeting_id
-           WHERE run.status = 'queued'
+           WHERE run.worker_scope = $3
+             AND (
+               run.status = 'queued_scoped'
               OR (
-                run.status IN ('starting', 'active', 'reconnecting')
+                run.status IN ('starting_scoped', 'active_scoped', 'reconnecting_scoped')
                 AND run.lease_expires_at IS NOT NULL
                 AND run.lease_expires_at < now()
               )
               OR (
-                run.status = 'stopping'
+                run.status = 'stopping_scoped'
                 AND settings.enabled = true
                 AND (
                   run.worker_instance_id IS NULL
@@ -72,12 +83,13 @@ export class TranslationJobStore {
                   OR run.lease_expires_at < now()
                 )
               )
+             )
            ORDER BY run.created_at ASC
            FOR UPDATE SKIP LOCKED
            LIMIT 1
          )
          UPDATE meeting_translation_runs run
-         SET status = 'starting',
+         SET status = 'starting_scoped',
              worker_instance_id = $1,
              lease_expires_at = now() + ($2::text || ' milliseconds')::interval,
              last_heartbeat_at = now(),
@@ -87,7 +99,7 @@ export class TranslationJobStore {
          WHERE run.id = candidate.id
          RETURNING run.id, run.meeting_id, run.livekit_room_name, run.status,
                    run.speaker_participant_identity, run.provider, run.model`,
-        [workerInstanceId, leaseMs],
+        [workerInstanceId, leaseMs, workerScope],
       );
       const row = result.rows[0];
       if (!row) {
@@ -137,17 +149,19 @@ export class TranslationJobStore {
   ): Promise<{ status: WorkerRunStatus; enabled: boolean } | null> {
     const result = await this.pool.query<{ status: WorkerRunStatus; enabled: boolean }>(
       `UPDATE meeting_translation_runs run
-       SET status = CASE WHEN run.status = 'stopping' THEN run.status ELSE $3 END,
+       SET status = CASE WHEN run.status = 'stopping_scoped' THEN run.status ELSE $3 END,
            lease_expires_at = now() + ($4::text || ' milliseconds')::interval,
            last_heartbeat_at = now(),
            updated_at = now()
        FROM meeting_translation_settings settings
        WHERE run.id = $1
          AND run.worker_instance_id = $2
-         AND run.status IN ('starting', 'active', 'reconnecting', 'stopping')
+         AND run.status IN (
+           'starting_scoped', 'active_scoped', 'reconnecting_scoped', 'stopping_scoped'
+         )
          AND settings.meeting_id = run.meeting_id
        RETURNING run.status, settings.enabled`,
-      [runId, workerInstanceId, status, leaseMs],
+      [runId, workerInstanceId, `${status}_scoped`, leaseMs],
     );
     return result.rows[0] ?? null;
   }
@@ -168,8 +182,41 @@ export class TranslationJobStore {
            error_detail = $5
        WHERE id = $1
          AND worker_instance_id = $2
-         AND status IN ('starting', 'active', 'reconnecting', 'stopping')`,
+         AND status IN (
+           'starting_scoped', 'active_scoped', 'reconnecting_scoped', 'stopping_scoped'
+         )`,
       [runId, workerInstanceId, status, error?.code ?? null, error?.detail ?? null],
+    );
+  }
+
+  async release(runId: string, workerInstanceId: string): Promise<void> {
+    await this.pool.query(
+      `UPDATE meeting_translation_runs
+       SET status = 'queued_scoped',
+           worker_instance_id = NULL,
+           lease_expires_at = NULL,
+           updated_at = now()
+       WHERE id = $1
+         AND worker_instance_id = $2
+         AND status IN (
+           'starting_scoped', 'active_scoped', 'reconnecting_scoped', 'stopping_scoped'
+         )`,
+      [runId, workerInstanceId],
+    );
+  }
+
+  async appendTranscript(
+    meetingId: string,
+    runId: string,
+    speakerIdentity: string,
+    text: string,
+  ): Promise<void> {
+    if (!text.trim()) return;
+    await this.pool.query(
+      `INSERT INTO meeting_transcript_segments (
+         meeting_id, run_id, speaker_identity, text
+       ) VALUES ($1, $2, $3, $4)`,
+      [meetingId, runId, speakerIdentity, text],
     );
   }
 }

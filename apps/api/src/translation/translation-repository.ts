@@ -27,6 +27,12 @@ export interface TranslationJob extends StoredTranslationRun {
   settings: MeetingTranslationSettings;
 }
 
+export interface StoredTranscriptSegment {
+  id: string;
+  text: string;
+  spokenAt: Date;
+}
+
 export interface TranslationRepository {
   getSettings(meetingId: string): Promise<MeetingTranslationSettings>;
   getRuntime(meetingId: string): Promise<MeetingTranslationRuntime>;
@@ -43,4 +49,5 @@ export interface TranslationRepository {
     model: TranslationModel;
   }): Promise<StoredTranslationRun>;
   requestStop(meetingId: string): Promise<void>;
+  listTranscript(meetingId: string): Promise<StoredTranscriptSegment[]>;
 }

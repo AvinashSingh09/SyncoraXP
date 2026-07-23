@@ -2,18 +2,20 @@ import {
   ArrowRight,
   CalendarBlank,
   CalendarDots,
+  DownloadSimple,
   DotsThree,
+  FileText,
   LinkSimple,
   ListDashes,
   Trash,
   VideoCamera,
   X,
 } from "@phosphor-icons/react";
-import type { MeetingSummary } from "@voice/shared";
+import type { MeetingSummary, MeetingTranscriptResponse } from "@voice/shared";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Brand } from "../components/Brand";
-import { createMeeting, deleteMeeting, getMyMeetings } from "../api";
+import { createMeeting, deleteMeeting, getMeetingTranscript, getMyMeetings } from "../api";
 import { useAuth } from "../auth/AuthContext";
 
 // get meeting time for today's meetings
@@ -50,6 +52,9 @@ export function HomePage() {
   const [joinValue, setJoinValue] = useState("");
   const [joinError, setJoinError] = useState("");
   const [creatingInstant, setCreatingInstant] = useState(false);
+  const [transcript, setTranscript] = useState<MeetingTranscriptResponse | null>(null);
+  const [transcriptLoading, setTranscriptLoading] = useState(false);
+  const [transcriptError, setTranscriptError] = useState("");
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000);
@@ -114,6 +119,33 @@ export function HomePage() {
     } finally {
       setDeletingMeetingId(null);
     }
+  };
+
+  const openTranscript = async (meeting: MeetingSummary) => {
+    setTranscript(null);
+    setTranscriptError("");
+    setTranscriptLoading(true);
+    try {
+      setTranscript(await getMeetingTranscript(meeting.id));
+    } catch (caught) {
+      setTranscriptError(caught instanceof Error ? caught.message : "Could not load the transcript");
+    } finally {
+      setTranscriptLoading(false);
+    }
+  };
+
+  const downloadTranscript = () => {
+    if (!transcript) return;
+    const text = transcript.segments.map(
+      (segment) =>
+        `[${new Date(segment.spokenAt).toLocaleString()}] ${segment.speakerName}: ${segment.text}`,
+    ).join("\n\n");
+    const url = URL.createObjectURL(new Blob([text], { type: "text/plain" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${transcript.meeting.title.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-|-$/g, "") || "meeting"}-transcript.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -242,6 +274,16 @@ export function HomePage() {
                         Open room <ArrowRight size={15} weight="bold" />
                       </Link>
                     )}
+                    {meeting.status === "ended" && (
+                      <button
+                        className="button meeting-list-open"
+                        type="button"
+                        disabled={transcriptLoading}
+                        onClick={() => void openTranscript(meeting)}
+                      >
+                        <FileText size={15} weight="bold" /> Transcript
+                      </button>
+                    )}
                     <button className="meeting-more-button" type="button" aria-label={`Delete ${meeting.title}`} title="Delete meeting" disabled={deletingMeetingId === meeting.id} onClick={() => void removeMeeting(meeting)}>
                       {deletingMeetingId === meeting.id ? <span className="meeting-action-progress">Deleting</span> : <><DotsThree size={22} weight="bold" /><Trash size={15} weight="bold" /></>}
                     </button>
@@ -252,6 +294,76 @@ export function HomePage() {
           </div>
         )}
       </section>
+      {(transcript || transcriptLoading || transcriptError) && (
+        <div
+          className="transcript-modal-backdrop"
+          onMouseDown={(event) => {
+            if (event.currentTarget === event.target) {
+              setTranscript(null);
+              setTranscriptError("");
+            }
+          }}
+        >
+          <section
+            className="transcript-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="transcript-modal-title"
+          >
+            <header>
+              <div>
+                <FileText size={22} weight="bold" />
+                <span>
+                  <strong id="transcript-modal-title">{transcript?.meeting.title ?? "Transcript"}</strong>
+                  <small>Original-language meeting transcript</small>
+                </span>
+              </div>
+              <div>
+                {transcript && (
+                  <button
+                    type="button"
+                    onClick={downloadTranscript}
+                    disabled={!transcript.segments.length}
+                    aria-label="Download transcript"
+                    title="Download transcript"
+                  >
+                    <DownloadSimple size={19} weight="bold" />
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTranscript(null);
+                    setTranscriptError("");
+                  }}
+                  aria-label="Close transcript"
+                >
+                  <X size={19} weight="bold" />
+                </button>
+              </div>
+            </header>
+            <div className="transcript-modal-body">
+              {transcriptLoading && <p className="dashboard-muted">Loading transcript…</p>}
+              {transcriptError && <p className="form-error" role="alert">{transcriptError}</p>}
+              {transcript && !transcript.segments.length && (
+                <div className="transcript-empty">
+                  <FileText size={34} weight="duotone" />
+                  <strong>No transcript was captured</strong>
+                  <small>No finalized host speech was detected during this meeting.</small>
+                </div>
+              )}
+              {transcript?.segments.map((segment) => (
+                <article key={segment.id} className="transcript-segment">
+                  <small>
+                    {segment.speakerName} · {new Date(segment.spokenAt).toLocaleString()}
+                  </small>
+                  <p>{segment.text}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

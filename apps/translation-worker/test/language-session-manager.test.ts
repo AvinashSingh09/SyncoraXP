@@ -56,11 +56,11 @@ test("shares one session per language and closes it after the final listener gra
   await manager.close();
 });
 
-test("source captions reuse one language session without counting as translated listeners", async () => {
+test("translated captions can keep a language session active without enabling translated audio", async () => {
   let created = 0;
   let closed = 0;
   const manager = new LanguageSessionManager(
-    ["hi", "ta"],
+    ["hi"],
     (language) => ({
       language,
       async open() { created += 1; },
@@ -71,19 +71,11 @@ test("source captions reuse one language session without counting as translated 
     0,
   );
 
-  await manager.setSourceCaptions("guest-1", true);
-  await manager.setSourceCaptions("guest-2", true);
+  await manager.setCaptionPreference("guest", "hi");
   assert.equal(created, 1);
   assert.deepEqual(manager.getStatus("hi"), { status: "live", listenerCount: 0 });
 
-  await manager.setPreference("guest-1", "hi");
-  assert.equal(created, 1);
-  assert.deepEqual(manager.getStatus("hi"), { status: "live", listenerCount: 1 });
-
-  await manager.setSourceCaptions("guest-1", false);
-  await manager.setSourceCaptions("guest-2", false);
-  assert.equal(closed, 0);
-  await manager.setPreference("guest-1", "original");
+  await manager.setCaptionPreference("guest", "original");
   await wait(5);
   assert.equal(closed, 1);
   await manager.close();

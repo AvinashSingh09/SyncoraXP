@@ -38,8 +38,8 @@ export interface LanguageSessionManagerHooks {
 
 export class LanguageSessionManager {
   private readonly preferences = new Map<string, TranslationPreference>();
+  private readonly captionPreferences = new Map<string, TranslationPreference>();
   private readonly languages = new Map<TranslationLanguageCode, ManagedLanguage>();
-  private readonly captionLanguage: TranslationLanguageCode;
   private closed = false;
 
   constructor(
@@ -48,7 +48,6 @@ export class LanguageSessionManager {
     private readonly hooks: LanguageSessionManagerHooks,
     private readonly idleGraceMs: number,
   ) {
-    this.captionLanguage = allowedLanguages[0]!;
     for (const language of allowedLanguages) {
       this.languages.set(language, {
         listeners: new Set(),
@@ -75,13 +74,16 @@ export class LanguageSessionManager {
     await this.addListener(preference, participantIdentity);
   }
 
-  async setSourceCaptions(participantIdentity: string, enabled: boolean): Promise<void> {
+  async setCaptionPreference(
+    participantIdentity: string,
+    preference: TranslationPreference,
+  ): Promise<void> {
+    if (this.closed) return;
     const listener = `${CAPTION_LISTENER_PREFIX}${participantIdentity}`;
-    if (enabled) {
-      await this.addListener(this.captionLanguage, listener);
-    } else {
-      this.removeListener(this.captionLanguage, listener);
-    }
+    const previous = this.captionPreferences.get(participantIdentity) ?? "original";
+    if (previous !== "original") this.removeListener(previous, listener);
+    this.captionPreferences.set(participantIdentity, preference);
+    if (preference !== "original") await this.addListener(preference, listener);
   }
 
   private async addListener(language: TranslationLanguageCode, listener: string): Promise<void> {
@@ -106,7 +108,11 @@ export class LanguageSessionManager {
     const previous = this.preferences.get(participantIdentity);
     this.preferences.delete(participantIdentity);
     if (previous && previous !== "original") this.removeListener(previous, participantIdentity);
-    this.removeListener(this.captionLanguage, `${CAPTION_LISTENER_PREFIX}${participantIdentity}`);
+    const captionPreference = this.captionPreferences.get(participantIdentity);
+    this.captionPreferences.delete(participantIdentity);
+    if (captionPreference && captionPreference !== "original") {
+      this.removeListener(captionPreference, `${CAPTION_LISTENER_PREFIX}${participantIdentity}`);
+    }
   }
 
   appendAudio(pcm16: Int16Array): void {
