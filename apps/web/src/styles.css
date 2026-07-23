@@ -4069,6 +4069,16 @@ textarea {
   transform: rotate(180deg);
 }
 
+.solutions-hover-col {
+  transition: all 0.22s ease;
+}
+.solutions-hover-col:hover {
+  background: rgba(255, 255, 255, 0.75) !important;
+}
+.solutions-hover-col:hover svg:last-child {
+  transform: translateX(3px);
+}
+
 .landing-page .solutions-trigger svg {
   transition: transform .18s ease;
 }
