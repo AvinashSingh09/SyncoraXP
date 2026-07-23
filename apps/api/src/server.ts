@@ -20,7 +20,10 @@ const pool = new Pool({
 });
 const repository = new PostgresMeetingRepository(pool);
 const auth = new AuthService(new PostgresAuthRepository(pool), config.SESSION_DAYS);
-const translations = new PostgresTranslationRepository(pool);
+const translations = new PostgresTranslationRepository(
+  pool,
+  config.LIVEKIT_URL ?? "unconfigured",
+);
 const roomTokens = new LiveKitRoomTokenIssuer({
   serverUrl: config.LIVEKIT_URL,
   apiKey: config.LIVEKIT_API_KEY,

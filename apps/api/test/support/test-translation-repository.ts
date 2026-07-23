@@ -9,6 +9,7 @@ import {
   type UpdateMeetingTranslationInput,
 } from "@voice/shared";
 import type {
+  StoredTranscriptSegment,
   StoredTranslationRun,
   TranslationRepository,
 } from "../../src/translation/translation-repository";
@@ -20,6 +21,7 @@ function cloneSettings(settings: MeetingTranslationSettings): MeetingTranslation
 export class TestTranslationRepository implements TranslationRepository {
   private readonly settings = new Map<string, MeetingTranslationSettings>();
   private readonly runs = new Map<string, StoredTranslationRun>();
+  readonly transcript = new Map<string, StoredTranscriptSegment[]>();
 
   async getSettings(meetingId: string): Promise<MeetingTranslationSettings> {
     return cloneSettings(this.settings.get(meetingId) ?? DEFAULT_TRANSLATION_SETTINGS);
@@ -123,5 +125,9 @@ export class TestTranslationRepository implements TranslationRepository {
         this.runs.set(id, { ...run, status: "stopping" });
       }
     }
+  }
+
+  async listTranscript(meetingId: string): Promise<StoredTranscriptSegment[]> {
+    return [...(this.transcript.get(meetingId) ?? [])];
   }
 }

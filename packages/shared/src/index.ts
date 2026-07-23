@@ -93,6 +93,18 @@ export interface MyMeetingsResponse {
   meetings: MeetingSummary[];
 }
 
+export interface MeetingTranscriptSegment {
+  id: string;
+  speakerName: string;
+  text: string;
+  spokenAt: string;
+}
+
+export interface MeetingTranscriptResponse {
+  meeting: Pick<MeetingSummary, "id" | "title" | "organizerName" | "status">;
+  segments: MeetingTranscriptSegment[];
+}
+
 export const GuestAdmissionInputSchema = z.object({
   displayName: z.string().trim().min(2, "Enter a display name").max(80),
 });

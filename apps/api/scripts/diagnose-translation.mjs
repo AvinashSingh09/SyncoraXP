@@ -16,7 +16,10 @@ try {
   if (process.argv.includes("--retry-stalled")) {
     const retried = await pool.query(`
       UPDATE meeting_translation_runs run
-      SET status = 'queued',
+      SET status = CASE
+            WHEN run.worker_scope = 'legacy' THEN 'queued'
+            ELSE 'queued_scoped'
+          END,
           worker_instance_id = NULL,
           lease_expires_at = NULL,
           last_heartbeat_at = NULL,
@@ -30,12 +33,15 @@ try {
         AND (
           run.status = 'failed'
           OR (
-            run.status IN ('starting', 'active', 'reconnecting')
+            run.status IN (
+              'starting', 'starting_scoped', 'active', 'active_scoped',
+              'reconnecting', 'reconnecting_scoped'
+            )
             AND run.lease_expires_at IS NOT NULL
             AND run.lease_expires_at < now()
           )
           OR (
-            run.status = 'stopping'
+            run.status IN ('stopping', 'stopping_scoped')
             AND (
               run.worker_instance_id IS NULL
               OR run.lease_expires_at IS NULL
@@ -48,7 +54,11 @@ try {
           FROM meeting_translation_runs active_run
           WHERE active_run.meeting_id = run.meeting_id
             AND active_run.id <> run.id
-            AND active_run.status IN ('queued', 'starting', 'active', 'reconnecting', 'stopping')
+            AND active_run.status IN (
+              'queued', 'queued_scoped', 'starting', 'starting_scoped',
+              'active', 'active_scoped', 'reconnecting', 'reconnecting_scoped',
+              'stopping', 'stopping_scoped'
+            )
         )
       RETURNING run.id
     `);
@@ -61,10 +71,19 @@ try {
       run.meeting_id,
       run.status,
       run.worker_instance_id,
+      run.worker_scope,
       run.last_heartbeat_at,
       run.error_code,
       run.error_detail,
-      settings.enabled
+      settings.enabled,
+      run.provider,
+      run.model,
+      run.speaker_participant_identity,
+      (
+        SELECT count(*)::int
+        FROM meeting_transcript_segments segment
+        WHERE segment.run_id = run.id
+      ) AS transcript_segments
     FROM meeting_translation_runs run
     JOIN meeting_translation_settings settings
       ON settings.meeting_id = run.meeting_id
@@ -77,6 +96,7 @@ try {
   } else {
     console.table(result.rows);
   }
+
 } finally {
   await pool.end();
 }

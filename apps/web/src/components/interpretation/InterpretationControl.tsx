@@ -7,7 +7,14 @@ import {
   type TranslationLanguageStatus,
   type TranslationPreference,
 } from "@voice/shared";
-import { ClosedCaptioning, DotsThreeCircle, GlobeHemisphereWest, X } from "@phosphor-icons/react";
+import {
+  ClosedCaptioning,
+  DownloadSimple,
+  DotsThreeCircle,
+  FileText,
+  GlobeHemisphereWest,
+  X,
+} from "@phosphor-icons/react";
 import { useParticipants, useRoomContext } from "@livekit/components-react";
 import {
   RoomEvent,
@@ -34,6 +41,11 @@ interface TranslatorDetails {
   sourceParticipantIdentity: string;
   allowedLanguages: TranslationLanguageCode[];
   joinedAtMs: number;
+}
+
+interface CaptionEntry {
+  text: string;
+  spokenAt: string;
 }
 
 function translatorDetails(participant: ReturnType<typeof useParticipants>[number]): TranslatorDetails | null {
@@ -67,14 +79,17 @@ export function InterpretationControl({
   const participants = useParticipants();
   const [liveSettings, setLiveSettings] = useState(settings);
   const [preference, setPreferenceState] = useState<TranslationPreference>("original");
+  const [captionPreference, setCaptionPreferenceState] =
+    useState<TranslationPreference>("original");
   const [menuOpen, setMenuOpen] = useState(false);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
+  const [panelMode, setPanelMode] = useState<"captions" | "transcript">("captions");
   const [statuses, setStatuses] = useState<
     Partial<Record<TranslationLanguageCode, TranslationLanguageStatus>>
   >({});
   const [caption, setCaption] = useState("");
   const [captionHistory, setCaptionHistory] = useState<
-    Partial<Record<TranslationLanguageCode | "source", string[]>>
+    Partial<Record<TranslationLanguageCode | "source", CaptionEntry[]>>
   >({});
   const [inactiveRunIds, setInactiveRunIds] = useState<ReadonlySet<string>>(() => new Set());
   const [subscriptionRevision, setSubscriptionRevision] = useState(0);
@@ -163,43 +178,53 @@ export function InterpretationControl({
     [meetingId, room.localParticipant, translator],
   );
 
-  const sendCaptionDemand = useCallback(
-    async (enabled: boolean) => {
-      if (!translator) return;
-      await room.localParticipant.publishData(
-        new TextEncoder().encode(
-          JSON.stringify({
-            version: 1,
-            meetingId,
-            translationRunId: translator.runId,
-            sequence: sequence.current++,
-            sentAt: new Date().toISOString(),
-            type: "translation.captions.set",
-            enabled,
-          }),
-        ),
-        {
-          reliable: true,
-          topic: DATA_TOPIC,
-          destinationIdentities: [translator.identity],
-        },
-      );
-    },
-    [meetingId, room.localParticipant, translator],
-  );
+  const sendCaptionPreference = useCallback(async (language: TranslationPreference) => {
+    if (!translator) return;
+    await room.localParticipant.publishData(
+      new TextEncoder().encode(
+        JSON.stringify({
+          version: 1,
+          meetingId,
+          translationRunId: translator.runId,
+          sequence: sequence.current++,
+          sentAt: new Date().toISOString(),
+          type: "translation.caption.preference.set",
+          language,
+        }),
+      ),
+      {
+        reliable: true,
+        topic: DATA_TOPIC,
+        destinationIdentities: [translator.identity],
+      },
+    );
+  }, [meetingId, room.localParticipant, translator]);
 
   const selectPreference = useCallback(
     (language: TranslationPreference) => {
       setPreferenceState(language);
       setCaption("");
       setMenuOpen(false);
+      if (language !== "original") {
+        setCaptionPreferenceState(language);
+        void sendCaptionPreference(language).catch(() => undefined);
+      }
       void sendPreference(language).catch(() => {
         if (language !== "original") {
           setStatuses((current) => ({ ...current, [language]: "unavailable" }));
         }
       });
     },
-    [sendPreference],
+    [sendCaptionPreference, sendPreference],
+  );
+
+  const selectCaptionPreference = useCallback(
+    (language: TranslationPreference) => {
+      setCaptionPreferenceState(language);
+      setCaption("");
+      void sendCaptionPreference(language).catch(() => undefined);
+    },
+    [sendCaptionPreference],
   );
 
   useEffect(() => {
@@ -212,9 +237,13 @@ export function InterpretationControl({
   }, [translator?.identity, translator?.runId, sendPreference]);
 
   useEffect(() => {
-    if (!translator) return;
-    void sendCaptionDemand(captionsOpen && preference === "original").catch(() => undefined);
-  }, [captionsOpen, preference, sendCaptionDemand, translator?.identity, translator?.runId]);
+    void sendCaptionPreference(captionPreference).catch(() => undefined);
+  }, [
+    captionPreference,
+    sendCaptionPreference,
+    translator?.identity,
+    translator?.runId,
+  ]);
 
   useEffect(() => {
     if (!liveSettings.enabled) void sendPreference("original").catch(() => undefined);
@@ -225,6 +254,7 @@ export function InterpretationControl({
     const handleReconnected = () => {
       refreshSubscriptions();
       void sendPreference(preference).catch(() => undefined);
+      void sendCaptionPreference(captionPreference).catch(() => undefined);
     };
     room.on(RoomEvent.TrackPublished, refreshSubscriptions);
     room.on(RoomEvent.TrackUnpublished, refreshSubscriptions);
@@ -242,7 +272,7 @@ export function InterpretationControl({
       room.off(RoomEvent.ParticipantDisconnected, refreshSubscriptions);
       room.off(RoomEvent.Reconnected, handleReconnected);
     };
-  }, [preference, room, sendPreference]);
+  }, [captionPreference, preference, room, sendCaptionPreference, sendPreference]);
 
   useEffect(() => {
     const onData = (
@@ -313,25 +343,35 @@ export function InterpretationControl({
           }
           return;
         }
-        const sourceCaption =
-          (message.type === "translation.caption.source.delta" ||
-            message.type === "translation.caption.source.final") &&
-          preference === "original";
+        const sourceTranscript =
+          message.type === "translation.transcript.source.delta" ||
+          message.type === "translation.transcript.source.final" ||
+          message.type === "translation.caption.source.delta" ||
+          message.type === "translation.caption.source.final";
         const targetCaption =
           (message.type === "translation.caption.target.delta" ||
             message.type === "translation.caption.target.final") &&
-          message.language === preference;
-        if (sourceCaption || targetCaption) {
-          const { language, text, type } = message;
-          const historyKey = sourceCaption ? "source" : language;
+          message.language === captionPreference;
+        if (sourceTranscript || targetCaption) {
+          const { text, type } = message;
+          const historyKey =
+            sourceTranscript ? "source" : "language" in message ? message.language : undefined;
           if (!historyKey) return;
+          const visible =
+            sourceTranscript
+              ? panelMode === "transcript" ||
+                (panelMode === "captions" && captionPreference === "original")
+              : panelMode === "captions";
           if (type.endsWith(".final")) {
-            setCaption("");
+            if (visible) setCaption("");
             setCaptionHistory((current) => ({
               ...current,
-              [historyKey]: [...(current[historyKey] ?? []), text],
+              [historyKey]: [
+                ...(current[historyKey] ?? []),
+                { text, spokenAt: new Date().toISOString() },
+              ],
             }));
-          } else {
+          } else if (visible) {
             setCaption((current) => current + text);
           }
         }
@@ -343,7 +383,16 @@ export function InterpretationControl({
     return () => {
       room.off(RoomEvent.DataReceived, onData);
     };
-  }, [liveSettings.enabled, meetingId, preference, room, translator?.identity, translator?.runId]);
+  }, [
+    liveSettings.enabled,
+    captionPreference,
+    meetingId,
+    panelMode,
+    preference,
+    room,
+    translator?.identity,
+    translator?.runId,
+  ]);
 
   useEffect(() => {
     if (captionsOpen) captionEnd.current?.scrollIntoView({ block: "end" });
@@ -408,30 +457,114 @@ export function InterpretationControl({
       : selectedStatus === "live"
         ? selectedLanguage?.nativeLabel ?? preference
         : `${selectedLanguage?.label ?? preference} · ${selectedStatus}`;
+  const selectedCaptionLanguage =
+    captionPreference === "original"
+      ? null
+      : TRANSLATION_LANGUAGES.find((language) => language.code === captionPreference);
 
-  const visibleCaptions = captionHistory[preference === "original" ? "source" : preference] ?? [];
+  const visibleCaptions =
+    captionHistory[
+      panelMode === "transcript" || captionPreference === "original"
+        ? "source"
+        : captionPreference
+    ] ?? [];
+  const downloadTranscript = () => {
+    const lines = (captionHistory.source ?? []).map(
+      (entry) =>
+        `[${new Date(entry.spokenAt).toLocaleTimeString()}] Host: ${entry.text}`,
+    );
+    const url = URL.createObjectURL(new Blob([lines.join("\n\n")], { type: "text/plain" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `transcript-${meetingId}.txt`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   const captionPanel = captionsOpen && panelHost && createPortal(
-    <aside className="translation-caption-panel" aria-label="Captions">
+    <aside
+      className="translation-caption-panel"
+      aria-label={panelMode === "transcript" ? "Transcript" : "Captions"}
+    >
       <header>
         <span>
-          <ClosedCaptioning size={21} weight="bold" />
+          {panelMode === "transcript"
+            ? <FileText size={21} weight="bold" />
+            : <ClosedCaptioning size={21} weight="bold" />}
           <span>
-            <strong>Captions</strong>
-            <small>{selectedLanguage?.nativeLabel ?? "Original language · Auto-detect"}</small>
+            <strong>{panelMode === "transcript" ? "Transcript" : "Captions"}</strong>
+            <small>
+              {panelMode === "transcript"
+                ? "Original language · Saved for the host"
+                : selectedCaptionLanguage?.nativeLabel ?? "Original language · Auto-detect"}
+            </small>
+            {panelMode === "captions" && (
+              <select
+                className="translation-caption-language"
+                aria-label="Caption language"
+                value={captionPreference}
+                onChange={(event) =>
+                  selectCaptionPreference(event.target.value as TranslationPreference)
+                }
+              >
+                <option value="original">Original · Auto-detect</option>
+                {TRANSLATION_LANGUAGES.filter((language) =>
+                  allowedLanguages.includes(language.code),
+                ).map((language) => (
+                  <option key={language.code} value={language.code}>
+                    {language.label}
+                  </option>
+                ))}
+              </select>
+            )}
           </span>
         </span>
-        <button type="button" onClick={() => onCaptionsOpenChange(false)} aria-label="Close captions">
-          <X size={18} weight="bold" />
-        </button>
+        <span className="translation-caption-actions">
+          {panelMode === "transcript" && (
+            <button
+              type="button"
+              onClick={downloadTranscript}
+              disabled={!captionHistory.source?.length}
+              aria-label="Download transcript"
+              title="Download transcript"
+            >
+              <DownloadSimple size={18} weight="bold" />
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => onCaptionsOpenChange(false)}
+            aria-label={`Close ${panelMode}`}
+          >
+            <X size={18} weight="bold" />
+          </button>
+        </span>
       </header>
       <div className="translation-caption-history" role="log" aria-live="polite">
-        {visibleCaptions.map((text, index) => <p key={index}>{text}</p>)}
+        {visibleCaptions.map((entry, index) => (
+          <p key={index}>
+            {panelMode === "transcript" && (
+              <small>
+                Host · {new Date(entry.spokenAt).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
+              </small>
+            )}
+            {entry.text}
+          </p>
+        ))}
         {caption && <p className="is-live">{caption}</p>}
         {!visibleCaptions.length && !caption && (
           <div className="translation-caption-empty">
-            <ClosedCaptioning size={32} weight="duotone" />
+            {panelMode === "transcript"
+              ? <FileText size={32} weight="duotone" />
+              : <ClosedCaptioning size={32} weight="duotone" />}
             <strong>Waiting for speech</strong>
-            <small>New captions will stay here for this meeting.</small>
+            <small>
+              {panelMode === "transcript"
+                ? "Finalized speech is saved and remains available after the meeting."
+                : "New captions will stay here for this meeting."}
+            </small>
           </div>
         )}
         <div ref={captionEnd} />
@@ -500,15 +633,30 @@ export function InterpretationControl({
                 <button
                   type="button"
                   role="menuitemcheckbox"
-                  aria-checked={captionsOpen}
+                  aria-checked={captionsOpen && panelMode === "captions"}
                   onClick={() => {
-                    onCaptionsOpenChange(!captionsOpen);
+                    const open = !captionsOpen || panelMode !== "captions";
+                    setPanelMode("captions");
+                    setCaption("");
+                    onCaptionsOpenChange(open);
                     setMoreMenuOpen(false);
                   }}
                 >
                   <ClosedCaptioning size={20} weight="bold" />
-                  <span><strong>Show captions</strong><small>Keep the host's speech in a side panel</small></span>
-                  <span className={`meeting-more-check ${captionsOpen ? "checked" : ""}`} aria-hidden="true" />
+                  <span><strong>Show captions</strong><small>Choose original or translated captions</small></span>
+                  <span className={`meeting-more-check ${captionsOpen && panelMode === "captions" ? "checked" : ""}`} aria-hidden="true" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPanelMode("transcript");
+                    setCaption("");
+                    onCaptionsOpenChange(true);
+                    setMoreMenuOpen(false);
+                  }}
+                >
+                  <FileText size={20} weight="bold" />
+                  <span><strong>Transcript</strong><small>View and download the meeting record</small></span>
                 </button>
               </div>
             )}

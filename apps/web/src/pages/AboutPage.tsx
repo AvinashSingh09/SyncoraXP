@@ -210,23 +210,24 @@ export function AboutPage() {
         </div>
       </section>
 
-      {/* OUR PRESENCE SECTION - DELHI, MUMBAI, DUBAI */}
+      {/* OUR PRESENCE SECTION - GURGAON, MUMBAI, DUBAI, BANGALORE */}
       <section className="presence-section">
         <div className="presence-container">
           <div className="presence-header">
             <h2 className="presence-title">
-              Our Presence Across <span className="presence-gradient">Delhi, Mumbai & Dubai</span>
+              <span className="presence-title-top">Delivering Exceptional Experiences</span>
+              <span className="presence-title-bottom">Across Gurgaon, Mumbai, Dubai & Bangalore</span>
             </h2>
             <p className="presence-subtitle">
-              Powering exceptional event experiences with dedicated hubs across key international capitals.
+              Strategically located to provide seamless event solutions with local expertise and global standards.
             </p>
           </div>
 
           <div className="presence-grid">
-            {/* DELHI CARD */}
-            <div className="presence-city-card city-card-delhi">
+            {/* GURGAON CARD */}
+            <div className="presence-city-card city-card-gurgaon">
               <div className="presence-card-bg-wrap">
-                <img src="/images/cities/delhi.jpg" alt="Delhi India Gate Landmark" className="presence-card-bg-img" />
+                <img src="/images/cities/gurgaon.png" alt="Gurgaon Cyber City Skyline" className="presence-card-bg-img" />
                 <div className="presence-card-gradient-overlay" />
               </div>
 
@@ -239,7 +240,7 @@ export function AboutPage() {
 
                 {/* Main Name Only */}
                 <div className="city-title-block">
-                  <h3 className="city-main-name">DELHI</h3>
+                  <h3 className="city-main-name">GURGAON</h3>
                 </div>
               </div>
             </div>
@@ -282,6 +283,27 @@ export function AboutPage() {
                 {/* Main Name Only */}
                 <div className="city-title-block">
                   <h3 className="city-main-name">DUBAI</h3>
+                </div>
+              </div>
+            </div>
+
+            {/* BANGALORE CARD */}
+            <div className="presence-city-card city-card-bangalore">
+              <div className="presence-card-bg-wrap">
+                <img src="/images/cities/bangalore.png" alt="Bangalore Vidhana Soudha Landmark" className="presence-card-bg-img" />
+                <div className="presence-card-gradient-overlay" />
+              </div>
+
+              <div className="presence-card-content">
+                {/* Top Badge */}
+                <div className="city-country-badge">
+                  <Buildings size={13} weight="bold" />
+                  <span>INDIA</span>
+                </div>
+
+                {/* Main Name Only */}
+                <div className="city-title-block">
+                  <h3 className="city-main-name">BANGALORE</h3>
                 </div>
               </div>
             </div>

@@ -202,31 +202,51 @@ export function LandingPage() {
 
       <div className="landing-theme-pink-dots">
         <section style={{ width: "100%", padding: "80px 0 100px", background: "transparent", color: "#1e1b4b", position: "relative", overflow: "hidden" }}>
-          <div style={{ width: "min(1280px, calc(100% - 48px))", margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", gap: "48px" }}>
-            <div style={{ textAlign: "center" }}>
-              <h2 style={{ font: "800 clamp(32px, 4vw, 48px) 'Manrope', sans-serif", color: "#1e1b4b", margin: "10px 0 0", letterSpacing: "-0.03em" }}>
-                Loved by Event Teams Worldwide
-              </h2>
+          <div style={{ width: "min(1280px, calc(100% - 48px))", margin: "0 auto", display: "flex", flexDirection: "column", gap: "32px" }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
+              width: "100%",
+              marginBottom: "12px",
+            }}>
+              <div style={{ textAlign: "left" }}>
+                <h2 style={{ font: "800 clamp(32px, 4vw, 48px) 'Manrope', sans-serif", color: "#1e1b4b", margin: 0, letterSpacing: "-0.03em" }}>
+                  Loved by Event Teams Worldwide
+                </h2>
+              </div>
+
+              <div style={{ display: "flex", gap: "12px" }}>
+                <button
+                  type="button"
+                  aria-label="Previous Testimonials"
+                  onClick={handlePrevTestimonial}
+                  style={{ width: "40px", height: "40px", borderRadius: "50%", background: "rgba(126, 34, 206, 0.08)", border: "1px solid rgba(126, 34, 206, 0.18)", color: "#7e22ce", display: "grid", placeItems: "center", cursor: "pointer", transition: "all 0.25s ease" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.2)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; }}
+                >
+                  <CaretLeft size={20} weight="bold" />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next Testimonials"
+                  onClick={handleNextTestimonial}
+                  style={{ width: "40px", height: "40px", borderRadius: "50%", background: "rgba(126, 34, 206, 0.08)", border: "1px solid rgba(126, 34, 206, 0.18)", color: "#7e22ce", display: "grid", placeItems: "center", cursor: "pointer", transition: "all 0.25s ease" }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.2)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; }}
+                >
+                  <CaretRight size={20} weight="bold" />
+                </button>
+              </div>
             </div>
 
-            <div style={{ position: "relative", width: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <button
-                type="button"
-                aria-label="Previous Testimonials"
-                onClick={handlePrevTestimonial}
-                style={{ position: "absolute", left: "-18px", zIndex: 10, width: "48px", height: "48px", borderRadius: "50%", background: "rgba(126, 34, 206, 0.08)", border: "1px solid rgba(126, 34, 206, 0.18)", color: "#7e22ce", display: "grid", placeItems: "center", cursor: "pointer", backdropFilter: "blur(10px)", transition: "all 0.25s ease" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.2)"; e.currentTarget.style.borderColor = "#7e22ce"; e.currentTarget.style.transform = "scale(1.1)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.18)"; e.currentTarget.style.transform = "scale(1)"; }}
-              >
-                <CaretLeft size={22} weight="bold" />
-              </button>
-
+            <div style={{ width: "100%" }}>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "28px", width: "100%", boxSizing: "border-box" }}>
                 {[0, 1, 2].map((offset) => {
                   const item = testimonials[(testimonialIndex + offset) % testimonials.length];
                   if (!item) return null;
                   return (
-                    <div key={`${item.name}-${offset}`} style={{ background: "rgba(255, 255, 255, 0.68)", border: "1px solid rgba(126, 34, 206, 0.15)", borderRadius: "24px", padding: "32px 28px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "24px", boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)", backdropFilter: "blur(12px)", transition: "all 0.3s ease" }}>
+                    <div key={`${item.name}-${offset}`} style={{ background: "rgba(255, 255, 255, 0.68)", border: "1px solid rgba(126, 34, 206, 0.15)", borderRadius: "24px", padding: "32px 28px", display: "flex", flexDirection: "column", justifyContent: "space-between", gap: "24px", boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)", backdropFilter: "blur(12px)", transition: "all 0.3s ease", height: "100%", minHeight: "290px" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                         <div style={{ display: "flex", gap: "4px", color: "#eab308" }}>
                           {[...Array(item.rating)].map((_, i) => <Star key={i} size={18} weight="fill" />)}
@@ -252,17 +272,6 @@ export function LandingPage() {
                   );
                 })}
               </div>
-
-              <button
-                type="button"
-                aria-label="Next Testimonials"
-                onClick={handleNextTestimonial}
-                style={{ position: "absolute", right: "-18px", zIndex: 10, width: "48px", height: "48px", borderRadius: "50%", background: "rgba(126, 34, 206, 0.08)", border: "1px solid rgba(126, 34, 206, 0.18)", color: "#7e22ce", display: "grid", placeItems: "center", cursor: "pointer", backdropFilter: "blur(10px)", transition: "all 0.25s ease" }}
-                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.2)"; e.currentTarget.style.borderColor = "#7e22ce"; e.currentTarget.style.transform = "scale(1.1)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.18)"; e.currentTarget.style.transform = "scale(1)"; }}
-              >
-                <CaretRight size={22} weight="bold" />
-              </button>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "12px" }}>

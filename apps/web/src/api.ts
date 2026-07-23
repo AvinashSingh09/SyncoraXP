@@ -8,6 +8,7 @@ import type {
   HostAdmissionListResponse,
   LoginInput,
   MeetingSettingsResponse,
+  MeetingTranscriptResponse,
   ParticipantMediaPermissionsResponse,
   MeetingTranslationResponse,
   MyMeetingsResponse,
@@ -71,6 +72,14 @@ export async function getCurrentUser(): Promise<AuthResponse | null> {
 
 export async function getMyMeetings(): Promise<MyMeetingsResponse> {
   return readJson<MyMeetingsResponse>(await apiFetch("/api/meetings", { credentials: "include" }));
+}
+
+export async function getMeetingTranscript(meetingId: string): Promise<MeetingTranscriptResponse> {
+  return readJson<MeetingTranscriptResponse>(
+    await apiFetch(`/api/meetings/${encodeURIComponent(meetingId)}/transcript`, {
+      credentials: "include",
+    }),
+  );
 }
 
 export async function deleteMeeting(meetingId: string): Promise<void> {
