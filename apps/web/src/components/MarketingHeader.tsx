@@ -1,7 +1,7 @@
 import {
   Broadcast, CaretDown, List, MicrophoneStage, X, Ticket,
   User, Briefcase, PhoneCall, GlobeHemisphereWest, CursorClick, ShieldCheck,
-  InstagramLogo, LinkedinLogo, YoutubeLogo, FacebookLogo, XLogo
+  InstagramLogo, LinkedinLogo, YoutubeLogo, FacebookLogo, XLogo, MapPin, CaretRight
 } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
@@ -57,7 +57,12 @@ export function MarketingHeader() {
     };
   }, []);
 
-  const isAboutPage = location.pathname.startsWith("/about");
+  const isAboutPage =
+    location.pathname.startsWith("/about") ||
+    location.pathname === "/" ||
+    location.pathname.startsWith("/virtual-events-platform") ||
+    location.pathname.startsWith("/book-demo") ||
+    location.pathname.startsWith("/webinar-service");
 
   return (
     <header className={`landing-header${headerScrolled ? " is-scrolled" : ""}${isAboutPage ? " is-about-header" : ""}`}>
@@ -176,74 +181,318 @@ export function MarketingHeader() {
           </button>
 
           {companyOpen && (
-            <div className="solutions-dropdown company-dropdown" id="desktop-company-menu" role="menu">
-              <div className="company-dropdown-layout">
-                <div className="company-dropdown-left">
-                  <div className="company-section-title">COMPANY</div>
-                  <div className="company-grid">
-                    <Link className="mega-solution-row" to="/about" role="menuitem" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
-                      <span className="mega-solution-title">
-                        <User size={23} weight="duotone" />
-                        <div>
-                          <strong>About</strong>
-                          <small>Your Event-Tech Partner</small>
-                        </div>
-                      </span>
-                    </Link>
-                    <Link className="mega-solution-row" to="/careers" role="menuitem" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
-                      <span className="mega-solution-title">
-                        <Briefcase size={23} weight="duotone" />
-                        <div>
-                          <strong>Careers</strong>
-                          <small>Join us in creating cutting-edge solutions for events</small>
-                        </div>
-                      </span>
-                    </Link>
-                    <Link className="mega-solution-row" to="/book-demo" role="menuitem" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
-                      <span className="mega-solution-title">
-                        <PhoneCall size={23} weight="duotone" />
-                        <div>
-                          <strong>Contact Us</strong>
-                          <small>Got a Question? Get in touch now.</small>
-                        </div>
-                      </span>
-                    </Link>
-                    <div className="mega-solution-row company-social-row">
-                      <span className="mega-solution-title">
-                        <GlobeHemisphereWest size={23} weight="duotone" />
-                        <div>
-                          <strong>Find Us At</strong>
-                          <div className="company-social-icons">
-                            <a href="https://www.instagram.com/360brightmedia?igsh=MXF4djN5YXgyYnR3eQ==" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><InstagramLogo size={20} /></a>
-                            <a href="https://www.linkedin.com/company/360-bright-media/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><LinkedinLogo size={20} /></a>
-                            <a href="https://www.youtube.com/@360brightmedia8/featured" target="_blank" rel="noopener noreferrer" aria-label="Youtube"><YoutubeLogo size={20} /></a>
-                            <a href="https://www.instagram.com/360brightmedia?igsh=MXF4djN5YXgyYnR3eQ==" target="_blank" rel="noopener noreferrer" aria-label="Facebook"><FacebookLogo size={20} /></a>
-                            <a href="https://www.linkedin.com/company/360-bright-media/" target="_blank" rel="noopener noreferrer" aria-label="X"><XLogo size={20} /></a>
-                          </div>
-                        </div>
-                      </span>
-                    </div>
-                  </div>
+            <div
+              className="company-dropdown-bar"
+              id="desktop-company-menu"
+              role="menu"
+              style={{
+                position: "absolute",
+                top: "calc(100% + 14px)",
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: "min(880px, calc(100vw - 48px))",
+                background: "linear-gradient(135deg, rgba(243, 232, 255, 0.94) 0%, rgba(255, 255, 255, 0.98) 50%, rgba(243, 232, 255, 0.94) 100%)",
+                borderRadius: "22px",
+                border: "1.5px solid rgba(147, 51, 234, 0.18)",
+                boxShadow: "0 20px 50px rgba(91, 20, 189, 0.16)",
+                padding: "16px 20px",
+                display: "grid",
+                gridTemplateColumns: "repeat(3, 1fr)",
+                gap: "0",
+                boxSizing: "border-box",
+                backdropFilter: "blur(20px)",
+                WebkitBackdropFilter: "blur(20px)",
+                zIndex: 1000,
+              }}
+            >
+              {/* Column 1: About */}
+              <Link
+                to="/about"
+                role="menuitem"
+                onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  padding: "12px 18px",
+                  textDecoration: "none",
+                  borderRight: "1px solid rgba(147, 51, 234, 0.12)",
+                  transition: "all 0.2s ease",
+                  borderRadius: "14px 0 0 14px",
+                }}
+                className="company-hover-col"
+              >
+                {/* Icon Badge */}
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  background: "#ffffff",
+                  border: "1px solid rgba(147, 51, 234, 0.18)",
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: "0 6px 16px rgba(91, 20, 189, 0.12)",
+                  flexShrink: 0,
+                }}>
+                  <User size={22} weight="regular" color="#7c3aed" />
                 </div>
-                <div className="company-dropdown-right">
-                  <Link className="company-right-card" to="/why-syncoraxp" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
-                    <span className="mega-solution-title">
-                      <CursorClick size={23} weight="duotone" />
-                      <div>
-                        <strong>Why Choose SyncoraXP</strong>
-                        <small>Empower your events with SyncoraXP's comprehensive event-tech suite</small>
-                      </div>
-                    </span>
-                  </Link>
-                  <Link className="company-right-card" to="/trust-security" onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}>
-                    <span className="mega-solution-title">
-                      <ShieldCheck size={23} weight="duotone" />
-                      <div>
-                        <strong>Trust and Security</strong>
-                        <small>SyncoraXP prioritizes trust and security, being your event's secure partner</small>
-                      </div>
-                    </span>
-                  </Link>
+
+                {/* Text Group */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                  <strong style={{ fontSize: "16px", fontWeight: 850, color: "#1e1035", lineHeight: 1.2 }}>
+                    About
+                  </strong>
+                  <div style={{
+                    width: "30px",
+                    height: "3px",
+                    borderRadius: "2px",
+                    background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)",
+                    margin: "3px 0 4px 0",
+                  }} />
+                  <span style={{ fontSize: "11.5px", color: "#64748b", fontWeight: 500, lineHeight: 1.3 }}>
+                    Your Event-Tech Partner
+                  </span>
+                </div>
+
+                {/* Arrow Circle */}
+                <div
+                  className="company-arrow-btn"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    borderRadius: "50%",
+                    background: "#ffffff",
+                    border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                    display: "grid",
+                    placeItems: "center",
+                    color: "#7c3aed",
+                    flexShrink: 0,
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <CaretRight size={14} weight="bold" />
+                </div>
+              </Link>
+
+              {/* Column 2: Contact Us */}
+              <Link
+                to="/book-demo"
+                role="menuitem"
+                onClick={() => { setCompanyOpen(false); setCompanyPinned(false); }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  padding: "12px 18px",
+                  textDecoration: "none",
+                  borderRight: "1px solid rgba(147, 51, 234, 0.12)",
+                  transition: "all 0.2s ease",
+                }}
+                className="company-hover-col"
+              >
+                {/* Icon Badge */}
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  background: "#ffffff",
+                  border: "1px solid rgba(147, 51, 234, 0.18)",
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: "0 6px 16px rgba(91, 20, 189, 0.12)",
+                  flexShrink: 0,
+                }}>
+                  <PhoneCall size={22} weight="regular" color="#7c3aed" />
+                </div>
+
+                {/* Text Group */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                  <strong style={{ fontSize: "16px", fontWeight: 850, color: "#1e1035", lineHeight: 1.2 }}>
+                    Contact Us
+                  </strong>
+                  <div style={{
+                    width: "30px",
+                    height: "3px",
+                    borderRadius: "2px",
+                    background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)",
+                    margin: "3px 0 4px 0",
+                  }} />
+                  <span style={{ fontSize: "11.5px", color: "#64748b", fontWeight: 500, lineHeight: 1.3 }}>
+                    Got a Question? Get in touch now.
+                  </span>
+                </div>
+
+                {/* Arrow Circle */}
+                <div
+                  className="company-arrow-btn"
+                  style={{
+                    width: "30px",
+                    height: "30px",
+                    borderRadius: "50%",
+                    background: "#ffffff",
+                    border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                    display: "grid",
+                    placeItems: "center",
+                    color: "#7c3aed",
+                    flexShrink: 0,
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <CaretRight size={14} weight="bold" />
+                </div>
+              </Link>
+
+              {/* Column 3: Find Us At */}
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "14px",
+                  padding: "12px 18px",
+                  borderRadius: "0 14px 14px 0",
+                }}
+                className="company-hover-col"
+              >
+                {/* Icon Badge */}
+                <div style={{
+                  width: "48px",
+                  height: "48px",
+                  borderRadius: "50%",
+                  background: "#ffffff",
+                  border: "1px solid rgba(147, 51, 234, 0.18)",
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: "0 6px 16px rgba(91, 20, 189, 0.12)",
+                  flexShrink: 0,
+                }}>
+                  <GlobeHemisphereWest size={22} weight="regular" color="#7c3aed" />
+                </div>
+
+                {/* Text & Social Icons Group */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                  <strong style={{ fontSize: "16px", fontWeight: 850, color: "#1e1035", lineHeight: 1.2 }}>
+                    Find Us At
+                  </strong>
+                  <div style={{
+                    width: "30px",
+                    height: "3px",
+                    borderRadius: "2px",
+                    background: "linear-gradient(90deg, #7c3aed 0%, #a855f7 100%)",
+                    margin: "3px 0 6px 0",
+                  }} />
+
+                  {/* All 5 Social Media Links Row */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <a
+                      href="https://www.instagram.com/360brightmedia?igsh=MXF4djN5YXgyYnR3eQ=="
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Instagram"
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        background: "#ffffff",
+                        border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                        color: "#7c3aed",
+                        display: "grid",
+                        placeItems: "center",
+                        textDecoration: "none",
+                        transition: "all 0.2s ease",
+                      }}
+                      className="social-icon-btn"
+                    >
+                      <InstagramLogo size={14} />
+                    </a>
+
+                    <a
+                      href="https://www.linkedin.com/company/360-bright-media/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="LinkedIn"
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        background: "#ffffff",
+                        border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                        color: "#7c3aed",
+                        display: "grid",
+                        placeItems: "center",
+                        textDecoration: "none",
+                        transition: "all 0.2s ease",
+                      }}
+                      className="social-icon-btn"
+                    >
+                      <LinkedinLogo size={14} />
+                    </a>
+
+                    <a
+                      href="https://www.youtube.com/@360brightmedia8/featured"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="YouTube"
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        background: "#ffffff",
+                        border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                        color: "#7c3aed",
+                        display: "grid",
+                        placeItems: "center",
+                        textDecoration: "none",
+                        transition: "all 0.2s ease",
+                      }}
+                      className="social-icon-btn"
+                    >
+                      <YoutubeLogo size={14} />
+                    </a>
+
+                    <a
+                      href="https://www.instagram.com/360brightmedia?igsh=MXF4djN5YXgyYnR3eQ=="
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="Facebook"
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        background: "#ffffff",
+                        border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                        color: "#7c3aed",
+                        display: "grid",
+                        placeItems: "center",
+                        textDecoration: "none",
+                        transition: "all 0.2s ease",
+                      }}
+                      className="social-icon-btn"
+                    >
+                      <FacebookLogo size={14} />
+                    </a>
+
+                    <a
+                      href="https://www.linkedin.com/company/360-bright-media/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label="X"
+                      style={{
+                        width: "28px",
+                        height: "28px",
+                        borderRadius: "50%",
+                        background: "#ffffff",
+                        border: "1.5px solid rgba(124, 58, 237, 0.25)",
+                        color: "#7c3aed",
+                        display: "grid",
+                        placeItems: "center",
+                        textDecoration: "none",
+                        transition: "all 0.2s ease",
+                      }}
+                      className="social-icon-btn"
+                    >
+                      <XLogo size={14} />
+                    </a>
+                  </div>
                 </div>
               </div>
             </div>
