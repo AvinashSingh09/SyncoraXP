@@ -5,9 +5,9 @@ import type {
   StoredAdmissionRequest,
   StoredInvitation,
   StoredMeeting,
-} from "./meeting-repository";
+} from "../../src/db/meeting-repository";
 
-export class MemoryMeetingRepository implements MeetingRepository {
+export class TestMeetingRepository implements MeetingRepository {
   private readonly meetings = new Map<string, StoredMeeting>();
   private readonly meetingsById = new Map<string, StoredMeeting>();
   private readonly invitations = new Map<string, StoredInvitation>();

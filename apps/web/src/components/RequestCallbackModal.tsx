@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { X, CheckCircle, User, EnvelopeSimple, Phone, ShieldCheck, CaretDown } from "@phosphor-icons/react";
-import { apiFetch } from "../backend";
+import { apiFetch } from "../api";
 
 const ALL_COUNTRIES = [
   { code: "IN", name: "India", dial: "+91", min: 10, max: 10 },

@@ -68,7 +68,7 @@ export function CreateMeetingPage() {
   if (result) {
     return (
       <main className="site-shell">
-        <header className="topbar"><Brand /><Link className="text-button back-home-link" to="/webinar-service"><ArrowLeft size={16} weight="bold" /> Back to meetings</Link></header>
+        <header className="topbar"><Brand /><Link className="text-button back-home-link" to="/webinar-service/meetings"><ArrowLeft size={16} weight="bold" /> Back to meetings</Link></header>
         <section className="success-layout">
           <div className="success-orb" aria-hidden="true">✓</div>
           <p className="eyebrow">Your meeting is ready</p>
@@ -97,7 +97,7 @@ export function CreateMeetingPage() {
           )}
           <div className="success-actions">
             <button className="button ghost" type="button" onClick={() => setResult(null)}>Create another meeting</button>
-            <Link className="button ghost button-link" to="/webinar-service">Return to meetings</Link>
+            <Link className="button ghost button-link" to="/webinar-service/meetings">Return to meetings</Link>
           </div>
         </section>
       </main>
@@ -110,7 +110,7 @@ export function CreateMeetingPage() {
         <Brand />
         <div className="account-actions"><span className="step-pill">{user?.name}</span><button className="text-button" type="button" onClick={() => void logout().then(() => navigate("/login"))}>Sign out</button></div>
       </header>
-      <Link className="text-button back-home-link create-back-link" to="/webinar-service"><ArrowLeft size={16} weight="bold" /> Back to meetings</Link>
+      <Link className="text-button back-home-link create-back-link" to="/webinar-service/meetings"><ArrowLeft size={16} weight="bold" /> Back to meetings</Link>
       <div className="create-layout">
         <section className="hero-copy">
           <p className="eyebrow">{isScheduling ? "Plan your next conversation" : "Meet without language barriers"}</p>

@@ -40,8 +40,6 @@ The default `EMAIL_MODE=console` prints invitation links in the API terminal and
 
 Virtual-events authentication requires JWT_SECRET; image generation additionally uses GEMINI_API_KEY when the photobooth feature is enabled.
 
-For a disposable preview without PostgreSQL, set `DATABASE_MODE=memory`. This mode loses all meetings when the API restarts and is rejected when `NODE_ENV=production`.
-
 ## LAN HTTPS testing
 
 Camera and microphone access works on HTTP only for the browser's special `localhost` secure context. Other devices opening a private IP such as `192.168.0.195` need HTTPS with a certificate they trust.

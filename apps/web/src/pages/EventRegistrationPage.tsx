@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MarketingHeader } from "../components/MarketingHeader";
 import { Footer } from "../components/Footer";
-import { apiFetch } from "../backend";
+import { apiFetch } from "../api";
 import { CheckCircle } from "@phosphor-icons/react";
 
 const COUNTRY_CODES = [

@@ -44,7 +44,7 @@ export function WebinarServicePage() {
               conceptualizing webinars in no time with the world's best webinar services &amp; solutions!
             </p>
 
-            <Link to="/login" className="webinar-cta-button">
+            <Link to="/webinar-service/meetings" className="webinar-cta-button">
               Get Started <ArrowRight size={18} weight="bold" />
             </Link>
 

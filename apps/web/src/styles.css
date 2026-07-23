@@ -1336,6 +1336,7 @@ textarea {
 
 .livekit-page .lk-video-conference {
   height: 100%;
+  position: relative;
 }
 
 .livekit-page .lk-control-bar {
@@ -3404,11 +3405,19 @@ textarea {
   line-height: 1;
 }
 
-.interpretation-control {
+.interpretation-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.interpretation-control,
+.meeting-more-control {
   position: relative;
 }
 
-.interpretation-toggle {
+.interpretation-toggle,
+.meeting-more-toggle {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
@@ -3425,7 +3434,9 @@ textarea {
 }
 
 .interpretation-toggle:hover,
-.interpretation-toggle.is-active {
+.interpretation-toggle.is-active,
+.meeting-more-toggle:hover,
+.meeting-more-toggle.is-active {
   color: #fff;
   background: rgba(82, 100, 232, .25);
 }
@@ -3475,24 +3486,179 @@ textarea {
   line-height: 1.35;
 }
 
-.translation-caption {
+.meeting-more-menu {
   position: absolute;
-  z-index: 70;
+  z-index: 80;
   left: 50%;
-  bottom: 76px;
-  width: max-content;
-  max-width: min(680px, calc(100vw - 48px));
+  bottom: calc(100% + 13px);
+  width: 270px;
   border: 1px solid rgba(255, 255, 255, .13);
-  border-radius: 10px;
-  padding: 9px 13px;
-  color: #fff;
-  background: rgba(8, 14, 25, .9);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, .3);
-  font-size: 13px;
-  line-height: 1.45;
-  text-align: center;
+  border-radius: 13px;
+  padding: 6px;
+  background: #18243a;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .42);
   transform: translateX(-50%);
-  pointer-events: none;
+}
+
+.meeting-more-menu button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 0;
+  border-radius: 9px;
+  padding: 10px;
+  color: #e8edf7;
+  background: transparent;
+  text-align: left;
+}
+
+.meeting-more-menu button:hover {
+  background: rgba(82, 100, 232, .22);
+}
+
+.meeting-more-menu button>span:nth-child(2) {
+  display: grid;
+  gap: 2px;
+}
+
+.meeting-more-menu strong {
+  font-size: 12px;
+}
+
+.meeting-more-menu small {
+  color: var(--meeting-muted);
+  font-size: 10px;
+  line-height: 1.35;
+}
+
+.meeting-more-check {
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, .3);
+  border-radius: 4px;
+}
+
+.meeting-more-check.checked {
+  border-color: #7182f2;
+  background: #6273ed;
+  box-shadow: inset 0 0 0 3px #18243a;
+}
+
+.translation-caption-panel {
+  flex: 0 0 min(var(--meeting-side-panel-width), 100vw);
+  width: min(var(--meeting-side-panel-width), 100vw);
+  min-width: min(320px, 100vw);
+  min-height: 0;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  color: var(--meeting-text);
+  background: var(--meeting-surface);
+  border-left: 1px solid var(--meeting-border);
+}
+
+.translation-caption-panel>header {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--meeting-border);
+}
+
+.translation-caption-panel>header>span {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.translation-caption-panel>header>span>span {
+  display: grid;
+  gap: 2px;
+}
+
+.translation-caption-panel header strong {
+  font: 750 15px "Manrope", sans-serif;
+}
+
+.translation-caption-panel header small {
+  color: var(--meeting-muted);
+  font-size: 10px;
+}
+
+.translation-caption-panel header button {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  color: var(--meeting-muted);
+  background: transparent;
+}
+
+.translation-caption-panel header button:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, .08);
+}
+
+.translation-caption-history {
+  min-height: 0;
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  scroll-behavior: smooth;
+}
+
+.translation-caption-history p {
+  margin: 0 0 10px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: #f4f7fc;
+  background: rgba(255, 255, 255, .065);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.translation-caption-history p.is-live {
+  border: 1px solid rgba(113, 130, 242, .35);
+  background: rgba(82, 100, 232, .16);
+}
+
+.translation-caption-empty {
+  min-height: 100%;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 7px;
+  padding: 24px;
+  color: var(--meeting-muted);
+  text-align: center;
+}
+
+.translation-caption-empty strong {
+  color: #eef2fa;
+  font-size: 13px;
+}
+
+.translation-caption-empty small {
+  max-width: 230px;
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+@media (max-width: 600px) {
+  .translation-caption-panel {
+    position: fixed;
+    z-index: 60;
+    top: 0;
+    right: 0;
+    bottom: var(--lk-control-bar-height);
+    height: auto;
+  }
 }
 
 .participants-panel {

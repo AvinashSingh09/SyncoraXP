@@ -252,7 +252,7 @@ export function MarketingHeader() {
       </nav>
 
       <div className="landing-header-actions">
-        <Link className="landing-sign-in" to={user ? "/webinar-service" : "/login"}>
+        <Link className="landing-sign-in" to={user ? "/webinar-service/meetings" : "/login"}>
           {user ? "Dashboard" : "Sign in"}
         </Link>
         <Link className="landing-button compact" to="/book-demo">
@@ -288,7 +288,7 @@ export function MarketingHeader() {
           </details>
           <a href={landingAnchor("#solutions")} onClick={() => setMobileMenuOpen(false)}>Platform</a>
           <a href={landingAnchor("#capabilities")} onClick={() => setMobileMenuOpen(false)}>Resources</a>
-          <Link to={user ? "/webinar-service" : "/login"} onClick={() => setMobileMenuOpen(false)}>
+          <Link to={user ? "/webinar-service/meetings" : "/login"} onClick={() => setMobileMenuOpen(false)}>
             {user ? "Open dashboard" : "Sign in"}
           </Link>
           <Link className="landing-button" to="/book-demo" onClick={() => setMobileMenuOpen(false)}>
