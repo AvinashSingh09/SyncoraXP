@@ -315,7 +315,6 @@ export function VirtualEventsPage() {
       <MarketingHeader />
       <div className="landing-theme-pink-dots">
         <section className="virtual-events-hero" id="platform" aria-labelledby="virtual-events-title">
-        <p className="virtual-events-kicker"><span /> Your virtual events, elevated</p>
         <h1 id="virtual-events-title">Virtual events that<br />feel truly together.</h1>
         <p className="virtual-events-intro">Create branded live experiences that bring every session, conversation, and connection into one seamless place.</p>
         <div className="virtual-events-actions">
@@ -373,11 +372,10 @@ export function VirtualEventsPage() {
       </div>
 
       <section className="virtual-events-capabilities" id="capabilities" aria-labelledby="virtual-events-capabilities-title">
-        <div className="virtual-events-capability-intro"><p>Built for powerful experiences</p><h2 id="virtual-events-capabilities-title">Everything you need to run remarkable virtual events.</h2></div>
+        <div className="virtual-events-capability-intro"><h2 id="virtual-events-capabilities-title">Everything you need to run remarkable virtual events.</h2></div>
         <div className="virtual-events-capability-list">
           {capabilities.map(({ icon: Icon, title, text }) => <article key={title}><Icon size={29} weight="duotone" aria-hidden="true" /><h3>{title}</h3><p>{text}</p></article>)}
         </div>
-        <Link className="virtual-events-join" to="/register">Create your event <CheckCircle size={19} weight="fill" /></Link>
       </section>
 
       {/* ── B2B TRUST LOGOS SECTION (Clean White Background like Webinar Service) ── */}
