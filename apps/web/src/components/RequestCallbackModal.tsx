@@ -40,7 +40,10 @@ const DELAY_SEQUENCE = [50000, 150000, 300000];
 
 export function RequestCallbackModal() {
   const location = useLocation();
-  const isInMeeting = location.pathname.includes("/meetings/") || location.pathname.includes("/join/");
+  const isInMeeting =
+    location.pathname.includes("/meetings/") ||
+    location.pathname.includes("/join/") ||
+    location.pathname.includes("/virtual-events");
 
   const [isOpen, setIsOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);

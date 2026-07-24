@@ -27,6 +27,7 @@ const DashboardLayout = () => {
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
     const [showUserDashboard, setShowUserDashboard] = useState(false);
+    const [isNavHovered, setIsNavHovered] = useState(false);
     const [layoutConfigs, setLayoutConfigs] = useState({});
     const [showBagModal, setShowBagModal] = useState(false);
     const [bagItems, setBagItems] = useState(() => {
@@ -311,10 +312,28 @@ const DashboardLayout = () => {
         { name: 'Survey', path: '/virtual-events-platform/app/dashboard/survey', icon: MdAssignment },
     ];
 
-    return (
+        const isNavVisible = isNavHovered || showNotifications || showProfileMenu || showAttendees || showLeaderboard;
+
+        return (
         <div className="h-screen w-full flex flex-col bg-gray-50 overflow-hidden font-sans relative">
-            {/* Floating Top Navigation Bar */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[97%] max-w-[1500px] h-[88px] bg-white/95 backdrop-blur-2xl rounded-[2.5rem] shadow-[0_12px_48px_rgba(41,92,232,0.10),0_2px_8px_rgba(0,0,0,0.06)] border border-blue-100/60 flex items-center justify-between px-8 z-50">
+            {/* Top Hover Trigger Area */}
+            <div
+                className="fixed top-0 left-0 w-full h-8 z-50 pointer-events-auto"
+                onMouseEnter={() => setIsNavHovered(true)}
+                onMouseLeave={() => setIsNavHovered(false)}
+            />
+
+            {/* Floating Top Navigation Bar - Slides down on hover */}
+            <div
+                onMouseEnter={() => setIsNavHovered(true)}
+                onMouseLeave={() => setIsNavHovered(false)}
+                className={`fixed top-0 left-1/2 -translate-x-1/2 w-[95%] max-w-[1400px] h-[80px] bg-white/95 backdrop-blur-2xl rounded-b-[2rem] shadow-[0_12px_48px_rgba(41,92,232,0.12),0_4px_12px_rgba(0,0,0,0.06)] border-b border-x border-blue-100/60 flex items-center justify-between px-8 z-50 transition-all duration-300 ease-in-out ${
+                    isNavVisible ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%-8px)] opacity-40 hover:opacity-100 hover:translate-y-0'
+                }`}
+            >
+                {!isNavVisible && (
+                    <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-10 h-1 bg-blue-500/50 rounded-full animate-pulse pointer-events-none" />
+                )}
                 {/* Logo Area */}
                 <div className="flex items-center gap-3 text-[#295ce8] shrink-0">
                     <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#295ce8] to-[#6366f1] shadow-lg shadow-blue-200">
@@ -596,7 +615,7 @@ const DashboardLayout = () => {
 
 
             {/* Main Content Area */}
-            <div className="flex-1 relative bg-gray-50 pt-[112px]">
+            <div className="flex-1 relative w-full h-full">
                 <Outlet context={{ layoutConfigs, refreshLayoutConfigs: fetchLayoutConfigs }} />
             </div>
 
