@@ -125,18 +125,23 @@ const Booth = () => {
     return (
         <div className="w-full h-full relative overflow-hidden bg-black flex flex-col">
             {/* Top Bar for Navigation */}
-            <div className="absolute top-0 left-0 w-full p-6 sm:p-8 z-20 flex justify-between items-start pointer-events-none">
+            <div className="absolute top-5 left-0 w-full px-6 sm:px-8 z-20 flex justify-between items-center pointer-events-none">
                 <button
                     onClick={() => navigate(`/virtual-events-platform/app/dashboard/expo-hall/${hallId ? hallId.toLowerCase() : 'a'}`)}
-                    className="pointer-events-auto bg-white/90 backdrop-blur hover:bg-white text-gray-800 font-bold py-4 px-8 rounded-2xl shadow-xl flex items-center gap-3 transition-all transform hover:-translate-y-1 hover:shadow-2xl border border-gray-200 group"
+                    className="pointer-events-auto bg-white/90 backdrop-blur hover:bg-white text-gray-800 font-bold py-1.5 px-3 rounded-lg shadow-md flex items-center gap-1.5 transition-all transform hover:-translate-y-0.5 border border-gray-200 group"
+                    style={{ fontSize: '11px' }}
                 >
-                    <FiArrowLeft className="w-6 h-6 text-blue-600 group-hover:-translate-x-1 transition-transform" />
-                    <span className="text-xl">Back to Hall {hallId ? hallId.toUpperCase() : 'A'}</span>
+                    <FiArrowLeft className="w-3.5 h-3.5 text-blue-600 group-hover:-translate-x-0.5 transition-transform" />
+                    <span style={{ fontSize: '11px', fontWeight: 700 }}>Back to Hall {hallId ? hallId.toUpperCase() : 'A'}</span>
                 </button>
 
-                <div className="bg-black/70 backdrop-blur-md px-10 py-4 rounded-2xl border border-white/20 shadow-2xl flex flex-col items-center justify-center text-center pointer-events-auto">
-                    <span className="text-blue-400 font-bold tracking-[0.3em] text-sm mb-1 uppercase">Exhibitor</span>
-                    <h1 className="text-4xl font-extrabold text-white tracking-widest uppercase">BOOTH {boothId}</h1>
+                <div 
+                    className="bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 shadow-md flex items-center gap-2 pointer-events-auto select-none"
+                    style={{ fontSize: '11px' }}
+                >
+                    <span style={{ color: '#60a5fa', fontWeight: 800, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Exhibitor</span>
+                    <span style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '10px' }}>|</span>
+                    <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>BOOTH {boothId}</span>
                 </div>
             </div>
 
@@ -158,11 +163,11 @@ const Booth = () => {
             {/* Background Image and Interactive Areas */}
             {bgImage ? (
                 <div className="absolute inset-0 w-full h-full z-0 flex items-center justify-center bg-black overflow-hidden">
-                    <div className="relative inline-flex max-w-full max-h-full items-center justify-center">
+                    <div className="relative w-full h-full flex items-center justify-center">
                         <img
                             src={bgImage}
                             alt={`Booth ${boothId}`}
-                            className="max-w-full max-h-screen block object-contain animate-fade-in"
+                            className="w-full h-full block object-cover animate-fade-in"
                         />
 
                         {/* Interactive Areas (Points & Posters) */}
