@@ -101,6 +101,19 @@ const Booth = () => {
         fetchConfig();
     }, [boothId]);
 
+    // Auto-open chat if directed with ?chat=true parameter
+    useEffect(() => {
+        const searchParams = new URLSearchParams(window.location.search);
+        const shouldOpenChat = searchParams.get('chat') === 'true' || searchParams.get('openChat') === 'true' || searchParams.get('chat') === '1';
+        if (shouldOpenChat) {
+            const timer = setTimeout(() => {
+                const roomName = boothId === '10' ? 'MuscleBlaze Chat' : `Booth ${boothId}`;
+                window.dispatchEvent(new CustomEvent('open-chat', { detail: { roomName } }));
+            }, 600);
+            return () => clearTimeout(timer);
+        }
+    }, [boothId]);
+
     const TOTAL_BOOTHS = 18;
     const currentBoothNum = parseInt(boothId) || 1;
     const prevBoothNum = currentBoothNum > 1 ? currentBoothNum - 1 : TOTAL_BOOTHS;
@@ -270,51 +283,88 @@ const Booth = () => {
                             })}
 
                             {/* Points */}
-                            {points && points.map(point => (
-                                <div
-                                    key={point.id}
-                                    className="absolute z-20"
-                                    style={{
-                                        top: `${point.top}%`,
-                                        left: `${point.left}%`
-                                    }}
-                                >
-                                    <div className="absolute bottom-1 left-0 transform -translate-x-1/2 flex flex-col items-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-10"
-                                        onClick={() => {
-                                            if (point.targetPage) {
-                                                if (point.targetPage === 'action:resource_center') {
-                                                    setShowResourceCenter(true);
-                                                } else if (point.targetPage === 'action:product_gallery') {
-                                                    setShowProductGallery(true);
-                                                } else if (point.targetPage.startsWith('user-chat:')) {
-                                                    const userId = point.targetPage.substring(10).trim();
-                                                    const assistantName = boothId === '10' ? 'MuscleBlaze' : `Booth ${boothId}`;
-                                                    window.dispatchEvent(new CustomEvent('open-chat', { detail: { user: { _id: userId, firstName: assistantName, lastName: 'Assistant' } } }));
-                                                } else if (point.targetPage.startsWith('chat:')) {
-                                                    const roomName = point.targetPage.substring(5).trim();
-                                                    window.dispatchEvent(new CustomEvent('open-chat', { detail: { roomName } }));
-                                                } else if (point.targetPage.startsWith('http')) {
-                                                    window.open(point.targetPage, '_blank');
-                                                } else {
-                                                    navigate(point.targetPage);
-                                                }
-                                            }
+                            {points && points.map(point => {
+                                const handlePointClick = () => {
+                                    const textLower = point.text ? point.text.toLowerCase().trim() : '';
+                                    const targetLower = point.targetPage ? point.targetPage.toLowerCase().trim() : '';
+
+                                    if (
+                                        textLower === 'chat' ||
+                                        textLower.includes('chat') ||
+                                        targetLower === 'chat' ||
+                                        targetLower === '#chat' ||
+                                        targetLower.startsWith('chat:')
+                                    ) {
+                                        const roomName = point.targetPage && point.targetPage.startsWith('chat:')
+                                            ? point.targetPage.substring(5).trim()
+                                            : (boothId === '10' ? 'MuscleBlaze Chat' : `Booth ${boothId}`);
+                                        window.dispatchEvent(new CustomEvent('open-chat', { detail: { roomName } }));
+                                    } else if (
+                                        textLower === 'details' ||
+                                        textLower.includes('detail') ||
+                                        textLower.includes('resource') ||
+                                        textLower.includes('document') ||
+                                        textLower.includes('brochure') ||
+                                        textLower.includes('pdf') ||
+                                        textLower.includes('video') ||
+                                        targetLower === 'action:resource_center' ||
+                                        targetLower.includes('resource_center') ||
+                                        targetLower === 'details'
+                                    ) {
+                                        setShowResourceCenter(true);
+                                    } else if (
+                                        textLower.includes('product') ||
+                                        textLower.includes('gallery') ||
+                                        textLower.includes('catalogue') ||
+                                        targetLower === 'action:product_gallery' ||
+                                        targetLower.includes('product_gallery')
+                                    ) {
+                                        setShowProductGallery(true);
+                                    } else if (point.targetPage && point.targetPage.startsWith('user-chat:')) {
+                                        const userId = point.targetPage.substring(10).trim();
+                                        const assistantName = boothId === '10' ? 'MuscleBlaze' : `Booth ${boothId}`;
+                                        window.dispatchEvent(new CustomEvent('open-chat', { detail: { user: { _id: userId, firstName: assistantName, lastName: 'Assistant' } } }));
+                                    } else if (point.targetPage && point.targetPage.startsWith('http')) {
+                                        window.open(point.targetPage, '_blank');
+                                    } else if (point.targetPage) {
+                                        navigate(point.targetPage);
+                                    } else {
+                                        // Default fallback if targetPage is empty: open Resource Center so uploaded items are visible!
+                                        setShowResourceCenter(true);
+                                    }
+                                };
+
+                                return (
+                                    <div
+                                        key={point.id}
+                                        className="absolute z-20"
+                                        style={{
+                                            top: `${point.top}%`,
+                                            left: `${point.left}%`
                                         }}
                                     >
-                                        <div className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-500/30 max-w-[150px] text-center hover:border-blue-400">
-                                            <p className="text-[10px] font-semibold leading-tight whitespace-nowrap">
-                                                {point.text}
-                                            </p>
+                                        <div 
+                                            className="absolute bottom-1 left-0 transform -translate-x-1/2 flex flex-col items-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-10"
+                                            onClick={handlePointClick}
+                                        >
+                                            <div className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-500/30 max-w-[150px] text-center hover:border-blue-400">
+                                                <p className="text-[10px] font-semibold leading-tight whitespace-nowrap">
+                                                    {point.text}
+                                                </p>
+                                            </div>
+                                            <div className="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-blue-400" />
                                         </div>
-                                        <div className="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-blue-400" />
-                                    </div>
 
-                                    <div className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center pointer-events-auto cursor-pointer z-20">
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border-2 border-white"></span>
+                                        <div 
+                                            className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center pointer-events-auto cursor-pointer z-20"
+                                            onClick={handlePointClick}
+                                        >
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border-2 border-white"></span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

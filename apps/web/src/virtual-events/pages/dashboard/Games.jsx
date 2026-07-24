@@ -255,7 +255,13 @@ const EngageBackground = () => (
 );
 
 const Games = () => {
-    const [activeSection, setActiveSection] = useState('engage'); // 'engage', 'games', 'photobooth'
+    const [activeSection, setActiveSection] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        const sec = params.get('section') || params.get('tab');
+        if (sec === 'photobooth') return 'photobooth';
+        if (sec === 'engage') return 'engage';
+        return 'games';
+    });
     const [activeGame, setActiveGame] = useState(null); // null = lobby, 'tictactoe', 'memory', 'hangman', 'snake', 'scramble', 'matrix', 'arrowescape'
     const [isZooming, setIsZooming] = useState(null);
     const [hangmanEnabled, setHangmanEnabled] = useState(true);
@@ -264,6 +270,18 @@ const Games = () => {
     const [scrambleEnabled, setScrambleEnabled] = useState(true);
     const [matrixEnabled, setMatrixEnabled] = useState(true);
     const [arrowEscapeEnabled, setArrowEscapeEnabled] = useState(true);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const sec = params.get('section') || params.get('tab');
+        if (sec === 'photobooth') {
+            setActiveSection('photobooth');
+        } else if (sec === 'engage') {
+            setActiveSection('engage');
+        } else {
+            setActiveSection('games');
+        }
+    }, [window.location.search]);
 
     useEffect(() => {
         const fetchGameStatus = async () => {
@@ -305,7 +323,7 @@ const Games = () => {
     }, []);
 
     if (activeSection === 'photobooth') {
-        return <Photobooth onBack={() => setActiveSection('engage')} />;
+        return <Photobooth onBack={() => setActiveSection('games')} />;
     }
 
     if (activeSection === 'games') {

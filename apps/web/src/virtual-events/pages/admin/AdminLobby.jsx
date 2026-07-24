@@ -156,8 +156,13 @@ const AdminLobby = () => {
         { path: '/virtual-events-platform/app/dashboard/expo-hall', label: 'Expo Hall' },
         { path: '/virtual-events-platform/app/dashboard/expo-hall/A', label: 'Hall A' },
         { path: '/virtual-events-platform/app/dashboard/expo-hall/B', label: 'Hall B' },
+        { path: '/virtual-events-platform/app/dashboard/expo-hall/C', label: 'Hall C' },
+        { path: '/virtual-events-platform/app/dashboard/expo-hall/a/booth/1', label: 'Booth 1 (Hall A)' },
+        { path: '/virtual-events-platform/app/dashboard/expo-hall/a/booth/1?chat=true', label: 'Booth 1 + Open Chat' },
         { path: '/virtual-events-platform/app/dashboard/meeting-room', label: 'Meeting Room' },
         { path: '/virtual-events-platform/app/dashboard/survey', label: 'Survey' },
+        { path: '/virtual-events-platform/app/dashboard/games', label: 'Game Zone' },
+        { path: '/virtual-events-platform/app/dashboard/games?section=photobooth', label: 'Photo Booth' },
         { path: '#info-modal', label: 'Open Information Desk (Modal)' },
     ];
 

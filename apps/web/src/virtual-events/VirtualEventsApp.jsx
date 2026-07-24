@@ -1,5 +1,5 @@
 import './virtual-events.css';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
@@ -62,6 +62,14 @@ const PublicRoute = ({ children }) => {
 };
 
 function VERoutes() {
+  const location = useLocation();
+
+  // Automatically clean double slashes in URL path (e.g. /admin//expo-hall -> /admin/expo-hall)
+  if (location.pathname.includes('//')) {
+    const cleanPath = location.pathname.replace(/\/+/g, '/');
+    return <Navigate to={cleanPath + location.search + location.hash} replace />;
+  }
+
   return (
     <Routes>
       {/* Default: redirect to login */}
@@ -76,6 +84,9 @@ function VERoutes() {
         <Route index element={<Navigate to="lobby" replace />} />
         <Route path="lobby" element={<Lobby />} />
         <Route path="expo-hall" element={<ExpoHall />} />
+        <Route path="expo hall" element={<Navigate to="../expo-hall" replace />} />
+        <Route path="lobby/expo-hall" element={<Navigate to="../expo-hall" replace />} />
+        <Route path="lobby/expo hall" element={<Navigate to="../expo-hall" replace />} />
         <Route path="expo-hall/:hallId" element={<Hall />} />
         <Route path="expo-hall/:hallId/booth/:boothId" element={<Booth />} />
         <Route path="expo-hall/:hallId/:boothId" element={<Booth />} />

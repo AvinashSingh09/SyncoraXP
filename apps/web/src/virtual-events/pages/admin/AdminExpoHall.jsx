@@ -8,7 +8,10 @@ import {
     FiSettings,
     FiPlus,
     FiRefreshCw,
-    FiMail
+    FiMail,
+    FiUpload,
+    FiFileText,
+    FiVideo
 } from 'react-icons/fi';
 import { FaInstagram, FaFacebook, FaYoutube, FaTwitter, FaLinkedin, FaTiktok, FaWhatsapp, FaTelegram, FaDiscord, FaPinterest, FaSnapchat, FaReddit, FaGlobe } from 'react-icons/fa';
 
@@ -31,6 +34,10 @@ const AdminExpoHall = () => {
     const [selectedItemId, setSelectedItemId] = useState(null);
     const [selectedItemType, setSelectedItemType] = useState('point'); // 'point', 'poster', or 'social'
     const [loading, setLoading] = useState(false);
+    const [loadingDocId, setLoadingDocId] = useState(null);
+    const [loadingVidId, setLoadingVidId] = useState(null);
+    const [loadingVidThumbId, setLoadingVidThumbId] = useState(null);
+    const [loadingProdId, setLoadingProdId] = useState(null);
     const [status, setStatus] = useState('');
 
     const getConfigKey = (tab, bId) => {
@@ -275,6 +282,145 @@ const AdminExpoHall = () => {
                 setStatus('Poster image upload failed.');
             } finally {
                 setLoading(false);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleDocumentPdfUpload = async (e, idx, docId) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64Data = reader.result;
+            setLoadingDocId(docId);
+            setStatus('Uploading PDF document...');
+            try {
+                const response = await configService.uploadImage(base64Data);
+                if (response.data && response.data.success) {
+                    const uploadedUrl = response.data.url;
+                    setResources(prev => {
+                        const newDocs = [...prev.documents];
+                        if (newDocs[idx]) {
+                            newDocs[idx].url = uploadedUrl;
+                            if (!newDocs[idx].name || newDocs[idx].name.trim() === '') {
+                                newDocs[idx].name = file.name;
+                            }
+                        }
+                        return { ...prev, documents: newDocs };
+                    });
+                    setStatus('PDF document uploaded successfully!');
+                    setTimeout(() => setStatus(''), 4000);
+                }
+            } catch (err) {
+                console.error('Document PDF upload failed', err);
+                setStatus('PDF document upload failed. Please try again.');
+            } finally {
+                setLoadingDocId(null);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleProductImageUpload = async (e, idx, prodId) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64Data = reader.result;
+            setLoadingProdId(prodId);
+            setStatus('Uploading product image...');
+            try {
+                const response = await configService.uploadImage(base64Data);
+                if (response.data && response.data.success) {
+                    const uploadedUrl = response.data.url;
+                    setProducts(prev => {
+                        const newProds = [...prev];
+                        if (newProds[idx]) {
+                            newProds[idx].imageUrl = uploadedUrl;
+                        }
+                        return newProds;
+                    });
+                    setStatus('Product image uploaded successfully!');
+                    setTimeout(() => setStatus(''), 4000);
+                }
+            } catch (err) {
+                console.error('Product image upload failed', err);
+                setStatus('Product image upload failed.');
+            } finally {
+                setLoadingProdId(null);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleVideoUpload = async (e, idx, vidId) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64Data = reader.result;
+            setLoadingVidId(vidId);
+            setStatus('Uploading video...');
+            try {
+                const response = await configService.uploadImage(base64Data);
+                if (response.data && response.data.success) {
+                    const uploadedUrl = response.data.url;
+                    setResources(prev => {
+                        const newVids = [...prev.videos];
+                        if (newVids[idx]) {
+                            newVids[idx].url = uploadedUrl;
+                            if (!newVids[idx].name || newVids[idx].name.trim() === '') {
+                                newVids[idx].name = file.name;
+                            }
+                        }
+                        return { ...prev, videos: newVids };
+                    });
+                    setStatus('Video uploaded successfully!');
+                    setTimeout(() => setStatus(''), 4000);
+                }
+            } catch (err) {
+                console.error('Video upload failed', err);
+                setStatus('Video upload failed. Please try again.');
+            } finally {
+                setLoadingVidId(null);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleVideoThumbnailUpload = async (e, idx, vidId) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64Data = reader.result;
+            setLoadingVidThumbId(vidId);
+            setStatus('Uploading video thumbnail image...');
+            try {
+                const response = await configService.uploadImage(base64Data);
+                if (response.data && response.data.success) {
+                    const uploadedUrl = response.data.url;
+                    setResources(prev => {
+                        const newVids = [...prev.videos];
+                        if (newVids[idx]) {
+                            newVids[idx].imageUrl = uploadedUrl;
+                            newVids[idx].thumbnailUrl = uploadedUrl;
+                        }
+                        return { ...prev, videos: newVids };
+                    });
+                    setStatus('Thumbnail image uploaded successfully!');
+                    setTimeout(() => setStatus(''), 4000);
+                }
+            } catch (err) {
+                console.error('Thumbnail upload failed', err);
+                setStatus('Thumbnail image upload failed.');
+            } finally {
+                setLoadingVidThumbId(null);
             }
         };
         reader.readAsDataURL(file);
@@ -587,8 +733,25 @@ const AdminExpoHall = () => {
                                     setPoints(prev => prev.map(p => p.id === selectedItemId ? { ...p, targetPage: val } : p));
                                 }}
                                 className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
-                                placeholder="/virtual-events-platform/app/dashboard/auditorium or https://example.com"
+                                placeholder="e.g. action:resource_center or /virtual-events-platform/app/dashboard/auditorium"
                             />
+                            <div className="mt-2">
+                                <select
+                                    value={selectedPoint.targetPage || ''}
+                                    onChange={(e) => {
+                                        if (e.target.value) {
+                                            const val = e.target.value;
+                                            setPoints(prev => prev.map(p => p.id === selectedItemId ? { ...p, targetPage: val } : p));
+                                        }
+                                    }}
+                                    className="w-full bg-white border border-blue-200 rounded-lg p-2 text-xs font-semibold text-blue-700 focus:outline-none focus:border-blue-500 cursor-pointer shadow-sm"
+                                >
+                                    <option value="">Quick Select Preset Action...</option>
+                                    <option value="action:resource_center">Open Resource Center (Show Uploaded Documents & Videos)</option>
+                                    <option value="action:product_gallery">Open Product Showcase Gallery</option>
+                                    <option value="chat:Booth">Open Booth Chat Drawer</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -845,37 +1008,203 @@ const AdminExpoHall = () => {
                         
                         <div className="space-y-4">
                             {/* Documents */}
-                            <div className="border border-gray-200 rounded-lg p-3 bg-white">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h4 className="text-xs font-bold text-gray-700">Documents (PDFs)</h4>
-                                    <button type="button" onClick={() => setResources(prev => ({ ...prev, documents: [...prev.documents, { id: Date.now(), name: '', url: '' }] }))} className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">
-                                        + ADD DOCUMENT
+                            <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm space-y-3">
+                                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                                    <div>
+                                        <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                            <FiFileText className="text-blue-600" /> Documents (PDFs & Downloads)
+                                        </h4>
+                                        <p className="text-[10px] text-gray-400">Upload PDF brochures, whitepapers, or enter document URLs for attendee downloads</p>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setResources(prev => ({ ...prev, documents: [...prev.documents, { id: Date.now(), name: '', url: '' }] }))} 
+                                        className="text-xs text-white font-bold bg-[#295ce8] hover:bg-blue-700 px-3 py-1.5 rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-1"
+                                    >
+                                        <FiPlus className="w-3.5 h-3.5" /> ADD DOCUMENT
                                     </button>
                                 </div>
+
                                 {resources.documents.map((doc, idx) => (
-                                    <div key={doc.id} className="flex gap-2 mb-2 items-center">
-                                        <input type="text" placeholder="Doc Name" value={doc.name} onChange={(e) => { const newDocs = [...resources.documents]; newDocs[idx].name = e.target.value; setResources(prev => ({...prev, documents: newDocs})); }} className="w-1/3 bg-gray-50 border border-gray-200 rounded p-1.5 text-xs focus:outline-none focus:border-blue-500" />
-                                        <input type="text" placeholder="URL" value={doc.url} onChange={(e) => { const newDocs = [...resources.documents]; newDocs[idx].url = e.target.value; setResources(prev => ({...prev, documents: newDocs})); }} className="flex-1 bg-gray-50 border border-gray-200 rounded p-1.5 text-xs focus:outline-none focus:border-blue-500" />
-                                        <button type="button" onClick={() => setResources(prev => ({ ...prev, documents: prev.documents.filter(d => d.id !== doc.id) }))} className="text-red-500 hover:text-red-700"><FiTrash2 /></button>
+                                    <div key={doc.id} className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2.5">
+                                        <div className="flex gap-2 items-center">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Document Title (e.g. Perfios Product Brochure.pdf)" 
+                                                value={doc.name} 
+                                                onChange={(e) => { 
+                                                    const newDocs = [...resources.documents]; 
+                                                    newDocs[idx].name = e.target.value; 
+                                                    setResources(prev => ({ ...prev, documents: newDocs })); 
+                                                }} 
+                                                className="flex-1 bg-white border border-gray-200 rounded-lg p-2 text-xs font-semibold text-gray-800 focus:outline-none focus:border-blue-500 shadow-sm" 
+                                            />
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setResources(prev => ({ ...prev, documents: prev.documents.filter(d => d.id !== doc.id) }))} 
+                                                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                                title="Delete Document"
+                                            >
+                                                <FiTrash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+
+                                        <div className="flex gap-2 items-center">
+                                            <input 
+                                                type="text" 
+                                                placeholder="PDF URL (e.g. https://res.cloudinary.com/... or click Upload PDF)" 
+                                                value={doc.url} 
+                                                onChange={(e) => { 
+                                                    const newDocs = [...resources.documents]; 
+                                                    newDocs[idx].url = e.target.value; 
+                                                    setResources(prev => ({ ...prev, documents: newDocs })); 
+                                                }} 
+                                                className="flex-1 bg-white border border-gray-200 rounded-lg p-2 text-xs text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm" 
+                                            />
+                                            <label className="bg-[#295ce8] hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg cursor-pointer transition-colors shadow-sm shrink-0 flex items-center gap-1.5">
+                                                <FiUpload className="w-3.5 h-3.5" />
+                                                <span>{loadingDocId === doc.id ? 'Uploading...' : 'Upload PDF'}</span>
+                                                <input
+                                                    type="file"
+                                                    accept=".pdf,application/pdf"
+                                                    className="hidden"
+                                                    disabled={loadingDocId === doc.id}
+                                                    onChange={(e) => handleDocumentPdfUpload(e, idx, doc.id)}
+                                                />
+                                            </label>
+                                        </div>
+
+                                        {doc.url && (
+                                            <div className="flex items-center gap-2 text-[11px] text-emerald-600 font-bold pt-1">
+                                                <FiCheckCircle className="w-3.5 h-3.5" />
+                                                <a href={doc.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-700 truncate max-w-md">
+                                                    Preview File: {doc.name || doc.url}
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
+
+                                {resources.documents.length === 0 && (
+                                    <p className="text-xs text-gray-400 text-center py-3 italic">No PDF documents added yet. Click "+ ADD DOCUMENT" above.</p>
+                                )}
                             </div>
 
                             {/* Videos */}
-                            <div className="border border-gray-200 rounded-lg p-3 bg-white">
-                                <div className="flex justify-between items-center mb-2">
-                                    <h4 className="text-xs font-bold text-gray-700">Videos</h4>
-                                    <button type="button" onClick={() => setResources(prev => ({ ...prev, videos: [...prev.videos, { id: Date.now(), name: '', url: '' }] }))} className="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded">
-                                        + ADD VIDEO
+                            <div className="border border-gray-200 rounded-lg p-4 bg-white shadow-sm space-y-3">
+                                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                                    <div>
+                                        <h4 className="text-xs font-bold text-gray-800 flex items-center gap-1.5">
+                                            <FiVideo className="text-[#295ce8]" /> Videos
+                                        </h4>
+                                        <p className="text-[10px] text-gray-400">Upload video files (MP4/WebM) or enter YouTube URLs for booth visitors</p>
+                                    </div>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setResources(prev => ({ ...prev, videos: [...prev.videos, { id: Date.now(), name: '', url: '' }] }))} 
+                                        className="text-xs text-white font-bold bg-[#295ce8] hover:bg-blue-700 px-3 py-1.5 rounded-lg shadow-sm transition-all cursor-pointer flex items-center gap-1"
+                                    >
+                                        <FiPlus className="w-3.5 h-3.5" /> ADD VIDEO
                                     </button>
                                 </div>
+
                                 {resources.videos.map((vid, idx) => (
-                                    <div key={vid.id} className="flex gap-2 mb-2 items-center">
-                                        <input type="text" placeholder="Video Title" value={vid.name} onChange={(e) => { const newVids = [...resources.videos]; newVids[idx].name = e.target.value; setResources(prev => ({...prev, videos: newVids})); }} className="w-1/3 bg-gray-50 border border-gray-200 rounded p-1.5 text-xs focus:outline-none focus:border-blue-500" />
-                                        <input type="text" placeholder="YouTube URL" value={vid.url} onChange={(e) => { const newVids = [...resources.videos]; newVids[idx].url = e.target.value; setResources(prev => ({...prev, videos: newVids})); }} className="flex-1 bg-gray-50 border border-gray-200 rounded p-1.5 text-xs focus:outline-none focus:border-blue-500" />
-                                        <button type="button" onClick={() => setResources(prev => ({ ...prev, videos: prev.videos.filter(v => v.id !== vid.id) }))} className="text-red-500 hover:text-red-700"><FiTrash2 /></button>
+                                    <div key={vid.id} className="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-2.5">
+                                        <div className="flex gap-2 items-center">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Video Title (e.g. Perfios Product Demo)" 
+                                                value={vid.name} 
+                                                onChange={(e) => { 
+                                                    const newVids = [...resources.videos]; 
+                                                    newVids[idx].name = e.target.value; 
+                                                    setResources(prev => ({ ...prev, videos: newVids })); 
+                                                }} 
+                                                className="flex-1 bg-white border border-gray-200 rounded-lg p-2 text-xs font-semibold text-gray-800 focus:outline-none focus:border-blue-500 shadow-sm" 
+                                            />
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setResources(prev => ({ ...prev, videos: prev.videos.filter(v => v.id !== vid.id) }))} 
+                                                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                                title="Delete Video"
+                                            >
+                                                <FiTrash2 className="w-4 h-4" />
+                                            </button>
+                                        </div>
+
+                                        {/* Video URL or Video File Upload */}
+                                        <div>
+                                            <label className="block text-[10px] font-semibold text-gray-500 mb-1">Video File / URL (YouTube or MP4 Video)</label>
+                                            <div className="flex gap-2 items-center">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="YouTube Link or Video URL (e.g. https://...)" 
+                                                    value={vid.url} 
+                                                    onChange={(e) => { 
+                                                        const newVids = [...resources.videos]; 
+                                                        newVids[idx].url = e.target.value; 
+                                                        setResources(prev => ({ ...prev, videos: newVids })); 
+                                                    }} 
+                                                    className="flex-1 bg-white border border-gray-200 rounded-lg p-2 text-xs text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm" 
+                                                />
+                                                <label className="bg-[#295ce8] hover:bg-blue-700 text-white font-bold text-xs px-3.5 py-2 rounded-lg cursor-pointer transition-colors shadow-sm shrink-0 flex items-center gap-1.5">
+                                                    <FiUpload className="w-3.5 h-3.5" />
+                                                    <span>{loadingVidId === vid.id ? 'Uploading...' : 'Upload Video File'}</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="video/*,.mp4,.webm,.ogg"
+                                                        className="hidden"
+                                                        disabled={loadingVidId === vid.id}
+                                                        onChange={(e) => handleVideoUpload(e, idx, vid.id)}
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {/* Cover Image / Thumbnail Upload */}
+                                        <div>
+                                            <label className="block text-[10px] font-semibold text-gray-500 mb-1">Video Cover Image (Thumbnail)</label>
+                                            <div className="flex gap-2 items-center">
+                                                <input 
+                                                    type="text" 
+                                                    placeholder="Thumbnail Image URL (e.g. https://...)" 
+                                                    value={vid.imageUrl || vid.thumbnailUrl || ''} 
+                                                    onChange={(e) => { 
+                                                        const newVids = [...resources.videos]; 
+                                                        newVids[idx].imageUrl = e.target.value; 
+                                                        newVids[idx].thumbnailUrl = e.target.value; 
+                                                        setResources(prev => ({ ...prev, videos: newVids })); 
+                                                    }} 
+                                                    className="flex-1 bg-white border border-gray-200 rounded-lg p-2 text-xs text-gray-700 focus:outline-none focus:border-blue-500 shadow-sm" 
+                                                />
+                                                <label className="bg-gray-100 hover:bg-gray-200 text-gray-700 border border-gray-300 font-bold text-xs px-3.5 py-2 rounded-lg cursor-pointer transition-colors shadow-sm shrink-0 flex items-center gap-1.5">
+                                                    <FiUpload className="w-3.5 h-3.5 text-blue-600" />
+                                                    <span>{loadingVidThumbId === vid.id ? 'Uploading...' : 'Upload Cover Image'}</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        disabled={loadingVidThumbId === vid.id}
+                                                        onChange={(e) => handleVideoThumbnailUpload(e, idx, vid.id)}
+                                                    />
+                                                </label>
+                                            </div>
+                                        </div>
+
+                                        {vid.url && (
+                                            <div className="flex items-center gap-2 text-[11px] text-emerald-600 font-bold pt-1">
+                                                <FiCheckCircle className="w-3.5 h-3.5" />
+                                                <a href={vid.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-emerald-700 truncate max-w-md">
+                                                    Preview Video: {vid.name || vid.url}
+                                                </a>
+                                            </div>
+                                        )}
                                     </div>
                                 ))}
+
+                                {resources.videos.length === 0 && (
+                                    <p className="text-xs text-gray-400 text-center py-3 italic">No videos added yet. Click "+ ADD VIDEO" above.</p>
+                                )}
                             </div>
                         </div>
                     </div>
@@ -916,7 +1245,20 @@ const AdminExpoHall = () => {
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-semibold text-gray-500 mb-1">Main Image URL</label>
-                                            <input type="text" value={product.imageUrl} onChange={(e) => { const newP = [...products]; newP[idx].imageUrl = e.target.value; setProducts(newP); }} className="w-full bg-gray-50 border border-gray-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500" />
+                                            <div className="flex gap-1.5 items-center">
+                                                <input type="text" value={product.imageUrl} onChange={(e) => { const newP = [...products]; newP[idx].imageUrl = e.target.value; setProducts(newP); }} className="flex-1 bg-gray-50 border border-gray-200 rounded p-2 text-xs focus:outline-none focus:border-blue-500" placeholder="https://..." />
+                                                <label className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-[10px] px-2.5 py-2 rounded cursor-pointer border border-gray-300 shrink-0 flex items-center gap-1">
+                                                    <FiUpload className="w-3 h-3 text-blue-600" />
+                                                    <span>{loadingProdId === product.id ? '...' : 'Upload'}</span>
+                                                    <input
+                                                        type="file"
+                                                        accept="image/*"
+                                                        className="hidden"
+                                                        disabled={loadingProdId === product.id}
+                                                        onChange={(e) => handleProductImageUpload(e, idx, product.id)}
+                                                    />
+                                                </label>
+                                            </div>
                                         </div>
                                         <div>
                                             <label className="block text-[10px] font-semibold text-gray-500 mb-1">Product Video URL (Youtube)</label>

@@ -699,10 +699,11 @@ export function BookDemoPage() {
         background: "#ffffff",
         backgroundImage: "radial-gradient(rgba(147, 51, 234, 0.12) 1.5px, transparent 1.5px)",
         backgroundSize: "24px 24px",
-        padding: "60px 24px 40px",
+        padding: "48px 24px 36px",
         color: "#1e1b4b",
         textAlign: "center",
         width: "100%",
+        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
@@ -716,8 +717,8 @@ export function BookDemoPage() {
             border: 1.5px solid #f1f0ff;
             box-shadow: 0 16px 48px rgba(91, 20, 189, 0.04);
             width: 100%;
-            max-width: 1200px;
-            margin: 48px auto 0;
+            max-width: 1240px;
+            margin: 0 auto;
             box-sizing: border-box;
             display: flex;
             flex-direction: column;
@@ -726,7 +727,7 @@ export function BookDemoPage() {
             display: grid;
             grid-template-columns: 1fr 380px;
             gap: 32px;
-            padding: 48px;
+            padding: 40px 44px;
             box-sizing: border-box;
           }
           .support-features {
@@ -741,38 +742,38 @@ export function BookDemoPage() {
             text-align: left;
           }
           .icon-circle {
-            width: 54px;
-            height: 54px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: #f3f0ff;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #7c3aed;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
           }
           .feature-title {
             font-size: 17px;
             font-weight: 800;
             color: #1e084a;
-            margin: 0 0 8px 0;
+            margin: 0 0 6px 0;
           }
           .feature-desc {
             font-size: 13px;
             color: #64748b;
             line-height: 1.5;
-            margin: 0 0 16px 0;
+            margin: 0 0 14px 0;
           }
           .feature-line {
             width: 32px;
             height: 2px;
             background: #e9e8ff;
-            margin-bottom: 18px;
+            margin-bottom: 14px;
           }
           .feature-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 9px;
             list-style-type: none;
             padding: 0;
             margin: 0;
@@ -788,14 +789,14 @@ export function BookDemoPage() {
           .support-callout {
             background: linear-gradient(145deg, #f5f3ff 0%, #ede9fe 100%);
             border-radius: 24px;
-            padding: 32px;
+            padding: 28px 30px;
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
             text-align: left;
-            min-height: 380px;
+            min-height: 340px;
             box-sizing: border-box;
           }
           .support-callout-content {
@@ -805,7 +806,7 @@ export function BookDemoPage() {
           .support-avatar-stack {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
           }
           .support-avatar {
             width: 32px;
@@ -832,7 +833,7 @@ export function BookDemoPage() {
             font-size: 20px;
             font-weight: 800;
             color: #1e084a;
-            margin: 0 0 12px 0;
+            margin: 0 0 10px 0;
             line-height: 1.25;
           }
           .callout-title span {
@@ -843,13 +844,13 @@ export function BookDemoPage() {
             font-size: 12.5px;
             color: #64748b;
             line-height: 1.5;
-            margin: 0 0 24px 0;
+            margin: 0 0 20px 0;
           }
           .callout-btn {
             background: #ffffff;
             border: 1px solid #e9e8ff;
             border-radius: 12px;
-            padding: 12px 18px;
+            padding: 11px 18px;
             font-size: 13px;
             font-weight: 800;
             color: #7c3aed;
@@ -877,11 +878,11 @@ export function BookDemoPage() {
           }
           .callout-badge {
             position: absolute;
-            right: 16px;
-            bottom: 16px;
+            right: 14px;
+            bottom: 14px;
             background: #ffffff;
-            border-radius: 16px;
-            padding: 12px 16px;
+            border-radius: 14px;
+            padding: 10px 14px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.06);
             display: flex;
             align-items: center;
@@ -894,7 +895,7 @@ export function BookDemoPage() {
             border-top: 1.5px solid #f1f0ff;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            padding: 24px 12px;
+            padding: 20px 16px;
             border-bottom-left-radius: 30px;
             border-bottom-right-radius: 30px;
           }
@@ -903,15 +904,15 @@ export function BookDemoPage() {
             align-items: center;
             justify-content: center;
             gap: 12px;
-            padding: 0 24px;
+            padding: 0 20px;
             box-sizing: border-box;
           }
           .stat-item:not(:last-child) {
             border-right: 1.5px solid #f1f0ff;
           }
           .stat-icon {
-            width: 36px;
-            height: 36px;
+            width: 34px;
+            height: 34px;
             border-radius: 50%;
             background: #ede9fe;
             display: flex;
@@ -941,21 +942,21 @@ export function BookDemoPage() {
           @media (max-width: 1024px) {
             .support-grid {
               grid-template-columns: 1fr;
-              padding: 24px;
+              padding: 28px;
             }
             .support-callout {
-              min-height: 320px;
+              min-height: 300px;
             }
           }
           @media (max-width: 768px) {
             .support-features {
               grid-template-columns: 1fr;
-              gap: 36px;
+              gap: 32px;
             }
             .support-stats-bar {
               grid-template-columns: repeat(2, 1fr);
               gap: 20px;
-              padding: 24px;
+              padding: 20px;
             }
             .stat-item {
               padding: 0;
@@ -972,13 +973,12 @@ export function BookDemoPage() {
           }
         `}</style>
 
-
         <h2 style={{
-          fontSize: "clamp(30px, 4vw, 44px)",
+          fontSize: "clamp(32px, 3.8vw, 42px)",
           fontWeight: 900,
           color: "#1e084a",
-          margin: "0 0 14px 0",
-          lineHeight: 1.15,
+          margin: "0 0 12px 0",
+          lineHeight: 1.18,
           letterSpacing: "-0.03em"
         }}>
           Reliable Support,<br />Right When You Need It
@@ -986,8 +986,8 @@ export function BookDemoPage() {
         <p style={{
           fontSize: "15px",
           color: "#64748b",
-          maxWidth: "540px",
-          margin: "0 auto 48px",
+          maxWidth: "580px",
+          margin: "0 auto 32px",
           lineHeight: 1.5,
           fontWeight: 500
         }}>
