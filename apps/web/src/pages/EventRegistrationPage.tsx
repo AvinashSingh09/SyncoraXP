@@ -339,7 +339,7 @@ export function EventRegistrationPage() {
             boxSizing: "border-box",
           }}>
             <img
-              src="/virtual-events-assets/event-registration.png"
+              src="/virtual-events-assets/reg_landing.png"
               alt="Event Registration Platform & Solutions Collage"
               style={{
                 width: "100%",

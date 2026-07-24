@@ -4,9 +4,12 @@ const path = require('path');
 
 const connectionString = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/voice_meetings';
 
+const isRemotePg = connectionString.includes('supabase') || connectionString.includes('neon') || connectionString.includes('sslmode=');
+
 const pool = new Pool({
   connectionString,
   connectionTimeoutMillis: 5000,
+  ...(isRemotePg ? { ssl: { rejectUnauthorized: false } } : {}),
 });
 
 const query = (text, params) => pool.query(text, params);
