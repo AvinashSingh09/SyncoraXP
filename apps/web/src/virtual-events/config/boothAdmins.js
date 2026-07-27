@@ -4,13 +4,23 @@ export const BOOTH_ADMINS = {
         boothId: 1, 
         roomName: "Booth 1 Chat" 
     },
+    "booth1@virtualevents.com": { 
+        hallId: "a", 
+        boothId: 1, 
+        roomName: "Booth 1 Chat" 
+    },
     "mb10@gmail.com": {
         hallId: "a",
         boothId: 10,
         roomName: "MuscleBlaze Booth Chat"
     },
     "info@virtualevent.com": {
-        hallId: "lobby", // Or whatever hallId won't crash
+        hallId: "lobby",
+        boothId: "info",
+        roomName: "Information Desk"
+    },
+    "info@virtualevents.com": {
+        hallId: "lobby",
         boothId: "info",
         roomName: "Information Desk"
     }

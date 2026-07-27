@@ -260,17 +260,31 @@ const AdminRoundTables = () => {
                                     left: `${point.left}%`
                                 }}
                             >
-                                {/* Small Blue Dot */}
-                                <div className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex h-3 w-3 items-center justify-center pointer-events-auto cursor-pointer z-20"
-                                     onClick={(e) => {
-                                         e.stopPropagation();
-                                         setSelectedRtItemId(point.id);
-                                         setSelectedRtItemType('point');
-                                     }}>
-                                    {selectedRtItemId === point.id && (
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                    )}
-                                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500 border border-white ${selectedRtItemId === point.id ? 'ring-2 ring-blue-400' : ''}`}></span>
+                                {/* Dot */}
+                                <div 
+                                    className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-auto cursor-pointer z-20"
+                                    style={{
+                                        width: `${point.size || 24}px`,
+                                        height: `${point.size || 24}px`
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedRtItemId(point.id);
+                                        setSelectedRtItemType('point');
+                                    }}
+                                >
+                                    <span 
+                                        className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                                        style={{ backgroundColor: point.color || '#60a5fa' }}
+                                    ></span>
+                                    <span 
+                                        className={`relative inline-flex rounded-full border-2 border-white shadow-md ${selectedRtItemId === point.id ? 'ring-2 ring-blue-500 scale-110' : ''}`}
+                                        style={{ 
+                                            width: `${(point.size || 24) * 0.6}px`, 
+                                            height: `${(point.size || 24) * 0.6}px`,
+                                            backgroundColor: point.color || '#3b82f6' 
+                                        }}
+                                    ></span>
                                 </div>
 
                                 {/* Text Bubble & Stem (Only show when selected to avoid map clutter) */}
@@ -325,6 +339,47 @@ const AdminRoundTables = () => {
                                 className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
                                 placeholder="Write point prompt here..."
                             />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Dot Color</label>
+                                <div className="flex gap-2 items-center">
+                                    <input
+                                        type="color"
+                                        value={selectedRtPoint.color || '#3b82f6'}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setRoundTablesPoints(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, color: val } : p));
+                                        }}
+                                        className="h-9 w-12 rounded cursor-pointer border border-gray-200 p-0.5 bg-white"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={selectedRtPoint.color || '#3b82f6'}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setRoundTablesPoints(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, color: val } : p));
+                                        }}
+                                        className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                        placeholder="#3b82f6"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Dot Size (px)</label>
+                                <input
+                                    type="number"
+                                    min="12"
+                                    max="64"
+                                    value={selectedRtPoint.size || 24}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        setRoundTablesPoints(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, size: val } : p));
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
                         </div>
 
                         {/* Schedule Manager */}

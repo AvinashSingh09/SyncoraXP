@@ -40,6 +40,10 @@ const AdminExpoHall = () => {
     const [loadingProdId, setLoadingProdId] = useState(null);
     const [status, setStatus] = useState('');
 
+    const [boothAdminEmail, setBoothAdminEmail] = useState('');
+    const [boothAdminPassword, setBoothAdminPassword] = useState('');
+    const [boothName, setBoothName] = useState('');
+
     const getConfigKey = (tab, bId) => {
         if (tab === 'Entrance') return 'expo_hall_entrance';
         if (tab === 'Booths') return `booth_${bId}_layout`;
@@ -81,6 +85,9 @@ const AdminExpoHall = () => {
                 setResources({ documents: [], videos: [] });
                 setProducts([]);
                 setLeads([]);
+                setBoothAdminEmail('');
+                setBoothAdminPassword('');
+                setBoothName('');
                 setIsFullscreen(false);
                 setSelectedItemId(null);
                 setStatus('');
@@ -99,6 +106,9 @@ const AdminExpoHall = () => {
                     if (config.socialLinks) setSocialLinks(config.socialLinks);
                     if (config.resources) setResources(config.resources);
                     if (config.products) setProducts(config.products);
+                    if (config.boothAdminEmail) setBoothAdminEmail(config.boothAdminEmail);
+                    if (config.boothAdminPassword) setBoothAdminPassword(config.boothAdminPassword);
+                    if (config.boothName) setBoothName(config.boothName);
                 } else {
                     // Default fallback images
                     setBgImage(defaultBg);
@@ -126,7 +136,10 @@ const AdminExpoHall = () => {
                 posters: activeTab === 'Entrance' ? [] : posters,
                 socialLinks: activeTab === 'Entrance' ? [] : socialLinks,
                 resources: activeTab === 'Entrance' ? { documents: [], videos: [] } : resources,
-                products: activeTab === 'Entrance' ? [] : products
+                products: activeTab === 'Entrance' ? [] : products,
+                boothName: activeTab === 'Booths' ? boothName : undefined,
+                boothAdminEmail: activeTab === 'Booths' ? boothAdminEmail : undefined,
+                boothAdminPassword: activeTab === 'Booths' ? boothAdminPassword : undefined
             });
             await configService.setConfig(configKey, configVal);
 
@@ -431,7 +444,7 @@ const AdminExpoHall = () => {
     const selectedSocial = socialLinks.find(p => p.id === selectedItemId);
 
     return (
-        <div className="w-full max-w-3xl bg-white rounded-2xl shadow-xl p-8 border border-gray-150 z-10 mx-auto">
+        <div className="w-full max-w-6xl bg-white rounded-2xl shadow-xl p-8 border border-gray-150 z-10 mx-auto">
             {/* Header */}
             <div className="flex items-center gap-3 mb-6 border-b border-gray-100 pb-4">
                 <div className="p-3 bg-blue-50 rounded-xl text-blue-600 border border-blue-100">
@@ -457,18 +470,59 @@ const AdminExpoHall = () => {
             </div>
 
             <form onSubmit={handleSave} className="space-y-6 animate-fade-in-up">
-                {/* Booth Selector (Only for Booths tab) */}
+                {/* Booth Selector & Stall Owner Credentials (Only for Booths tab) */}
                 {activeTab === 'Booths' && (
-                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5">
-                        <label className="block text-sm font-bold text-indigo-800 mb-2">Select Booth ID to Edit</label>
-                        <input
-                            type="text"
-                            value={boothId}
-                            onChange={(e) => setBoothId(e.target.value)}
-                            className="w-full max-w-xs bg-white border border-indigo-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-indigo-500"
-                            placeholder="e.g. 1"
-                        />
-                        <p className="text-sm text-indigo-600 mt-2">Enter the ID of the booth you want to configure (e.g. "1" for /dashboard/expo-hall/a/booth/1)</p>
+                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-5 flex flex-col gap-4">
+                        <div>
+                            <label className="block text-sm font-bold text-indigo-800 mb-1">Select Booth ID to Edit</label>
+                            <input
+                                type="text"
+                                value={boothId}
+                                onChange={(e) => setBoothId(e.target.value)}
+                                className="w-full max-w-xs bg-white border border-indigo-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-indigo-500 font-semibold"
+                                placeholder="e.g. 1"
+                            />
+                            <p className="text-xs text-indigo-600 mt-1">Configuring stall & credentials for /dashboard/expo-hall/a/booth/{boothId}</p>
+                        </div>
+
+                        <div className="border-t border-indigo-200/70 pt-3">
+                            <h4 className="text-xs font-extrabold uppercase tracking-wider text-indigo-900 mb-2">🔐 Stall Owner Login Credentials</h4>
+                            <p className="text-xs text-indigo-700 mb-3">
+                                Create dedicated login credentials for this stall's team. When they log in, they will be automatically locked to Booth {boothId} and see only incoming attendee chat queries for their booth.
+                            </p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div className="md:col-span-2">
+                                    <label className="block text-xs font-bold text-gray-600 mb-1">Booth Name</label>
+                                    <input
+                                        type="text"
+                                        value={boothName}
+                                        onChange={(e) => setBoothName(e.target.value)}
+                                        className="w-full bg-white border border-indigo-200 rounded-lg p-2.5 text-xs text-gray-800 focus:outline-none focus:border-indigo-500"
+                                        placeholder="e.g. Perfios"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-600 mb-1">Stall Owner Email</label>
+                                    <input
+                                        type="email"
+                                        value={boothAdminEmail}
+                                        onChange={(e) => setBoothAdminEmail(e.target.value)}
+                                        className="w-full bg-white border border-indigo-200 rounded-lg p-2.5 text-xs text-gray-800 focus:outline-none focus:border-indigo-500 font-mono"
+                                        placeholder={`e.g. booth${boothId}@virtualevent.com`}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-600 mb-1">Stall Owner Password</label>
+                                    <input
+                                        type="text"
+                                        value={boothAdminPassword}
+                                        onChange={(e) => setBoothAdminPassword(e.target.value)}
+                                        className="w-full bg-white border border-indigo-200 rounded-lg p-2.5 text-xs text-gray-800 focus:outline-none focus:border-indigo-500 font-mono"
+                                        placeholder="e.g. boothpass123"
+                                    />
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
                 {/* General Background Config */}
@@ -514,17 +568,17 @@ const AdminExpoHall = () => {
                                 <button
                                     type="button"
                                     onClick={() => setIsFullscreen(!isFullscreen)}
-                                    className="text-[10px] text-gray-700 font-semibold bg-gray-100 hover:bg-gray-200 px-2 py-0.5 rounded shadow cursor-pointer border border-gray-300"
+                                    className="text-xs font-bold text-gray-800 bg-amber-300 hover:bg-amber-400 px-3 py-2 rounded-lg shadow-md cursor-pointer transition-colors flex items-center gap-1 border border-amber-400"
                                 >
-                                    Expand Editor
+                                    {isFullscreen ? '🔍 Exit Fullscreen Editor' : '🔍 Expand Fullscreen Editor'}
                                 </button>
-                                <span className="text-sm text-blue-600 font-semibold bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 shadow-sm">
+                                <span className="text-xs text-blue-600 font-semibold bg-blue-50 px-3 py-2 rounded-lg border border-blue-100 shadow-sm">
                                     Click on image to add point. To draw poster, click "+ Add Poster" first, then click and drag on image!
                                 </span>
                                 <button
                                     type="button"
                                     onClick={handleAddPoster}
-                                    className="text-sm text-white font-bold bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg shadow-md cursor-pointer transition-colors"
+                                    className="text-xs text-white font-bold bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg shadow-md cursor-pointer transition-colors"
                                 >
                                     + Add Poster
                                 </button>
@@ -532,33 +586,53 @@ const AdminExpoHall = () => {
                                     <button
                                         type="button"
                                         onClick={handleAddSocialLink}
-                                        className="text-sm text-white font-bold bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded-lg shadow-md cursor-pointer transition-colors"
+                                        className="text-xs text-white font-bold bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded-lg shadow-md cursor-pointer transition-colors"
                                     >
                                         + Add Social
                                     </button>
                                 )}
                             </div>
                         </div>
-                        <div className={isFullscreen ? "fixed inset-0 z-50 bg-black/95 overflow-auto p-4 flex flex-col items-center" : ""}>
-                            {isFullscreen && (
-                                <div className="w-full flex justify-end mb-4 sticky top-0 z-[60] pointer-events-auto">
-                                    <button type="button" onClick={() => setIsFullscreen(false)} className="bg-white text-black px-4 py-2 text-sm font-bold rounded shadow-lg hover:bg-gray-200">
-                                        Close Fullscreen
-                                    </button>
-                                </div>
-                            )}
+                        <div className={isFullscreen ? "fixed inset-0 z-[9999] bg-black flex flex-col w-screen h-screen overflow-hidden" : ""}>
                             <div
-                                className={`bg-neutral-900 border border-gray-200 relative shadow-inner cursor-crosshair select-none ${isFullscreen ? 'w-[1600px] max-w-none shadow-2xl' : 'w-full rounded-xl overflow-hidden'}`}
+                                className={`bg-neutral-900 border border-gray-800 relative cursor-crosshair select-none ${isFullscreen ? 'w-full flex-1 rounded-none overflow-hidden' : 'w-full rounded-xl overflow-hidden'}`}
                                 onMouseDown={handleMouseDown}
                                 onMouseMove={handleMouseMove}
                                 onMouseUp={handleMouseUp}
                                 onMouseLeave={handleMouseUp}
                             >
+                                {/* Floating Top Controls Bar (Always Visible) */}
+                                <div className="absolute top-4 right-4 z-[999] flex items-center gap-2 bg-black/80 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-2xl">
+                                    <button
+                                        type="button"
+                                        onClick={handleAddPoster}
+                                        className="text-xs text-white font-bold bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-xl shadow cursor-pointer transition-all"
+                                    >
+                                        + Poster
+                                    </button>
+                                    {activeTab === 'Booths' && (
+                                        <button
+                                            type="button"
+                                            onClick={handleAddSocialLink}
+                                            className="text-xs text-white font-bold bg-pink-600 hover:bg-pink-700 px-3 py-1.5 rounded-xl shadow cursor-pointer transition-all"
+                                        >
+                                            + Social
+                                        </button>
+                                    )}
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsFullscreen(!isFullscreen)} 
+                                        className="bg-amber-400 hover:bg-amber-500 text-black px-3.5 py-1.5 text-xs font-black rounded-xl shadow-lg cursor-pointer transition-all flex items-center gap-1 border border-amber-300"
+                                        title="Minimize to configure options below"
+                                    >
+                                        {isFullscreen ? '📉 Minimize Editor' : '🔍 Fullscreen'}
+                                    </button>
+                                </div>
                                 <img
-                                src={bgImage || undefined}
-                                alt="Hall Preview"
-                                className="w-full h-auto pointer-events-none block"
-                            />
+                                    src={bgImage || undefined}
+                                    alt="Hall Preview"
+                                    className="w-full h-full object-cover block pointer-events-none"
+                                />
 
                             {/* Posters */}
                             {posters.map(poster => (
@@ -645,45 +719,70 @@ const AdminExpoHall = () => {
                                         <Icon className="text-white w-4 h-4" />
                                     </div>
                                 );
-                            })}
-
-                            {/* Points */}
+                            })}                            {/* Points */}
                             {points.map(point => (
                                 <div
                                     key={point.id}
                                     className="map-item absolute z-20 pointer-events-none"
                                     style={{
                                         top: `${point.top}%`,
-                                        left: `${point.left}%`
+                                        left: `${point.left}%`,
+                                        transform: 'translate(-50%, -50%)'
                                     }}
                                 >
-                                    {/* Small Blue Dot */}
-                                    <div className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex h-3 w-3 items-center justify-center pointer-events-auto cursor-pointer z-20"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedItemId(point.id);
-                                            setSelectedItemType('point');
-                                        }}>
-                                        {selectedItemId === point.id && (
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                        )}
-                                        <span className={`relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500 border border-white ${selectedItemId === point.id ? 'ring-2 ring-blue-400' : ''}`}></span>
-                                    </div>
-
-                                    {/* Text Bubble & Stem */}
-                                    <div className={`absolute bottom-1 left-0 transform -translate-x-1/2 flex flex-col items-center pointer-events-auto cursor-pointer transition-all z-10 ${selectedItemId === point.id ? 'scale-110 drop-shadow-xl' : 'hover:scale-105'}`}
+                                    {/* Dot */}
+                                    <div 
+                                        className="flex items-center justify-center pointer-events-auto cursor-pointer z-20"
+                                        style={{
+                                            width: `${point.size || 24}px`,
+                                            height: `${point.size || 24}px`
+                                        }}
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             setSelectedItemId(point.id);
                                             setSelectedItemType('point');
                                         }}
                                     >
-                                        <div className={`bg-black text-white rounded-xl p-2 shadow-2xl border ${selectedItemId === point.id ? 'border-blue-400' : 'border-blue-500/30'} max-w-[150px] text-center`}>
+                                        <span 
+                                            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                                            style={{ backgroundColor: point.color || '#60a5fa' }}
+                                        ></span>
+                                        <span 
+                                            className={`relative inline-flex rounded-full border-2 border-white shadow-md ${selectedItemId === point.id ? 'ring-2 ring-blue-500 scale-110' : ''}`}
+                                            style={{ 
+                                                width: `${(point.size || 24) * 0.6}px`, 
+                                                height: `${(point.size || 24) * 0.6}px`,
+                                                backgroundColor: point.color || '#3b82f6' 
+                                            }}
+                                        ></span>
+                                    </div>
+
+                                    {/* Text Bubble & Stem */}
+                                    <div className={`absolute bottom-2 left-1/2 transform -translate-x-1/2 flex flex-col items-center pointer-events-auto cursor-pointer transition-all z-10 ${selectedItemId === point.id ? 'scale-110 drop-shadow-xl' : 'hover:scale-105'}`}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedItemId(point.id);
+                                            setSelectedItemType('point');
+                                        }}
+                                    >
+                                        <div className={`bg-black text-white rounded-xl p-2 shadow-2xl border relative ${selectedItemId === point.id ? 'border-blue-400 ring-2 ring-blue-400/50' : 'border-blue-500/30'} max-w-[150px] text-center`}>
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setPoints(prev => prev.filter(p => p.id !== point.id));
+                                                    if (selectedItemId === point.id) setSelectedItemId(null);
+                                                }}
+                                                className="absolute -top-2.5 -right-2.5 w-5 h-5 bg-red-600 hover:bg-red-700 text-white rounded-full font-extrabold text-[10px] flex items-center justify-center border-2 border-white shadow-lg z-30 transition-transform hover:scale-125 cursor-pointer"
+                                                title="Delete point"
+                                            >
+                                                ✕
+                                            </button>
                                             <p className="text-sm font-semibold leading-tight whitespace-nowrap">
                                                 {point.text || 'New Point'}
                                             </p>
                                         </div>
-                                        <div className="w-0.5 h-5 bg-gradient-to-b from-blue-500 to-blue-400" />
+                                        <div className="w-0.5 h-4 bg-gradient-to-b from-blue-500 to-blue-400" />
                                     </div>
                                 </div>
                             ))}
@@ -751,6 +850,47 @@ const AdminExpoHall = () => {
                                     <option value="action:product_gallery">Open Product Showcase Gallery</option>
                                     <option value="chat:Booth">Open Booth Chat Drawer</option>
                                 </select>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Dot Color</label>
+                                <div className="flex gap-2 items-center">
+                                    <input
+                                        type="color"
+                                        value={selectedPoint.color || '#3b82f6'}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setPoints(prev => prev.map(p => p.id === selectedItemId ? { ...p, color: val } : p));
+                                        }}
+                                        className="h-9 w-12 rounded cursor-pointer border border-gray-200 p-0.5 bg-white"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={selectedPoint.color || '#3b82f6'}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setPoints(prev => prev.map(p => p.id === selectedItemId ? { ...p, color: val } : p));
+                                        }}
+                                        className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                        placeholder="#3b82f6"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Dot Size (px)</label>
+                                <input
+                                    type="number"
+                                    min="12"
+                                    max="64"
+                                    value={selectedPoint.size || 24}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        setPoints(prev => prev.map(p => p.id === selectedItemId ? { ...p, size: val } : p));
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
                             </div>
                         </div>
                     </div>

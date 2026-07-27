@@ -337,7 +337,7 @@ const TicTacToe = ({ onBack }) => {
     };
 
     return (
-        <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-start bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50 text-slate-800 px-6 pb-20 pt-[124px] overflow-y-auto font-sans z-10">
+        <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50 text-slate-800 px-6 pb-6 pt-[90px] overflow-hidden font-sans z-10">
             {/* Main background gradient */}
             <div className="absolute inset-0 bg-gradient-to-br from-[#ebf4ff] via-[#e0e7ff] to-[#f3e8ff] z-0"></div>
 
@@ -363,25 +363,25 @@ const TicTacToe = ({ onBack }) => {
             </svg>
 
             {/* Top Bar */}
-            <div className="w-full max-w-xl flex items-center justify-between mb-4 z-10">
+            <div className="w-full max-w-xl flex items-center justify-between mb-2 z-10">
                 <button
                     onClick={handleBackToArena}
-                    className="flex items-center gap-2 text-slate-600 hover:text-indigo-900 transition-colors cursor-pointer text-xs font-bold bg-white border border-slate-200 px-4 py-2 rounded-xl shadow-sm hover:shadow"
+                    className="flex items-center gap-2 text-slate-600 hover:text-indigo-900 transition-colors cursor-pointer text-xs font-bold bg-white border border-slate-200 px-3.5 py-1.5 rounded-xl shadow-sm hover:shadow"
                 >
                     <FiArrowLeft className="text-indigo-650 w-4 h-4" /> Exit Game
                 </button>
             </div>
 
             {/* Header */}
-            <div className="text-center mt-2 mb-6 z-10">
-                <h1 className="text-4xl font-black tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-650 bg-clip-text text-transparent">
+            <div className="text-center mb-3 z-10">
+                <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-650 bg-clip-text text-transparent">
                     Tic-Tac-Toe
                 </h1>
-                <p className="text-xs text-slate-550 mt-1.5 font-semibold">Play X and O in the Virtual Event Arena</p>
+                <p className="text-[11px] text-slate-550 mt-1 font-semibold">Play X and O in the Virtual Event Arena</p>
             </div>
 
             {/* Game Options & Modes */}
-            <div className="flex gap-2 mb-6 bg-white border border-slate-200 p-1.5 rounded-2xl shadow-sm z-10">
+            <div className="flex gap-2 mb-3 bg-white border border-slate-200 p-1 rounded-xl shadow-sm z-10">
                 <button
                     onClick={() => handleModeChange('bot')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${gameMode === 'bot'
@@ -470,29 +470,29 @@ const TicTacToe = ({ onBack }) => {
                     )}
 
                     {/* Scoreboard */}
-                    <div className="grid grid-cols-3 gap-4 w-full max-w-sm mb-5 text-center">
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm min-w-0 flex flex-col items-center justify-center">
+                    <div className="grid grid-cols-3 gap-3 w-full max-w-sm mb-3 text-center">
+                        <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-sm min-w-0 flex flex-col items-center justify-center">
                             <span
-                                className="text-[10px] uppercase font-black tracking-wider text-blue-600 block w-full truncate mb-1"
+                                className="text-[10px] uppercase font-black tracking-wider text-blue-600 block w-full truncate mb-0.5"
                                 title={gameMode === 'online' && onlineGameState ? (onlineGameState.players.find(p => p.symbol === 'X')?.username || 'Player X') : 'Player (X)'}
                             >
                                 {gameMode === 'online' && onlineGameState
                                     ? (onlineGameState.players.find(p => p.symbol === 'X')?.username || 'Player X')
                                     : 'Player (X)'}
                             </span>
-                            <p className="text-2xl font-black text-slate-850">
+                            <p className="text-xl font-black text-slate-850">
                                 {gameMode === 'online' && onlineGameState ? onlineGameState.scores.x : scores.x}
                             </p>
                         </div>
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm flex flex-col items-center justify-center">
-                            <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-1">Ties</span>
-                            <p className="text-2xl font-black text-slate-800">
+                        <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-sm flex flex-col items-center justify-center">
+                            <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 block mb-0.5">Ties</span>
+                            <p className="text-xl font-black text-slate-800">
                                 {gameMode === 'online' && onlineGameState ? onlineGameState.scores.ties : scores.ties}
                             </p>
                         </div>
-                        <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm min-w-0 flex flex-col items-center justify-center">
+                        <div className="bg-white border border-slate-200/80 rounded-xl p-2.5 shadow-sm min-w-0 flex flex-col items-center justify-center">
                             <span
-                                className="text-[10px] uppercase font-black tracking-wider text-indigo-600 block w-full truncate mb-1"
+                                className="text-[10px] uppercase font-black tracking-wider text-indigo-600 block w-full truncate mb-0.5"
                                 title={gameMode === 'online' && onlineGameState ? (onlineGameState.players.find(p => p.symbol === 'O')?.username || 'Player O') : 'CPU (O)'}
                             >
                                 {gameMode === 'online' && onlineGameState
@@ -506,12 +506,12 @@ const TicTacToe = ({ onBack }) => {
                     </div>
 
                     {/* Status Message */}
-                    <p className="text-xs font-black tracking-wider uppercase text-slate-600 mb-6 bg-white px-5 py-2.5 rounded-full border border-slate-200 shadow-sm">
+                    <p className="text-[11px] font-black tracking-wider uppercase text-slate-600 mb-3 bg-white px-4 py-1.5 rounded-full border border-slate-200 shadow-sm">
                         {gameMode === 'online' ? getOnlineStatus() : statusMessage}
                     </p>
 
                     {/* Tic-Tac-Toe Grid */}
-                    <div className="grid grid-cols-3 gap-3 w-full max-w-[320px] aspect-square bg-slate-900 border border-slate-800 p-4 rounded-3xl shadow-2xl relative mb-6">
+                    <div className="grid grid-cols-3 gap-2.5 w-full max-w-[280px] aspect-square bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-2xl relative mb-3">
                         {currentBoard.map((value, idx) => {
                             const isWinningSquare = winningPattern.includes(idx);
                             const onlineTurnSymbol = onlineGameState?.isXNext ? 'X' : 'O';
@@ -525,7 +525,7 @@ const TicTacToe = ({ onBack }) => {
                                     key={idx}
                                     onClick={() => handleSquareClick(idx)}
                                     disabled={isDisable}
-                                    className={`w-full aspect-square flex items-center justify-center text-4xl font-black rounded-2xl border border-slate-800/80 transition-all select-none cursor-pointer
+                                    className={`w-full aspect-square flex items-center justify-center text-3xl font-black rounded-xl border border-slate-800/80 transition-all select-none cursor-pointer
                                         ${value === null
                                             ? 'bg-slate-800/40 hover:bg-slate-800 text-transparent hover:scale-[1.02] active:scale-95'
                                             : 'bg-slate-800/80 shadow-inner'
@@ -542,11 +542,11 @@ const TicTacToe = ({ onBack }) => {
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex gap-4">
+                    <div className="flex gap-3">
                         <button
                             onClick={handleReset}
                             disabled={gameMode === 'online' && onlineGameState?.status === 'waiting'}
-                            className="flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 text-xs font-black px-6 py-3 rounded-2xl shadow-sm transition-all cursor-pointer active:scale-95"
+                            className="flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 disabled:opacity-50 text-slate-700 text-xs font-black px-4 py-2 rounded-xl shadow-sm transition-all cursor-pointer active:scale-95"
                         >
                             <FiRefreshCw /> Reset Board
                         </button>
@@ -554,7 +554,7 @@ const TicTacToe = ({ onBack }) => {
                         {gameMode === 'online' && (
                             <button
                                 onClick={handleLeaveOnlineGame}
-                                className="flex items-center gap-1.5 border border-red-250 bg-red-50 hover:bg-red-100 text-red-655 text-xs font-bold px-6 py-3 rounded-2xl shadow-sm transition-all cursor-pointer active:scale-95"
+                                className="flex items-center gap-1.5 border border-red-250 bg-red-50 hover:bg-red-100 text-red-655 text-xs font-bold px-4 py-2 rounded-xl shadow-sm transition-all cursor-pointer active:scale-95"
                             >
                                 Leave Room
                             </button>

@@ -129,7 +129,7 @@ class Message {
     return this;
   }
 
-  static async findOne(conditions) {
+  static findOne(conditions) {
     let sql = 'SELECT * FROM ve_messages';
     const keys = Object.keys(conditions);
     const params = [];

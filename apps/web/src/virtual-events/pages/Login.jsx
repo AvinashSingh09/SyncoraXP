@@ -4,7 +4,7 @@ import Input from '../components/Input';
 import Button from '../components/Button';
 import { useToast } from '../context/ToastContext';
 import { useAuth } from '../hooks/useAuth';
-import { authService } from '../services/api';
+import { authService, configService } from '../services/api';
 import { BOOTH_ADMINS } from '../config/boothAdmins';
 import { FaEye, FaEyeSlash } from 'react-icons/fa';
 
@@ -50,8 +50,35 @@ const Login = () => {
                 password: formData.password
             });
             const emailKey = formData.email.toLowerCase().trim();
-            if (BOOTH_ADMINS[emailKey]) {
-                const boothInfo = BOOTH_ADMINS[emailKey];
+            let boothInfo = BOOTH_ADMINS[emailKey];
+
+            if (!boothInfo) {
+                // Check dynamic booth configurations (booth_1_layout, booth_2_layout, etc.)
+                try {
+                    for (let b = 1; b <= 20; b++) {
+                        const confRes = await configService.getConfig(`booth_${b}_layout`);
+                        if (confRes.data && confRes.data.value) {
+                            const parsed = JSON.parse(confRes.data.value);
+                            if (
+                                parsed.boothAdminEmail &&
+                                parsed.boothAdminEmail.toLowerCase().trim() === emailKey &&
+                                parsed.boothAdminPassword === formData.password
+                            ) {
+                                boothInfo = {
+                                    hallId: 'a',
+                                    boothId: b,
+                                    roomName: `Booth ${b}`
+                                };
+                                break;
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error('Error checking dynamic booth admin config', err);
+                }
+            }
+
+            if (boothInfo) {
                 sessionStorage.setItem('autoOpenChat', boothInfo.roomName);
                 if (boothInfo.hallId === 'lobby') {
                     sessionStorage.setItem('redirectUrl', '/virtual-events-platform/app/dashboard/lobby');
