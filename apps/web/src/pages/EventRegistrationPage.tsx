@@ -37,14 +37,25 @@ const brandLogoFiles = [
 ];
 
 const smartSolutions = [
-  { name: "Face Recognition Scanner", image: "/virtual-events-assets/event_reg_facial_kiosk.png" },
-  { name: "Mobile App Check-in", image: "/virtual-events-assets/event_reg_mobile_app.png" },
-  { name: "On-Ground Reception Counter", image: "/virtual-events-assets/event_reg_forbes_desk.png" },
+  { name: "Image 1", image: "/registration-images/WhatsApp Image 2026-07-23 at 3.08.26 PM.jpeg" },
+  { name: "Image 2", image: "/registration-images/WhatsApp Image 2026-07-23 at 3.08.26 PM (1).jpeg" },
+  { name: "Image 3", image: "/registration-images/WhatsApp Image 2026-07-23 at 3.08.26 PM (2).jpeg" },
+  { name: "Image 4", image: "/registration-images/WhatsApp Image 2026-07-23 at 3.11.16 PM.jpeg" },
+  { name: "Image 5", image: "/registration-images/WhatsApp Image 2026-07-23 at 3.11.22 PM.jpeg" },
+  { name: "Image 6", image: "/registration-images/WhatsApp Image 2026-07-23 at 3.11.22 PM (1).jpeg" },
+  { name: "Image 7", image: "/registration-images/WhatsApp Image 2026-07-23 at 3.12.20 PM.jpeg" },
+];
+
+const uspSolutions = [
+  { name: "Facial Recognition Check-in", image: "/registration-images/event_reg_facial_recognition_portrait.png" },
+  { name: "On-Spot Registration", image: "/registration-images/event_reg_on_spot_registration_portrait.png" },
+  { name: "Badge Printing Solutions", image: "/registration-images/event_reg_badge_printing_portrait.png" },
 ];
 
 export function EventRegistrationPage() {
   const formRef = useRef<HTMLDivElement>(null);
   const [smartIndex, setSmartIndex] = useState(0);
+  const [uspIndex, setUspIndex] = useState(0);
   const [activeFeatureTab, setActiveFeatureTab] = useState(0);
   const [tabProgress, setTabProgress] = useState(0);
   const [isCountryOpen, setIsCountryOpen] = useState(false);
@@ -328,7 +339,7 @@ export function EventRegistrationPage() {
             boxSizing: "border-box",
           }}>
             <img
-              src="/virtual-events-assets/event-registration.png"
+              src="/virtual-events-assets/reg_landing.png"
               alt="Event Registration Platform & Solutions Collage"
               style={{
                 width: "100%",
@@ -792,64 +803,48 @@ export function EventRegistrationPage() {
 
           {/* Carousel Viewport */}
           <div style={{
-            width: "calc(100% + 48px)",
-            margin: "0 -24px",
-            overflow: "hidden",
-            position: "relative",
-            padding: "10px 24px",
+            width: "100%",
             boxSizing: "border-box",
+            padding: "10px 0",
           }}>
             <div style={{
-              display: "flex",
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
               gap: "24px",
-              transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-              transform: `translateX(-${smartIndex * 504}px)`,
+              width: "100%",
             }}>
-              {smartSolutions.map((space, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    minWidth: "480px",
-                    width: "480px",
-                    height: "360px",
-                    borderRadius: "20px",
-                    overflow: "hidden",
-                    position: "relative",
-                    boxShadow: "0 10px 30px rgba(109, 40, 217, 0.1)",
-                    border: "1px solid rgba(109, 40, 217, 0.08)",
-                    transition: "all 0.3s ease",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.2)"; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.08)"; }}
-                >
-                  <img
-                    src={space.image}
-                    alt={space.name}
+              {[0, 1, 2].map((offset) => {
+                const space = smartSolutions[(smartIndex + offset) % smartSolutions.length];
+                if (!space) return null;
+                return (
+                  <div
+                    key={`${space.name}-${offset}`}
                     style={{
                       width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
+                      height: "480px",
+                      borderRadius: "20px",
+                      overflow: "hidden",
+                      position: "relative",
+                      boxShadow: "0 10px 30px rgba(109, 40, 217, 0.1)",
+                      border: "1px solid rgba(109, 40, 217, 0.08)",
+                      transition: "all 0.3s ease",
+                      cursor: "pointer",
                     }}
-                  />
-                  {/* Space Label Badge */}
-                  <div style={{
-                    position: "absolute",
-                    bottom: "20px",
-                    right: "20px",
-                    background: "rgba(30, 27, 75, 0.85)",
-                    backdropFilter: "blur(8px)",
-                    border: "1px solid rgba(255, 255, 255, 0.1)",
-                    padding: "8px 16px",
-                    borderRadius: "20px",
-                    color: "#ffffff",
-                    fontSize: "12.5px",
-                    fontWeight: 700,
-                  }}>
-                    {space.name}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.2)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.08)"; }}
+                  >
+                    <img
+                      src={space.image}
+                      alt={space.name}
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                      }}
+                    />
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -1043,120 +1038,134 @@ export function EventRegistrationPage() {
         boxSizing: "border-box",
       }}>
         <section style={{
-          maxWidth: "1200px",
+          maxWidth: "1400px",
           margin: "0 auto",
-          textAlign: "center",
+          boxSizing: "border-box",
+          textAlign: "left",
         }}>
-          <h2 style={{
-            fontSize: "clamp(28px, 4.5vw, 44px)",
-            fontWeight: 800,
-            color: "#1e1035",
-            margin: "0 auto 16px",
-            lineHeight: 1.15,
-            letterSpacing: "-0.02em",
-            maxWidth: "800px",
-          }}>
-            Key USP's of Event Registration Suite
-          </h2>
-          <p style={{
-            fontSize: "clamp(14px, 1.8vw, 16px)",
-            color: "#3b2166",
-            maxWidth: "750px",
-            margin: "0 auto 60px",
-            lineHeight: 1.6,
-          }}>
-            Ensure smooth event execution with SyncoraXP's robust tech, facial recognition check-in, on-spot registration, and instant badge printing.
-          </p>
-
-          {/* Cards Grid */}
+          {/* Header Row */}
           <div style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-            gap: "32px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            marginBottom: "40px",
             width: "100%",
           }}>
-            {/* Card 1: Facial Recognition */}
-            <div style={{
-              background: "rgba(255, 255, 255, 0.68)",
-              border: "1px solid rgba(126, 34, 206, 0.15)",
-              borderRadius: "24px",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              transition: "transform 0.3s ease, border-color 0.3s ease",
-              boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.15)"; }}
-            >
-              <div style={{ width: "100%", height: "360px", overflow: "hidden" }}>
-                <img
-                  src="/virtual-events-assets/event_reg_facial_kiosk.png"
-                  alt="Facial Recognition Check-in"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </div>
-              <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#1e1035", margin: "24px 0" }}>
-                Facial Recognition Check-in
-              </h3>
+            <div>
+              <h2 style={{
+                fontSize: "clamp(28px, 4.5vw, 44px)",
+                fontWeight: 800,
+                color: "#1e1035",
+                margin: 0,
+                lineHeight: 1.15,
+                letterSpacing: "-0.02em",
+                maxWidth: "800px",
+              }}>
+                Key USP's of Event Registration Suite
+              </h2>
+              <p style={{
+                fontSize: "clamp(14px, 1.8vw, 16px)",
+                color: "#3b2166",
+                maxWidth: "750px",
+                margin: "12px 0 0 0",
+                lineHeight: 1.6,
+              }}>
+                Ensure smooth event execution with SyncoraXP's robust tech, facial recognition check-in, on-spot registration, and instant badge printing.
+              </p>
             </div>
 
-            {/* Card 2: On-Spot Registration */}
-            <div style={{
-              background: "rgba(255, 255, 255, 0.68)",
-              border: "1px solid rgba(126, 34, 206, 0.15)",
-              borderRadius: "24px",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              transition: "transform 0.3s ease, border-color 0.3s ease",
-              boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.15)"; }}
-            >
-              <div style={{ width: "100%", height: "360px", overflow: "hidden" }}>
-                <img
-                  src="/virtual-events-assets/event_reg_forbes_desk.png"
-                  alt="On-Spot Registration"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </div>
-              <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#1e1035", margin: "24px 0" }}>
-                On-Spot Registration
-              </h3>
+            {/* Navigation Buttons */}
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => setUspIndex((prev) => (prev - 1 + uspSolutions.length) % uspSolutions.length)}
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  background: "rgba(109, 40, 217, 0.05)",
+                  border: "1px solid rgba(109, 40, 217, 0.15)",
+                  color: "#6d28d9",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(109, 40, 217, 0.1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(109, 40, 217, 0.05)"; }}
+              >
+                ←
+              </button>
+              <button
+                onClick={() => setUspIndex((prev) => (prev + 1) % uspSolutions.length)}
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  background: "rgba(109, 40, 217, 0.05)",
+                  border: "1px solid rgba(109, 40, 217, 0.15)",
+                  color: "#6d28d9",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(109, 40, 217, 0.1)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(109, 40, 217, 0.05)"; }}
+              >
+                →
+              </button>
             </div>
+          </div>
 
-            {/* Card 3: Badge Printing */}
+          {/* Carousel Viewport */}
+          <div style={{
+            width: "100%",
+            boxSizing: "border-box",
+            padding: "10px 0",
+          }}>
             <div style={{
-              background: "rgba(255, 255, 255, 0.68)",
-              border: "1px solid rgba(126, 34, 206, 0.15)",
-              borderRadius: "24px",
-              overflow: "hidden",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              transition: "transform 0.3s ease, border-color 0.3s ease",
-              boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)",
-              cursor: "pointer",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.15)"; }}
-            >
-              <div style={{ width: "100%", height: "360px", overflow: "hidden" }}>
-                <img
-                  src="/virtual-events-assets/event_reg_badge_printing.png"
-                  alt="Badge Printing Solutions"
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                />
-              </div>
-              <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#1e1035", margin: "24px 0" }}>
-                Badge Printing Solutions
-              </h3>
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+              gap: "24px",
+              width: "100%",
+            }}>
+              {[0, 1, 2].map((offset) => {
+                const space = uspSolutions[(uspIndex + offset) % uspSolutions.length];
+                if (!space) return null;
+                return (
+                  <div
+                    key={`${space.name}-${offset}`}
+                    style={{
+                      width: "100%",
+                      background: "rgba(255, 255, 255, 0.68)",
+                      border: "1px solid rgba(126, 34, 206, 0.15)",
+                      borderRadius: "24px",
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      transition: "all 0.3s ease",
+                      boxShadow: "0 15px 35px rgba(91, 33, 182, 0.05)",
+                      cursor: "pointer",
+                    }}
+                    onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-6px)"; e.currentTarget.style.borderColor = "rgba(109, 40, 217, 0.3)"; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(126, 34, 206, 0.15)"; }}
+                  >
+                    <div style={{ width: "100%", height: "380px", overflow: "hidden" }}>
+                      <img
+                        src={space.image}
+                        alt={space.name}
+                        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                      />
+                    </div>
+                    <h3 style={{ fontSize: "20px", fontWeight: 800, color: "#1e1035", margin: "20px 0" }}>
+                      {space.name}
+                    </h3>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>

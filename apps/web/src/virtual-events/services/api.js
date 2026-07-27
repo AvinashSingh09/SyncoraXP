@@ -72,33 +72,12 @@ export const configService = {
         }
         return res;
     }),
-    getConfig: (key) => {
-        const cacheKey = `config_${key}`;
-        const cached = sessionStorage.getItem(cacheKey);
-        if (cached) {
-            try {
-                const parsed = JSON.parse(cached);
-                if (parsed.value) parsed.value = fixConfigValueString(parsed.value);
-                return Promise.resolve({ data: parsed });
-            } catch (e) {
-                sessionStorage.removeItem(cacheKey);
-            }
+    getConfig: (key) => api.get(`/config/${key}`).then(res => {
+        if (res.data && res.data.value) {
+            res.data.value = fixConfigValueString(res.data.value);
         }
-
-        if (!configCache[key]) {
-            configCache[key] = api.get(`/config/${key}`).then(res => {
-                if (res.data) {
-                    if (res.data.value) res.data.value = fixConfigValueString(res.data.value);
-                    sessionStorage.setItem(cacheKey, JSON.stringify(res.data));
-                }
-                return res;
-            }).catch(err => {
-                delete configCache[key];
-                return Promise.reject(err);
-            });
-        }
-        return configCache[key];
-    },
+        return res;
+    }),
     preloadBooth: async (boothId) => {
         const key = `booth_${boothId}_layout`;
         if (preloadedKeys.has(key)) return;

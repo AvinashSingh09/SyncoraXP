@@ -169,7 +169,19 @@ async function registerVirtualEvents(app) {
   register(app, 'GET', '/config/:key', async (req, res) => res.json({ success: true, value: (await Config.findOne({ key: req.params.key }))?.value ?? null }));
   register(app, 'POST', '/config', async (req, res) => res.json({ success: true, data: await Config.findOneAndUpdate({ key: req.body.key }, { value: req.body.value }, { new: true, upsert: true }) }));
   register(app, 'POST', '/config/upload', async (req, res) => {
-    const matches = req.body.image?.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    const base64Data = req.body.image;
+    if (!base64Data) return res.status(400).json({ success: false, message: 'Image data is required' });
+
+    try {
+      const cloudinaryUrl = await photobooth.uploadToCloudinary(base64Data);
+      if (cloudinaryUrl) {
+        return res.json({ success: true, url: cloudinaryUrl });
+      }
+    } catch (e) {
+      console.warn('Cloudinary upload fallback to local disk:', e.message);
+    }
+
+    const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
     if (!matches) return res.status(400).json({ success: false, message: 'Invalid base64 image data' });
     if (!existsSync(uploadDir)) mkdirSync(uploadDir, { recursive: true });
     const filename = `bg_${Date.now()}.${matches[1].split('/')[1] || 'png'}`;
@@ -196,7 +208,20 @@ async function serveFile(request, reply, directory) {
   const name = basename(request.params.name);
   const file = join(directory, name);
   if (!existsSync(file)) return reply.code(404).send({ message: 'File not found' });
-  const type = extname(name).toLowerCase() === '.png' ? 'image/png' : extname(name).toLowerCase() === '.jpeg' || extname(name).toLowerCase() === '.jpg' ? 'image/jpeg' : 'application/octet-stream';
+  const ext = extname(name).toLowerCase();
+  const mimeTypes = {
+    '.pdf': 'application/pdf',
+    '.png': 'image/png',
+    '.jpeg': 'image/jpeg',
+    '.jpg': 'image/jpeg',
+    '.webp': 'image/webp',
+    '.svg': 'image/svg+xml',
+    '.mp4': 'video/mp4',
+    '.webm': 'video/webm',
+    '.ogg': 'video/ogg'
+  };
+  const type = mimeTypes[ext] || 'application/octet-stream';
+  reply.header('Content-Disposition', 'inline');
   return reply.type(type).send(createReadStream(file));
 }
 

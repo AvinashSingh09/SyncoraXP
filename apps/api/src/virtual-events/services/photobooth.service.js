@@ -226,5 +226,6 @@ const uploadPoster = async (sessionId, posterBase64) => {
 
 module.exports = {
     processCaricature,
-    uploadPoster
+    uploadPoster,
+    uploadToCloudinary
 };
