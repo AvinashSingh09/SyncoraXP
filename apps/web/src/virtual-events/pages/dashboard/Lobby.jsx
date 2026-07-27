@@ -6,11 +6,32 @@ import { FiX, FiInfo, FiCalendar, FiMapPin, FiClock, FiSend, FiUser, FiMessageSq
 const Lobby = () => {
     const navigate = useNavigate();
     const navigateTo = (path) => {
-        let target = path;
-        if (target.startsWith('/dashboard')) {
+        if (!path) return;
+        let target = decodeURIComponent(path).trim();
+        target = target
+            .replace('virtual events platform', 'virtual-events-platform')
+            .replace('expo hall', 'expo-hall')
+            .replace('meeting room', 'meeting-room')
+            .replace('round tables', 'round-tables');
+
+        const boothMatch = target.match(/^(?:https?:\/\/[^\/]+)?\/?(?:virtual-events-platform\/app\/dashboard\/expo-hall\/[a-c]\/)?(?:booth\/|booth\s*)(\d+)(.*)$/i);
+        if (boothMatch) {
+            const bId = boothMatch[1];
+            const extra = boothMatch[2] || '';
+            const isChatShortcut = extra.toLowerCase().includes('chat') || target.toLowerCase().includes('chat=true');
+            target = `/virtual-events-platform/app/dashboard/expo-hall/a/booth/${bId}${isChatShortcut ? '?chat=true' : ''}`;
+        } else if (target.includes('/lobby/expo-hall') || target.includes('/lobby/expo hall') || target.endsWith('/expo hall')) {
+            target = '/virtual-events-platform/app/dashboard/expo-hall';
+        } else if (target.startsWith('/dashboard')) {
             target = `/virtual-events-platform/app${target}`;
         } else if (target.startsWith('dashboard')) {
             target = `/virtual-events-platform/app/${target}`;
+        } else if (!target.startsWith('/virtual-events-platform/app')) {
+            if (target.startsWith('/')) {
+                target = `/virtual-events-platform/app/dashboard${target}`;
+            } else {
+                target = `/virtual-events-platform/app/dashboard/${target}`;
+            }
         }
         navigate(target);
     };

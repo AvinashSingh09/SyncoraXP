@@ -40,6 +40,7 @@ export function App() {
             <Route path="/contact" element={<Navigate to="/book-demo" replace />} />
             <Route path="/virtual-events-platform/book-demo" element={<Navigate to="/book-demo" replace />} />
             <Route path="/virtual-events-platform/app/*" element={<VirtualEventsApp />} />
+            <Route path="/virtual events platform/app/*" element={<Navigate to="/virtual-events-platform/app/dashboard/expo-hall" replace />} />
             <Route path="/webinar-service" element={<WebinarServicePage />} />
             <Route path="/webinar-service/meetings" element={<ProtectedRoute><HomePage /></ProtectedRoute>} />
             <Route path="/event-registration" element={<EventRegistrationPage />} />

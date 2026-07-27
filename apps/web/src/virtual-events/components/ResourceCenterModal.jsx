@@ -53,16 +53,14 @@ const ResourceCenterModal = ({ onClose, resources, boothId }) => {
 
     const getEmbedUrl = (url) => {
         if (!url) return '';
-        const params = 'autoplay=1&mute=1&loop=1&controls=1&showinfo=0&rel=0&modestbranding=1';
+        const params = 'controls=1&rel=0&modestbranding=1&enablejsapi=1';
         if (url.includes('youtube.com/embed/')) {
             return url.includes('?') ? `${url}&${params}` : `${url}?${params}`;
         }
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+        const regExp = /(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/|v\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
         const match = url.match(regExp);
-        const videoId = (match && match[2].length === 11) ? match[2] : null;
-
-        if (videoId) {
-            return `https://www.youtube.com/embed/${videoId}?${params}`;
+        if (match && match[1]) {
+            return `https://www.youtube.com/embed/${match[1]}?${params}`;
         }
         return url;
     };
@@ -98,20 +96,63 @@ const ResourceCenterModal = ({ onClose, resources, boothId }) => {
                                 <FiX className="w-6 h-6" />
                             </button>
                         </div>
-                        <div className="flex-1 w-full relative min-h-[60vh] sm:min-h-[70vh]">
-                            {selectedResource.type === 'video' ? (
-                                <iframe 
-                                    src={getEmbedUrl(selectedResource.url)}
-                                    className="absolute inset-0 w-full h-full border-0"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                    allowFullScreen
-                                />
-                            ) : (
-                                <iframe 
-                                    src={selectedResource.url}
-                                    className="absolute inset-0 w-full h-full border-0 bg-white"
-                                />
-                            )}
+                        <div className="flex-1 w-full relative min-h-[60vh] sm:min-h-[70vh] bg-gray-900 flex flex-col">
+                            <div className="bg-gray-800 text-white px-6 py-2.5 flex justify-between items-center text-xs border-b border-gray-700 shrink-0">
+                                <span className="font-semibold text-gray-300 truncate max-w-md">
+                                    {selectedResource.type === 'video' ? 'Video Player' : 'Document Preview'}: {selectedResource.title || selectedResource.name || 'File'}
+                                </span>
+                                <div className="flex items-center gap-3">
+                                    {selectedResource.url && (
+                                        <a
+                                            href={selectedResource.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="bg-[#295ce8] hover:bg-blue-700 text-white font-bold px-3 py-1 rounded text-xs transition-colors flex items-center gap-1"
+                                        >
+                                            Open Full Page / Download
+                                        </a>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="flex-1 w-full relative bg-gray-950">
+                                {!selectedResource.url || (!selectedResource.url.startsWith('http') && !selectedResource.url.startsWith('/ve-api') && !selectedResource.url.startsWith('data:')) ? (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center bg-gray-900 text-white">
+                                        <div className="w-16 h-16 rounded-full bg-gray-800 flex items-center justify-center text-3xl mb-4 border border-gray-700">
+                                            {selectedResource.type === 'video' ? '🎬' : '📄'}
+                                        </div>
+                                        <h3 className="text-xl font-bold mb-2">Invalid or Missing Resource Link</h3>
+                                        <p className="text-sm text-gray-400 max-w-md mb-6 leading-relaxed">
+                                            The entered link <code className="bg-gray-800 px-2 py-1 rounded text-rose-400">{selectedResource.url || 'empty'}</code> is not a valid file URL. Please use the <strong className="text-white">"{selectedResource.type === 'video' ? 'Upload Video File' : 'Upload PDF'}"</strong> button in Booth Settings to upload your file properly.
+                                        </p>
+                                    </div>
+                                ) : selectedResource.type === 'video' ? (
+                                    (selectedResource.url.endsWith('.mp4') || 
+                                     selectedResource.url.endsWith('.webm') || 
+                                     selectedResource.url.endsWith('.ogg') || 
+                                     selectedResource.url.includes('/uploads/') || 
+                                     (selectedResource.url.includes('cloudinary.com') && !selectedResource.url.includes('youtube'))) ? (
+                                        <video 
+                                            src={selectedResource.url} 
+                                            controls 
+                                            autoPlay 
+                                            className="absolute inset-0 w-full h-full object-contain bg-black"
+                                        />
+                                    ) : (
+                                        <iframe 
+                                            src={getEmbedUrl(selectedResource.url)}
+                                            className="absolute inset-0 w-full h-full border-0"
+                                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                            allowFullScreen
+                                        />
+                                    )
+                                ) : (
+                                    <embed 
+                                        src={selectedResource.url} 
+                                        type="application/pdf" 
+                                        className="absolute inset-0 w-full h-full border-0 bg-white"
+                                    />
+                                )}
+                            </div>
                         </div>
                     </div>
                 ) : (
@@ -161,46 +202,54 @@ const ResourceCenterModal = ({ onClose, resources, boothId }) => {
                                     {docs.length === 0 ? (
                                         <p className="text-gray-500 italic col-span-2 text-center py-10">No documents available.</p>
                                     ) : (
-                                        docs.map(doc => (
-                                            <div key={doc.id} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-shadow group">
-                                                <div className="w-12 h-12 bg-red-100 text-red-500 rounded-xl flex items-center justify-center shrink-0">
-                                                    <span className="font-extrabold text-xs">PDF</span>
+                                        docs.map(doc => {
+                                            const docName = doc.name || doc.title || 'Untitled Document';
+                                            return (
+                                                <div 
+                                                    key={doc.id} 
+                                                    className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition-all cursor-pointer group"
+                                                    onClick={() => setSelectedResource({ type: 'document', ...doc, title: docName })}
+                                                >
+                                                    <div className="w-12 h-12 bg-red-100 text-red-500 rounded-xl flex items-center justify-center shrink-0">
+                                                        <span className="font-extrabold text-xs">PDF</span>
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h4 className="text-sm font-bold text-gray-800 truncate" title={docName}>{docName}</h4>
+                                                        <p className="text-[10px] text-gray-400 font-semibold truncate">Click to view document preview</p>
+                                                    </div>
+                                                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                                        <button 
+                                                            onClick={() => setSelectedResource({ type: 'document', ...doc, title: docName })}
+                                                            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#6b46c1] hover:bg-purple-50 rounded-full transition-colors cursor-pointer"
+                                                            title="View Preview"
+                                                        >
+                                                            <FiEye />
+                                                        </button>
+                                                        <a 
+                                                            href={getDownloadUrl(doc.url)} 
+                                                            target="_blank" 
+                                                            rel="noopener noreferrer"
+                                                            download
+                                                            className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#6b46c1] hover:bg-purple-50 rounded-full transition-colors cursor-pointer"
+                                                            title="Download PDF"
+                                                        >
+                                                            <FiDownload />
+                                                        </a>
+                                                        <button 
+                                                            onClick={() => toggleBagItem(doc, 'document')}
+                                                            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
+                                                                isInBag(doc.id, 'document') 
+                                                                    ? 'text-emerald-500 hover:text-emerald-600 bg-emerald-50' 
+                                                                    : 'text-gray-400 hover:text-[#6b46c1] hover:bg-purple-50'
+                                                            }`}
+                                                            title={isInBag(doc.id, 'document') ? "Remove from Bag" : "Add to Bag"}
+                                                        >
+                                                            {isInBag(doc.id, 'document') ? <FiFolderMinus /> : <FiFolderPlus />}
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-sm font-bold text-gray-800 truncate" title={doc.title}>{doc.title || 'Untitled Document'}</h4>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button 
-                                                        onClick={() => setSelectedResource({ type: 'document', ...doc })}
-                                                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#6b46c1] hover:bg-purple-50 rounded-full transition-colors cursor-pointer"
-                                                        title="View"
-                                                    >
-                                                        <FiEye />
-                                                    </button>
-                                                    <a 
-                                                        href={getDownloadUrl(doc.url)} 
-                                                        target="_blank" 
-                                                        rel="noopener noreferrer"
-                                                        download
-                                                        className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-[#6b46c1] hover:bg-purple-50 rounded-full transition-colors cursor-pointer"
-                                                        title="Download"
-                                                    >
-                                                        <FiDownload />
-                                                    </a>
-                                                    <button 
-                                                        onClick={() => toggleBagItem(doc, 'document')}
-                                                        className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer ${
-                                                            isInBag(doc.id, 'document') 
-                                                                ? 'text-emerald-500 hover:text-emerald-600 bg-emerald-50' 
-                                                                : 'text-gray-400 hover:text-[#6b46c1] hover:bg-purple-50'
-                                                        }`}
-                                                        title={isInBag(doc.id, 'document') ? "Remove from Bag" : "Add to Bag"}
-                                                    >
-                                                        {isInBag(doc.id, 'document') ? <FiFolderMinus /> : <FiFolderPlus />}
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                     )}
                                 </div>
                             ) : (
@@ -208,29 +257,47 @@ const ResourceCenterModal = ({ onClose, resources, boothId }) => {
                                     {vids.length === 0 ? (
                                         <p className="text-gray-500 italic col-span-2 text-center py-10">No videos available.</p>
                                     ) : (
-                                        vids.map(vid => (
-                                            <div key={vid.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
-                                                <div className="h-32 bg-gray-900 relative flex items-center justify-center group-hover:bg-black transition-colors cursor-pointer"
-                                                     onClick={() => setSelectedResource({ type: 'video', ...vid })}
-                                                >
-                                                    <FiPlay className="w-10 h-10 text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all" />
-                                                </div>
-                                                <div className="p-4 flex items-center justify-between gap-3">
-                                                    <h4 className="text-sm font-bold text-gray-800 truncate flex-1" title={vid.title}>{vid.title || 'Untitled Video'}</h4>
-                                                    <button 
-                                                        onClick={() => toggleBagItem(vid, 'video')}
-                                                        className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer shrink-0 ${
-                                                            isInBag(vid.id, 'video') 
-                                                                ? 'text-emerald-500 hover:text-emerald-600 bg-emerald-50' 
-                                                                : 'text-gray-400 hover:text-[#6b46c1] hover:bg-purple-50'
-                                                        }`}
-                                                        title={isInBag(vid.id, 'video') ? "Remove from Bag" : "Add to Bag"}
+                                        vids.map(vid => {
+                                            const vidName = vid.name || vid.title || 'Untitled Video';
+                                            const hasUrl = vid.url && vid.url.trim() !== '';
+                                            return (
+                                                <div key={vid.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group flex flex-col">
+                                                    <div 
+                                                        className="h-36 bg-gray-900 relative flex items-center justify-center group-hover:bg-black transition-colors cursor-pointer overflow-hidden"
+                                                        onClick={() => setSelectedResource({ type: 'video', ...vid, title: vidName })}
                                                     >
-                                                        {isInBag(vid.id, 'video') ? <FiFolderMinus /> : <FiFolderPlus />}
-                                                    </button>
+                                                        {(vid.thumbnailUrl || vid.imageUrl) ? (
+                                                            <img src={vid.thumbnailUrl || vid.imageUrl} alt={vidName} className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity" />
+                                                        ) : null}
+                                                        <FiPlay className="w-10 h-10 text-white opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all absolute" />
+                                                        {!hasUrl && (
+                                                            <span className="absolute bottom-2 left-2 bg-amber-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded shadow">
+                                                                Upload File Pending
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="p-4 flex items-center justify-between gap-3">
+                                                        <div className="flex-1 min-w-0">
+                                                            <h4 className="text-sm font-bold text-gray-800 truncate" title={vidName}>{vidName}</h4>
+                                                            <p className="text-[10px] text-gray-400 font-semibold truncate">
+                                                                {hasUrl ? 'Click to play video' : 'File upload required in Admin Settings'}
+                                                            </p>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => toggleBagItem(vid, 'video')}
+                                                            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors cursor-pointer shrink-0 ${
+                                                                isInBag(vid.id, 'video') 
+                                                                    ? 'text-emerald-500 hover:text-emerald-600 bg-emerald-50' 
+                                                                    : 'text-gray-400 hover:text-[#6b46c1] hover:bg-purple-50'
+                                                            }`}
+                                                            title={isInBag(vid.id, 'video') ? "Remove from Bag" : "Add to Bag"}
+                                                        >
+                                                            {isInBag(vid.id, 'video') ? <FiFolderMinus /> : <FiFolderPlus />}
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))
+                                            );
+                                        })
                                     )}
                                 </div>
                             )}

@@ -175,12 +175,8 @@ export function LandingPage() {
           <article className="solution-showcase" role="tabpanel">
             <div className="solution-showcase-copy">
               <span className="solution-icon">{getSolutionIcon(activeSolution, 27)}</span>
-              <p className="section-kicker">{solution.eyebrow}</p>
               <h3>{solution.title}</h3>
               <p>{solution.description}</p>
-              <div className="solution-feature-list">
-                {solution.features.map((feature) => <span key={feature}><ShieldCheck size={16} weight="fill" /> {feature}</span>)}
-              </div>
               <Link className="landing-button" to={solution.route}>{solution.action} <ArrowRight size={17} weight="bold" /></Link>
             </div>
             <img className="solution-showcase-image" src={solution.image} alt={solution.imageAlt} />
@@ -189,7 +185,6 @@ export function LandingPage() {
 
       <section className="landing-capabilities" id="capabilities" aria-labelledby="capabilities-heading">
         <div>
-          <p className="section-kicker">Everything connected</p>
           <h2 id="capabilities-heading">Built to keep every audience in the moment.</h2>
         </div>
         <div className="capability-list">

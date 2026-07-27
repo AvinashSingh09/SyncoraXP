@@ -29,7 +29,10 @@ class Config {
 
   static async findOneAndUpdate(conditions, update) {
     const key = conditions.key;
-    const value = update.value;
+    let value = update.value;
+    if (typeof value !== 'string') {
+      value = JSON.stringify(value);
+    }
     const existing = await Config.findOne({ key });
     const now = new Date();
     if (existing) {

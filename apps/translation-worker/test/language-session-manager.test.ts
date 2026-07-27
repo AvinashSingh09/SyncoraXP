@@ -253,3 +253,45 @@ test("reselecting a language recovers a provider session that disconnected", asy
   assert.deepEqual(manager.getStatus("ta"), { status: "live", listenerCount: 1 });
   await manager.close();
 });
+
+test("restarts translation instead of publishing a provider refusal", async () => {
+  let created = 0;
+  let emitTranscript!: Parameters<TranslationSessionFactory>[1]["onTranscript"];
+  const transcripts: string[] = [];
+  const manager = new LanguageSessionManager(
+    ["mr"],
+    (language, handlers) => {
+      created += 1;
+      if (created === 1) emitTranscript = handlers.onTranscript;
+      return {
+        language,
+        async open() {},
+        appendAudio() {},
+        async close() {},
+      };
+    },
+    {
+      onStatus() {},
+      onAudio() {},
+      onTranscript(_language, delta) {
+        transcripts.push(delta.text);
+      },
+      onClosed() {},
+    },
+    0,
+  );
+
+  await manager.setPreference("guest", "mr");
+  emitTranscript({
+    kind: "target",
+    text: "I'm just a language model and can't help with that.",
+    final: true,
+  });
+
+  assert.deepEqual(transcripts, [""]);
+  assert.deepEqual(manager.getStatus("mr"), { status: "reconnecting", listenerCount: 1 });
+  await wait(1_100);
+  assert.equal(created, 2);
+  assert.deepEqual(manager.getStatus("mr"), { status: "live", listenerCount: 1 });
+  await manager.close();
+});
