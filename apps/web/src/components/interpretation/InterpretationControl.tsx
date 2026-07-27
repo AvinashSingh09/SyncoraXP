@@ -364,6 +364,7 @@ export function InterpretationControl({
               : panelMode === "captions";
           if (type.endsWith(".final")) {
             if (visible) setCaption("");
+            if (!text.trim()) return;
             setCaptionHistory((current) => ({
               ...current,
               [historyKey]: [

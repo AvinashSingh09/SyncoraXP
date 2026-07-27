@@ -23,6 +23,8 @@ interface ManagedLanguage {
 const RETRY_BASE_MS = 1_000;
 const RETRY_MAX_MS = 10_000;
 const CAPTION_LISTENER_PREFIX = "captions:";
+const PROVIDER_REFUSAL =
+  /\bi(?:'m| am) (?:just )?(?:a )?(?:large )?language model\b|\bi (?:can(?:not|'t)|am unable to) (?:help|assist)\b/i;
 
 export interface LanguageSessionManagerHooks {
   onStatus(
@@ -156,7 +158,19 @@ export class LanguageSessionManager {
           }
         },
         onTranscript: (delta) => {
-          if (managed.generation === generation) this.hooks.onTranscript(language, delta);
+          if (managed.generation !== generation) return;
+          if (
+            delta.kind === "target" &&
+            delta.final &&
+            PROVIDER_REFUSAL.test(delta.text)
+          ) {
+            this.hooks.onTranscript(language, { ...delta, text: "" });
+            const error = new Error("Translation provider returned an assistant refusal");
+            error.name = "provider_refusal";
+            this.handleSessionFailure(language, managed, generation, session, error);
+            return;
+          }
+          this.hooks.onTranscript(language, delta);
         },
         onError: (error) => {
           this.handleSessionFailure(language, managed, generation, session, error);
