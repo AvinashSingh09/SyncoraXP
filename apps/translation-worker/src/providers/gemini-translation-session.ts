@@ -90,6 +90,7 @@ export class GeminiTranslationSession implements TranslationSession {
         responseModalities: [Modality.AUDIO],
         inputAudioTranscription: {},
         outputAudioTranscription: {},
+        contextWindowCompression: { slidingWindow: {} },
         translationConfig: {
           targetLanguageCode: this.language,
           echoTargetLanguage: this.config.echoTargetLanguage,
