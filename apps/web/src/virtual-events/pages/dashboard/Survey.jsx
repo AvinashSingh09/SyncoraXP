@@ -127,16 +127,45 @@ const Survey = () => {
 
     if (loading) {
         return (
-            <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gray-50 py-20 text-gray-500 text-sm gap-3">
-                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="font-semibold">Loading survey...</span>
+            <div className="absolute inset-0 w-full h-full overflow-hidden text-slate-800">
+                {/* Default main background gradient */}
+                <div className="absolute inset-0 bg-gradient-to-br from-[#ebf4ff] via-[#e0e7ff] to-[#f3e8ff] z-0"></div>
+                <div className="absolute top-20 right-[-10%] w-[45%] h-[45%] bg-[#F472B6]/15 rounded-full blur-[120px] z-0"></div>
+                <div className="absolute top-10 left-[-10%] w-[40%] h-[40%] bg-[#3B82F6]/10 rounded-full blur-[100px] z-0"></div>
+                <div className="absolute bottom-10 right-[-5%] w-[35%] h-[35%] bg-[#F43F5E]/10 rounded-full blur-[90px] z-0"></div>
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-[size:24px_24px] z-0 pointer-events-none"></div>
+                
+                <div className="relative z-10 w-full h-full flex flex-col items-center justify-center py-20 text-gray-500 text-sm gap-3">
+                    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="font-semibold">Loading survey...</span>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="absolute inset-0 w-full h-full flex justify-center items-start overflow-y-auto bg-gray-50 p-8 pt-[128px]">
-            <div className="w-full max-w-3xl">
+        <div className="absolute inset-0 w-full h-full overflow-hidden text-slate-800">
+            {/* Default main background gradient */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ebf4ff] via-[#e0e7ff] to-[#f3e8ff] z-0"></div>
+            {/* Blur Circles */}
+            <div className="absolute top-20 right-[-10%] w-[45%] h-[45%] bg-[#F472B6]/15 rounded-full blur-[120px] z-0"></div>
+            <div className="absolute top-10 left-[-10%] w-[40%] h-[40%] bg-[#3B82F6]/10 rounded-full blur-[100px] z-0"></div>
+            <div className="absolute bottom-10 right-[-5%] w-[35%] h-[35%] bg-[#F43F5E]/10 rounded-full blur-[90px] z-0"></div>
+            
+            {/* Grid pattern overlay */}
+            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-[size:24px_24px] z-0 pointer-events-none"></div>
+            
+            {/* Floating Sparkles and Stars */}
+            <svg className="absolute inset-0 w-full h-full opacity-60 z-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M180 160 L182 165 L187 167 L182 169 L180 174 L178 169 L173 167 L178 165 Z" fill="#60A5FA" />
+                <path d="M340 230 L341 234 L345 235 L341 236 L340 240 L339 236 L335 235 L339 234 Z" fill="#FDBA74" />
+                <path d="M680 180 L681 184 L685 185 L681 186 L680 190 L679 186 L675 185 L679 184 Z" fill="#F9A8D4" />
+                <circle cx="220" cy="280" r="2" fill="#93C5FD" />
+                <circle cx="620" cy="140" r="2.5" fill="#FCA5A5" />
+            </svg>
+
+            <div className="w-full h-full flex justify-center items-start overflow-y-auto relative z-10 p-8 pt-[128px]">
+                <div className="w-full max-w-3xl">
                 {!surveyActive && !isSubmitted ? (
                     <div className="bg-white rounded-3xl shadow-xl p-10 border border-gray-150 text-center space-y-6 max-w-xl mx-auto mt-10">
                         <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto border border-rose-100 shadow-sm animate-pulse">
@@ -356,6 +385,7 @@ const Survey = () => {
                     </div>
                 </div>
             )}
+        </div>
         </div>
     );
 };

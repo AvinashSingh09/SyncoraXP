@@ -259,7 +259,7 @@ const AdminLobby = () => {
                                     setSelectedPointId(null);
                                 }}
                             >
-                                {!poster.imageUrl && <div className="w-full h-full flex items-center justify-center text-sm text-gray-500 font-bold">Poster</div>}
+                                {!poster.imageUrl && <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-bold text-center px-1">POSTER ({poster.width}% &times; {poster.height}%)</div>}
                             </div>
                         ))}
 
@@ -298,6 +298,21 @@ const AdminLobby = () => {
                                             backgroundColor: point.color || '#ef4444' 
                                         }}
                                     ></span>
+                                    {/* Delete Button */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setLobbyPoints(prev => prev.filter(p => p.id !== point.id));
+                                            if (selectedPointId === point.id) {
+                                                setSelectedPointId(null);
+                                            }
+                                        }}
+                                        className="absolute -top-3 -right-3 w-4 h-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-extrabold text-[8px] flex items-center justify-center border border-white shadow-lg z-40 transition-transform hover:scale-125 cursor-pointer"
+                                        title="Delete point"
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
 
 
@@ -450,51 +465,63 @@ const AdminLobby = () => {
                             
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Left (%)</label>
+                                    <label className="block text-sm font-semibold text-gray-500 mb-1">X Position ({selectedPoster.left}%)</label>
                                     <input
-                                        type="number"
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        step="0.5"
                                         value={selectedPoster.left}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
                                             setLobbyPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, left: val } : p));
                                         }}
-                                        className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm text-gray-800"
+                                        className="w-full cursor-pointer accent-[#295ce8]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Top (%)</label>
+                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Y Position ({selectedPoster.top}%)</label>
                                     <input
-                                        type="number"
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        step="0.5"
                                         value={selectedPoster.top}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
                                             setLobbyPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, top: val } : p));
                                         }}
-                                        className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm text-gray-800"
+                                        className="w-full cursor-pointer accent-[#295ce8]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Width (%)</label>
+                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Width ({selectedPoster.width}%)</label>
                                     <input
-                                        type="number"
+                                        type="range"
+                                        min="1"
+                                        max="100"
+                                        step="0.5"
                                         value={selectedPoster.width}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
                                             setLobbyPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, width: val } : p));
                                         }}
-                                        className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm text-gray-800"
+                                        className="w-full cursor-pointer accent-[#295ce8]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Height (%)</label>
+                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Height ({selectedPoster.height}%)</label>
                                     <input
-                                        type="number"
+                                        type="range"
+                                        min="1"
+                                        max="100"
+                                        step="0.5"
                                         value={selectedPoster.height}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
                                             setLobbyPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, height: val } : p));
                                         }}
-                                        className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm text-gray-800"
+                                        className="w-full cursor-pointer accent-[#295ce8]"
                                     />
                                 </div>
                             </div>

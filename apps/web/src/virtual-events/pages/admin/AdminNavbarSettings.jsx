@@ -21,7 +21,10 @@ const DEFAULT_NAVBAR_CONFIG = {
     'round-tables': true,
     'meeting-room': true,
     games: true,
-    survey: true
+    survey: true,
+    logoUrl: '',
+    logoWidth: 150,
+    logoHeight: 40
 };
 
 const AdminNavbarSettings = () => {
@@ -52,6 +55,34 @@ const AdminNavbarSettings = () => {
             ...prev,
             [key]: !prev[key]
         }));
+    };
+
+    const handleLogoUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64Data = reader.result;
+            setSaving(true);
+            setStatusMessage({ type: 'info', text: 'Uploading logo image...' });
+            try {
+                const response = await configService.uploadImage(base64Data);
+                if (response.data && response.data.success) {
+                    setNavConfig(prev => ({ ...prev, logoUrl: response.data.url }));
+                    setStatusMessage({ type: 'success', text: 'Logo uploaded successfully!' });
+                    setTimeout(() => setStatusMessage(null), 3000);
+                } else {
+                    setStatusMessage({ type: 'error', text: 'Logo upload failed.' });
+                }
+            } catch (err) {
+                console.error('Upload error:', err);
+                setStatusMessage({ type: 'error', text: 'An error occurred during upload.' });
+            } finally {
+                setSaving(false);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     const handleSave = async () => {
@@ -155,6 +186,90 @@ const AdminNavbarSettings = () => {
                         </div>
                     );
                 })}
+            </div>
+
+            {/* Logo Settings */}
+            <div className="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-sm mt-6">
+                <div className="mb-4">
+                    <h2 className="text-lg font-black text-gray-900 tracking-tight">Custom Logo Settings</h2>
+                    <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                        Replace the default VirtualEvent text and icon with your own logo.
+                    </p>
+                </div>
+
+                <div className="space-y-6">
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-600 mb-1.5">Logo Image URL</label>
+                        <div className="flex items-center gap-3">
+                            <input 
+                                type="text" 
+                                value={navConfig.logoUrl || ''} 
+                                onChange={(e) => setNavConfig(prev => ({ ...prev, logoUrl: e.target.value }))}
+                                className="flex-1 bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                placeholder="https://example.com/logo.png"
+                            />
+                            <input 
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLogoUpload}
+                                className="hidden"
+                                id="nav-logo-upload"
+                            />
+                            <label 
+                                htmlFor="nav-logo-upload"
+                                className="bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 font-bold px-4 py-2.5 rounded-lg text-sm cursor-pointer whitespace-nowrap transition-colors"
+                            >
+                                Upload Logo
+                            </label>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                Logo Width ({navConfig.logoWidth || 150}px)
+                            </label>
+                            <input 
+                                type="range"
+                                min="30"
+                                max="300"
+                                step="1"
+                                value={navConfig.logoWidth || 150}
+                                onChange={(e) => setNavConfig(prev => ({ ...prev, logoWidth: Number(e.target.value) }))}
+                                className="w-full cursor-pointer accent-blue-600"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                Logo Height ({navConfig.logoHeight || 40}px)
+                            </label>
+                            <input 
+                                type="range"
+                                min="20"
+                                max="100"
+                                step="1"
+                                value={navConfig.logoHeight || 40}
+                                onChange={(e) => setNavConfig(prev => ({ ...prev, logoHeight: Number(e.target.value) }))}
+                                className="w-full cursor-pointer accent-blue-600"
+                            />
+                        </div>
+                    </div>
+
+                    {/* Logo Preview */}
+                    {navConfig.logoUrl && (
+                        <div className="mt-4 p-4 border border-gray-200 rounded-xl bg-gray-50 flex items-center justify-center min-h-[100px] overflow-hidden">
+                            <img 
+                                src={navConfig.logoUrl} 
+                                alt="Custom Logo Preview"
+                                style={{
+                                    width: `${navConfig.logoWidth || 150}px`,
+                                    height: `${navConfig.logoHeight || 40}px`,
+                                    objectFit: 'contain'
+                                }}
+                            />
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );

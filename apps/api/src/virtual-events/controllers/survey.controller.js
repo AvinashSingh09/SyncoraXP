@@ -179,10 +179,25 @@ exports.submitSurvey = async (req, res, next) => {
 // GET /api/survey/ (Get all submissions)
 exports.getSurveys = async (req, res, next) => {
     try {
-        const surveys = await Survey.find()
-            .populate('user', 'firstName lastName email designation company')
-            .populate('answers.questionId')
-            .sort({ createdAt: -1 });
+        const { query } = require('../utils/db');
+        const { rows } = await query(`
+            SELECT 
+                s._id, s.answers, s.created_at as "createdAt", s.updated_at as "updatedAt",
+                json_build_object('_id', u._id, 'firstName', u.first_name, 'lastName', u.last_name, 'email', u.email, 'designation', u.designation, 'company', u.company) as user
+            FROM ve_surveys s
+            LEFT JOIN ve_users u ON s.user_id = u._id
+            ORDER BY s.created_at DESC
+        `);
+        
+        const { rows: questions } = await query('SELECT _id, text, type, options FROM ve_survey_questions');
+        const qMap = {};
+        questions.forEach(q => qMap[q._id] = q);
+
+        const surveys = rows.map(r => {
+            let answers = typeof r.answers === 'string' ? JSON.parse(r.answers) : (r.answers || []);
+            answers = answers.map(a => ({ ...a, questionId: qMap[a.questionId] || a.questionId }));
+            return { ...r, answers };
+        });
 
         res.status(200).json({
             success: true,

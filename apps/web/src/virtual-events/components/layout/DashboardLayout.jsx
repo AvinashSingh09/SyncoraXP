@@ -361,18 +361,32 @@ const DashboardLayout = () => {
                 )}
                 {/* Logo Area */}
                 <div className="flex items-center gap-3 text-[#295ce8] shrink-0">
-                    <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#295ce8] to-[#6366f1] shadow-lg shadow-blue-200">
-                        <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="currentColor">
-                            <path d="M12 3L3 7.5L12 12L21 7.5L12 3Z" />
-                            <path d="M3 12L12 16.5L21 12" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.9" />
-                            <path d="M3 16.5L12 21L21 16.5" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.6" />
-                        </svg>
-                        <span className="absolute -top-1.5 -right-1.5 text-[10px]">✨</span>
-                    </div>
-                    <div className="hidden md:flex flex-col leading-tight">
-                        <span className="text-[17px] font-black text-gray-900 tracking-tight">Virtual<span className="text-[#295ce8]">Event</span></span>
-                        <span className="text-[9px] font-semibold text-gray-400 tracking-widest uppercase">Platform</span>
-                    </div>
+                    {navbarConfig?.logoUrl ? (
+                        <img 
+                            src={navbarConfig.logoUrl} 
+                            alt="Event Logo"
+                            style={{
+                                width: `${navbarConfig.logoWidth || 150}px`,
+                                height: `${navbarConfig.logoHeight || 40}px`,
+                                objectFit: 'contain'
+                            }}
+                        />
+                    ) : (
+                        <>
+                            <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#295ce8] to-[#6366f1] shadow-lg shadow-blue-200">
+                                <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="currentColor">
+                                    <path d="M12 3L3 7.5L12 12L21 7.5L12 3Z" />
+                                    <path d="M3 12L12 16.5L21 12" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.9" />
+                                    <path d="M3 16.5L12 21L21 16.5" stroke="white" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.6" />
+                                </svg>
+                                <span className="absolute -top-1.5 -right-1.5 text-[10px]">✨</span>
+                            </div>
+                            <div className="hidden md:flex flex-col leading-tight">
+                                <span className="text-[17px] font-black text-gray-900 tracking-tight">Virtual<span className="text-[#295ce8]">Event</span></span>
+                                <span className="text-[9px] font-semibold text-gray-400 tracking-widest uppercase">Platform</span>
+                            </div>
+                        </>
+                    )}
                 </div>
 
                 {/* Divider */}
@@ -380,9 +394,16 @@ const DashboardLayout = () => {
 
                 {/* Main Navigation */}
                 <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar py-3">
+                    <div 
+                        className="flex items-center gap-0.5 overflow-x-auto hide-scrollbar py-3"
+                        onWheel={(e) => {
+                            if (e.currentTarget) {
+                                e.currentTarget.scrollLeft += e.deltaY;
+                            }
+                        }}
+                    >
                         {/* Left edge spacer */}
-                        <div className="w-4 shrink-0" />
+                        <div className="w-2 shrink-0" />
                         {navTabs.map((tab) => {
                             const Icon = tab.icon;
                             return (
@@ -390,19 +411,19 @@ const DashboardLayout = () => {
                                     key={tab.name}
                                     to={tab.path}
                                     className={({ isActive }) =>
-                                        `flex flex-col items-center justify-center min-w-[82px] h-[56px] gap-1.5 px-2 transition-all duration-200 rounded-2xl shrink-0 group outline-none focus:outline-none ${isActive
+                                        `flex flex-col items-center justify-center min-w-[54px] h-[52px] gap-1 px-2 transition-all duration-200 rounded-xl shrink-0 group outline-none focus:outline-none ${isActive
                                             ? 'bg-[#eef2ff] text-[#295ce8]'
                                             : 'text-gray-400 hover:text-[#295ce8] hover:bg-[#f0f5ff]'
                                         }`
                                     }
                                 >
-                                    <Icon className="w-[20px] h-[20px] shrink-0 transition-transform duration-200 group-hover:scale-110" />
-                                    <span className="text-[10.5px] font-bold whitespace-nowrap">{tab.name}</span>
+                                    <Icon className="w-[18px] h-[18px] shrink-0 transition-transform duration-200 group-hover:scale-110" />
+                                    <span className="text-[10px] font-bold whitespace-nowrap">{tab.name}</span>
                                 </NavLink>
                             );
                         })}
                         {/* Right edge spacer */}
-                        <div className="w-4 shrink-0" />
+                        <div className="w-2 shrink-0" />
                     </div>
                 </div>
 

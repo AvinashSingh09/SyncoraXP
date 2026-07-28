@@ -528,11 +528,12 @@ const Auditorium = () => {
                             </div>
                             {/* Ask Area */}
                             <form onSubmit={handleAskQuestion} className="p-3 bg-[#f5f7fb] border-b border-gray-100 flex gap-2 items-center">
-                                <textarea
+                                <input
+                                    type="text"
                                     placeholder="Type your question here..."
                                     value={newQuestionText}
                                     onChange={(e) => setNewQuestionText(e.target.value)}
-                                    className="flex-1 bg-white text-xs text-gray-800 rounded p-2 focus:outline-none focus:ring-1 focus:ring-blue-400 border border-gray-200 resize-none h-12"
+                                    className="flex-1 bg-white text-xs text-gray-800 rounded p-2 focus:outline-none focus:ring-1 focus:ring-blue-400 border border-gray-200 h-10"
                                 />
                                 <button
                                     type="submit"

@@ -245,7 +245,7 @@ const AdminRoundTables = () => {
                                 }}
                             >
                                 {!poster.imageUrl && (
-                                    <span className="text-white text-sm font-bold opacity-50 text-center px-1">Poster</span>
+                                    <span className="text-white text-xs font-bold opacity-50 text-center px-1">POSTER ({poster.width}% &times; {poster.height}%)</span>
                                 )}
                             </div>
                         ))}
@@ -285,6 +285,23 @@ const AdminRoundTables = () => {
                                             backgroundColor: point.color || '#3b82f6' 
                                         }}
                                     ></span>
+
+                                    {/* Unconditional Delete Button directly on the dot */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setRoundTablesPoints(prev => prev.filter(p => p.id !== point.id));
+                                            if (selectedRtItemId === point.id) {
+                                                setSelectedRtItemId(null);
+                                                setSelectedRtItemType(null);
+                                            }
+                                        }}
+                                        className="absolute -top-3 -right-3 w-4 h-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-extrabold text-[8px] flex items-center justify-center border border-white shadow-lg z-30 transition-transform hover:scale-125 cursor-pointer"
+                                        title="Delete point"
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
 
                                 {/* Text Bubble & Stem (Only show when selected to avoid map clutter) */}
@@ -296,7 +313,7 @@ const AdminRoundTables = () => {
                                              setSelectedRtItemType('point');
                                          }}
                                     >
-                                        <div className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-400 max-w-[150px] text-center">
+                                        <div className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-400 max-w-[150px] text-center relative">
                                             <p className="text-sm font-semibold leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
                                                 {point.text || 'New Point'}
                                             </p>
@@ -628,51 +645,63 @@ const AdminRoundTables = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-600 mb-1">X Position (%)</label>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">X Position ({selectedRtPoster.left}%)</label>
                                 <input 
-                                    type="number"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    step="0.5"
                                     value={selectedRtPoster.left}
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setRoundTablesPosters(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, left: val } : p));
                                     }}
-                                    className="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm"
+                                    className="w-full cursor-pointer accent-indigo-600"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-600 mb-1">Y Position (%)</label>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">Y Position ({selectedRtPoster.top}%)</label>
                                 <input 
-                                    type="number"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    step="0.5"
                                     value={selectedRtPoster.top}
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setRoundTablesPosters(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, top: val } : p));
                                     }}
-                                    className="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm"
+                                    className="w-full cursor-pointer accent-indigo-600"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-600 mb-1">Width (%)</label>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">Width ({selectedRtPoster.width}%)</label>
                                 <input 
-                                    type="number"
+                                    type="range"
+                                    min="1"
+                                    max="100"
+                                    step="0.5"
                                     value={selectedRtPoster.width}
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setRoundTablesPosters(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, width: val } : p));
                                     }}
-                                    className="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm"
+                                    className="w-full cursor-pointer accent-indigo-600"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-600 mb-1">Height (%)</label>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">Height ({selectedRtPoster.height}%)</label>
                                 <input 
-                                    type="number"
+                                    type="range"
+                                    min="1"
+                                    max="100"
+                                    step="0.5"
                                     value={selectedRtPoster.height}
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setRoundTablesPosters(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, height: val } : p));
                                     }}
-                                    className="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm"
+                                    className="w-full cursor-pointer accent-indigo-600"
                                 />
                             </div>
                         </div>
