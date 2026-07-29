@@ -1060,7 +1060,7 @@ export function VirtualEventsPage() {
                 {activeTabRow1 === 2 && (
                   <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "12px", background: "#f8fafc", padding: "16px", borderRadius: "14px", border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
                     {/* 1-on-1 Chat Header */}
-                    <div style={{ display: "flex", alignItems: "center", justifyBetween: "space-between", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                         <div style={{ position: "relative" }}>
                           <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?fit=crop&w=80&h=80&q=80" style={{ width: "34px", height: "34px", borderRadius: "50%" }} alt="Maya S." />
