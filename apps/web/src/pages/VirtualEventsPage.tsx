@@ -35,11 +35,70 @@ const capabilities = [
 ];
 
 const brandLogoFiles = [
-  "1.jfif", "2.jfif", "3.webp", "4.jfif", "5.png", "6.png", "7.png", "8.png",
-  "9.png", "10.png", "11.png", "12.png", "13.jpg", "14.png", "15.jfif", "16.avif", "16.jpg",
-  "17.png", "18.png", "19.jfif", "20.png", "21.avif", "22.png", "23.png", "24.png",
-  "25.svg", "26.png", "27.png", "28.png", "29.png", "30.png", "31.png", "32.png",
-  "33-removebg-preview.png", "35.png", "36.png", "37.jfif"
+  "ChatGPT Image Jul 29, 2026, 11_51_54 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_52_09 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_53_24 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_53_32 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_53_39 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_53_50 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_54_01 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_54_09 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_54_18 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_54_25 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_54_32 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_54_39 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_54_48 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_54_58 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_55_05 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_55_12 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_55_19 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_55_44 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_55_51 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_55_57 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_56_47 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_56_53 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_57_00 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_57_07 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_57_14 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_57_20 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_57_51 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_57_59 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_58_05 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_58_11 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_58_20 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_58_27 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_58_32 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_58_39 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_58_46 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_58_53 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_59_00 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_59_06 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_59_12 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_59_17 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_59_25 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_59_31 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_59_39 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_59_45 AM.png",
+  "ChatGPT Image Jul 29, 2026, 11_59_55 AM.png",
+  "ChatGPT Image Jul 29, 2026, 12_00_03 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_00_12 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_00_19 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_00_40 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_00_46 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_00_53 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_00_59 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_01_06 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_01_13 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_01_20 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_01_31 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_01_37 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_01_44 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_02_02 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_02_11 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_02_19 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_02_25 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_02_31 PM.png",
+  "ChatGPT Image Jul 29, 2026, 12_02_40 PM.png"
 ];
 
 const COUNTRY_CODES = [
@@ -315,13 +374,9 @@ export function VirtualEventsPage() {
     <main className="landing-page virtual-events-page">
       <MarketingHeader />
       <div className="landing-theme-pink-dots">
-        <section className="virtual-events-hero" id="platform" aria-labelledby="virtual-events-title">
+        <section className="virtual-events-hero" id="platform" aria-labelledby="virtual-events-title" style={{ paddingBottom: "140px" }}>
           <h1 id="virtual-events-title">Virtual events that<br />feel truly together.</h1>
           <p className="virtual-events-intro">Create branded live experiences that bring every session, conversation, and connection into one seamless place.</p>
-          <div className="virtual-events-actions">
-            <Link className="virtual-events-primary" to="/virtual-events-platform/app/login">Explore the platform <ArrowRight size={18} weight="bold" /></Link>
-            <a className="virtual-events-watch" href="#capabilities"><PlayCircle size={22} weight="fill" /> Watch overview</a>
-          </div>
 
           <section className="event-stage" id="experience" aria-label="A live SyncoraXP virtual event experience">
             <article className="event-stage-keynote">
@@ -393,7 +448,7 @@ export function VirtualEventsPage() {
                   {brandLogoFiles.map((file, i) => (
                     <img
                       key={`ve-1-${i}`}
-                      src={`/brands/${file}`}
+                      src={`/Portfolio logo/${file}`}
                       alt={`Brand Logo ${i + 1}`}
                       className="brand-normal-logo-img"
                       loading="eager"
@@ -405,7 +460,7 @@ export function VirtualEventsPage() {
                   {brandLogoFiles.map((file, i) => (
                     <img
                       key={`ve-2-${i}`}
-                      src={`/brands/${file}`}
+                      src={`/Portfolio logo/${file}`}
                       alt={`Brand Logo ${i + 1}`}
                       className="brand-normal-logo-img"
                       loading="eager"
@@ -1384,10 +1439,6 @@ export function VirtualEventsPage() {
               {
                 q: "How customizable is SyncoraXP's virtual event platform?",
                 a: "Highly customizable! Event hosts can upload dynamic banners, configure custom booth names and button icons, pick custom brand layouts, and customize color schemes.",
-              },
-              {
-                q: "Can I integrate third-party tools with my virtual event?",
-                a: "Yes. We offer robust API endpoints and integrations with leading CRM platforms, marketing tools, live streaming providers, and web analytics tools.",
               },
               {
                 q: "How does SyncoraXP ensure audience engagement during virtual events?",
