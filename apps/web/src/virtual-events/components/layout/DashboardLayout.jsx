@@ -120,7 +120,7 @@ const DashboardLayout = () => {
     React.useEffect(() => {
         fetchLayoutConfigs();
     }, []);
-
+    //
     const fetchLeaderboard = async () => {
         setLoadingLeaderboard(true);
         try {
@@ -383,11 +383,9 @@ const DashboardLayout = () => {
             <div
                 onMouseEnter={() => !isStickyMode && setIsNavHovered(true)}
                 onMouseLeave={() => !isStickyMode && setIsNavHovered(false)}
-                className={`fixed top-0 left-1/2 -translate-x-1/2 ${
-                    isStickyMode ? 'w-full max-w-full rounded-none border-x-0' : 'w-[98%] max-w-[1720px] rounded-b-[1.75rem]'
-                } h-[80px] bg-white/95 backdrop-blur-2xl shadow-[0_12px_48px_rgba(41,92,232,0.12),0_4px_12px_rgba(0,0,0,0.06)] border-b border-blue-100/60 flex items-center justify-between px-3 md:px-6 z-50 transition-all duration-300 ease-in-out ${
-                    isNavVisible ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%-8px)] opacity-40 hover:opacity-100 hover:translate-y-0'
-                }`}
+                className={`fixed top-0 left-1/2 -translate-x-1/2 ${isStickyMode ? 'w-full max-w-full rounded-none border-x-0' : 'w-[98%] max-w-[1720px] rounded-b-[1.75rem]'
+                    } h-[80px] bg-white/95 backdrop-blur-2xl shadow-[0_12px_48px_rgba(41,92,232,0.12),0_4px_12px_rgba(0,0,0,0.06)] border-b border-blue-100/60 flex items-center justify-between px-3 md:px-6 z-50 transition-all duration-300 ease-in-out ${isNavVisible ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%-8px)] opacity-40 hover:opacity-100 hover:translate-y-0'
+                    }`}
             >
                 {!isNavVisible && (
                     <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-10 h-1 bg-blue-500/50 rounded-full animate-pulse pointer-events-none" />
@@ -396,8 +394,8 @@ const DashboardLayout = () => {
                 <div className="flex items-center gap-3 text-[#295ce8] shrink-0">
                     {navbarConfig?.logoUrl ? (
                         <div className="flex items-center gap-2.5">
-                            <img 
-                                src={navbarConfig.logoUrl} 
+                            <img
+                                src={navbarConfig.logoUrl}
                                 alt="Event Logo"
                                 style={{
                                     width: `${navbarConfig.logoWidth || 150}px`,
@@ -406,7 +404,7 @@ const DashboardLayout = () => {
                                 }}
                             />
                             {navbarConfig.logoText && (
-                                <span 
+                                <span
                                     className="font-black text-gray-900 tracking-tight whitespace-nowrap"
                                     style={{ fontSize: `${navbarConfig.logoFontSize || 18}px` }}
                                 >
@@ -437,7 +435,7 @@ const DashboardLayout = () => {
 
                 {/* Main Navigation */}
                 <div className="flex-1 min-w-0 overflow-hidden">
-                    <div 
+                    <div
                         className="flex items-center justify-start xl:justify-center gap-1 overflow-x-auto hide-scrollbar py-2"
                         onWheel={(e) => {
                             if (e.currentTarget) {
