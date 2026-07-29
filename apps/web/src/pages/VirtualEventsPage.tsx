@@ -162,6 +162,9 @@ const virtualSpaces = [
   { name: "Nutanix Stall", image: "/landing-virtualevent/Stall NUTANIX_02.jpg.jpeg" },
   { name: "AWS Stall 2", image: "/landing-virtualevent/AWS STALL_02.jpg.jpeg" },
   { name: "AWS Stall 1", image: "/landing-virtualevent/aws1.jpg.jpeg" },
+  { name: "Agenda & Login View", image: "/landing-virtualevent/agenda_login.jpg" },
+  { name: "Event Space Backdrop", image: "/landing-virtualevent/back.jpg" },
+  { name: "User Flow & Navigation", image: "/landing-virtualevent/flow.jpg" },
 ];
 
 function EventPhoto({ className, alt, src = eventArtwork }: { className: string; alt: string; src?: string }) {
