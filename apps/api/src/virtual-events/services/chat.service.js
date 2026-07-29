@@ -115,7 +115,7 @@ exports.createMessage = async (senderId, room, text, replyTo, forwarded) => {
 };
 
 exports.getUsersWithStatus = async (currentUserId, onlineUsers) => {
-    const users = await User.find({ _id: { $ne: currentUserId } }, 'firstName lastName designation company email');
+    const users = (await User.find({}, 'firstName lastName designation company email')).filter(user => user._id.toString() !== currentUserId.toString());
     const myId = currentUserId.toString();
 
     const usersWithStatus = await Promise.all(users.map(async user => {

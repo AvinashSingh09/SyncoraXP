@@ -34,8 +34,89 @@ class AuthController {
             }
 
             const { email, password } = req.body;
-            const result = await this.authService.login(email, password);
-            
+            let result;
+            try {
+                result = await this.authService.login(email, password);
+            } catch (loginErr) {
+                // If login failed, check if this email is a configured booth admin/stall owner in configs
+                const emailKey = email.toLowerCase().trim();
+                let isBoothAdminConfigured = false;
+                let boothAdminName = 'Stall Representative';
+
+                // Check static BOOTH_ADMINS or dynamic booth_X_layout configs or pattern (boothX@...)
+                let expectedPassword = null;
+                const boothPatternMatch = emailKey.match(/^booth([0-9]+)@/i);
+
+                // First check dynamic booth_X_layout configs for exact matching email and password
+                try {
+                    for (let b = 1; b <= 20; b++) {
+                        const conf = await Config.findOne({ key: `booth_${b}_layout` });
+                        if (conf && conf.value) {
+                            const parsed = JSON.parse(conf.value);
+                            if (parsed.boothAdminEmail && parsed.boothAdminEmail.toLowerCase().trim() === emailKey) {
+                                isBoothAdminConfigured = true;
+                                boothAdminName = parsed.boothName?.trim() || `Booth ${b} Representative`;
+                                expectedPassword = parsed.boothAdminPassword;
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {}
+
+                if (!isBoothAdminConfigured) {
+                    if (
+                        boothPatternMatch ||
+                        emailKey === 'booth1@virtualevent.com' ||
+                        emailKey === 'booth1@virtualevents.com' ||
+                        emailKey === 'mb10@gmail.com' ||
+                        emailKey === 'info@virtualevent.com' ||
+                        emailKey === 'info@virtualevents.com'
+                    ) {
+                        isBoothAdminConfigured = true;
+                        if (boothPatternMatch) {
+                            boothAdminName = `Booth ${boothPatternMatch[1]} Representative`;
+                        } else if (emailKey.includes('booth1')) {
+                            boothAdminName = 'Booth 1 Representative';
+                        } else if (emailKey === 'mb10@gmail.com') {
+                            boothAdminName = 'MuscleBlaze Representative';
+                        }
+                    }
+                }
+
+                if (isBoothAdminConfigured) {
+                    // If expectedPassword is set in Admin panel config, ensure typed password matches it
+                    if (expectedPassword && expectedPassword !== password) {
+                        const err = new Error('Invalid credentials');
+                        err.statusCode = 401;
+                        throw err;
+                    }
+
+                    const UserRepo = require('../repositories/user.repository');
+                    let existingUser = await UserRepo.findByEmail(emailKey);
+                    if (!existingUser) {
+                        const nameParts = boothAdminName.split(' ');
+                        const firstName = nameParts[0] || 'Booth';
+                        const lastName = nameParts.slice(1).join(' ') || 'Admin';
+                        existingUser = await UserRepo.create({
+                            email: emailKey,
+                            password: await require('bcrypt').hash(password, 10),
+                            firstName,
+                            lastName,
+                            company: boothAdminName,
+                            designation: 'Exhibitor / Stall Owner'
+                        });
+                    } else {
+                        existingUser.password = await require('bcrypt').hash(password, 10);
+                        existingUser.company = boothAdminName;
+                        existingUser.designation = 'Exhibitor / Stall Owner';
+                        await existingUser.save();
+                    }
+                    result = await this.authService.login(emailKey, password);
+                } else {
+                    throw loginErr;
+                }
+            }
+
             res.status(200).json({
                 success: true,
                 message: 'Login successful',

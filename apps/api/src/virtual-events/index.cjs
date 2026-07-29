@@ -2,6 +2,7 @@ const { createReadStream, existsSync, mkdirSync, writeFileSync } = require('node
 const { basename, extname, join } = require('node:path');
 const jwt = require('./utils/jwt.utils');
 const authService = require('./services/auth.service');
+const authController = require('./controllers/auth.controller');
 const chat = require('./controllers/chat.controller');
 const chatService = require('./services/chat.service');
 const qna = require('./controllers/qna.controller');
@@ -10,6 +11,7 @@ const quiz = require('./controllers/quiz.controller');
 const meeting = require('./controllers/meeting.controller');
 const survey = require('./controllers/survey.controller');
 const Config = require('./models/config.model');
+const User = require('./models/user.model');
 const Session = require('./models/session.model');
 const Lead = require('./models/lead.model');
 const PhotoboothSession = require('./models/photoboothSession.model');
@@ -111,17 +113,8 @@ async function registerVirtualEvents(app) {
       return reply.code(error.statusCode || 500).send(errorPayload(error));
     }
   });
-  app.post('/ve-api/auth/login', async (request, reply) => {
-    const { email, password } = request.body || {};
-    if (!email || !/^\S+@\S+\.\S+$/.test(email) || !password) return reply.code(400).send({ errors: [{ msg: 'Valid email and password are required' }] });
-    try {
-      const data = await authService.login(email, password);
-      return reply.send({ success: true, message: 'Login successful', data });
-    } catch (error) {
-      return reply.code(error.statusCode || 500).send(errorPayload(error));
-    }
-  });
-  const authController = require('./controllers/auth.controller');
+  register(app, 'POST', '/auth/login', authController.login);
+
   register(app, 'GET', '/auth/users', authController.getUsersStats, { auth: true });
   register(app, 'POST', '/auth/visit-booth/:boothId', authController.visitBooth, { auth: true });
   register(app, 'GET', '/auth/leaderboard', authController.getLeaderboard, { auth: true });
@@ -167,7 +160,23 @@ async function registerVirtualEvents(app) {
     res.json({ success: true, configs: Object.fromEntries(keyList.map((key) => [key, configs.find((item) => item.key === key)?.value ?? null])) });
   });
   register(app, 'GET', '/config/:key', async (req, res) => res.json({ success: true, value: (await Config.findOne({ key: req.params.key }))?.value ?? null }));
-  register(app, 'POST', '/config', async (req, res) => res.json({ success: true, data: await Config.findOneAndUpdate({ key: req.body.key }, { value: req.body.value }, { new: true, upsert: true }) }));
+  register(app, 'POST', '/config', async (req, res) => {
+    const data = await Config.findOneAndUpdate({ key: req.body.key }, { value: req.body.value }, { new: true, upsert: true });
+    if (/^booth_[0-9]+_layout$/.test(req.body.key)) {
+      const boothConfig = typeof req.body.value === 'string' ? JSON.parse(req.body.value) : req.body.value;
+      const boothName = boothConfig.boothName?.trim();
+      const boothEmail = boothConfig.boothAdminEmail?.toLowerCase().trim();
+      if (boothName && boothEmail) {
+        const boothUser = await User.findOne({ email: boothEmail });
+        if (boothUser) {
+          boothUser.company = boothName;
+          boothUser.designation = 'Exhibitor / Stall Owner';
+          await boothUser.save();
+        }
+      }
+    }
+    res.json({ success: true, data });
+  });
   register(app, 'POST', '/config/upload', async (req, res) => {
     const base64Data = req.body.image;
     if (!base64Data) return res.status(400).json({ success: false, message: 'Image data is required' });

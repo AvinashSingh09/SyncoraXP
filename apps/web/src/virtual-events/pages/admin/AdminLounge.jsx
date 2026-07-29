@@ -159,7 +159,7 @@ const AdminLounge = () => {
                         <img 
                             src={loungeBgImage} 
                             alt="Lounge Preview"
-                            className="w-full h-auto pointer-events-none block"
+                            className="w-full h-full object-cover pointer-events-none block"
                         />
                         {/* Map Pins */}
                         {loungePoints.map(point => (
@@ -171,16 +171,30 @@ const AdminLounge = () => {
                                     left: `${point.left}%`
                                 }}
                             >
-                                {/* Small Red Dot */}
-                                <div className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex h-3 w-3 items-center justify-center pointer-events-auto cursor-pointer z-20"
-                                     onClick={(e) => {
-                                         e.stopPropagation();
-                                         setSelectedPointId(point.id);
-                                     }}>
-                                    {selectedPointId === point.id && (
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                    )}
-                                    <span className={`relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white ${selectedPointId === point.id ? 'ring-2 ring-red-400' : ''}`}></span>
+                                {/* Dot */}
+                                <div 
+                                    className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-auto cursor-pointer z-20"
+                                    style={{
+                                        width: `${point.size || 24}px`,
+                                        height: `${point.size || 24}px`
+                                    }}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedPointId(point.id);
+                                    }}
+                                >
+                                    <span 
+                                        className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                                        style={{ backgroundColor: point.color || '#f87171' }}
+                                    ></span>
+                                    <span 
+                                        className={`relative inline-flex rounded-full border-2 border-white shadow-md ${selectedPointId === point.id ? 'ring-2 ring-blue-500 scale-110' : ''}`}
+                                        style={{ 
+                                            width: `${(point.size || 24) * 0.6}px`, 
+                                            height: `${(point.size || 24) * 0.6}px`,
+                                            backgroundColor: point.color || '#ef4444' 
+                                        }}
+                                    ></span>
                                 </div>
 
                                 {/* Text Bubble & Stem */}
@@ -190,7 +204,19 @@ const AdminLounge = () => {
                                          setSelectedPointId(point.id);
                                      }}
                                 >
-                                    <div className={`bg-black text-white rounded-xl p-2 shadow-2xl border ${selectedPointId === point.id ? 'border-red-400' : 'border-red-500/30'} max-w-[150px] text-center`}>
+                                    <div className={`bg-black text-white rounded-xl p-2 shadow-2xl border relative ${selectedPointId === point.id ? 'border-red-400 ring-2 ring-red-400/50' : 'border-red-500/30'} max-w-[150px] text-center`}>
+                                        <button
+                                            type="button"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setLoungePoints(prev => prev.filter(p => p.id !== point.id));
+                                                if (selectedPointId === point.id) setSelectedPointId(null);
+                                            }}
+                                            className="absolute -top-2.5 -right-2.5 w-5 h-5 bg-red-600 hover:bg-red-700 text-white rounded-full font-extrabold text-[10px] flex items-center justify-center border-2 border-white shadow-lg z-30 transition-transform hover:scale-125 cursor-pointer"
+                                            title="Delete point"
+                                        >
+                                            ✕
+                                        </button>
                                         <p className="text-sm font-semibold leading-tight whitespace-nowrap">
                                             {point.text || 'New Point'}
                                         </p>
@@ -233,6 +259,46 @@ const AdminLounge = () => {
                                 placeholder="Write discussion prompt here..."
                                 required
                             />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Dot Color</label>
+                                <div className="flex gap-2 items-center">
+                                    <input
+                                        type="color"
+                                        value={selectedPoint.color || '#ef4444'}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setLoungePoints(prev => prev.map(p => p.id === selectedPointId ? { ...p, color: val } : p));
+                                        }}
+                                        className="h-9 w-12 rounded cursor-pointer border border-gray-200 p-0.5 bg-white"
+                                    />
+                                    <input
+                                        type="text"
+                                        value={selectedPoint.color || '#ef4444'}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setLoungePoints(prev => prev.map(p => p.id === selectedPointId ? { ...p, color: val } : p));
+                                        }}
+                                        className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                        placeholder="#ef4444"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Dot Size (px)</label>
+                                <input
+                                    type="number"
+                                    min="12"
+                                    max="64"
+                                    value={selectedPoint.size || 24}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        setLoungePoints(prev => prev.map(p => p.id === selectedPointId ? { ...p, size: val } : p));
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
                         </div>
                         <div>
                             <label className="block text-sm font-semibold text-gray-500 mb-1">Room Password (Optional)</label>

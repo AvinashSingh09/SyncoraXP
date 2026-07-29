@@ -196,43 +196,7 @@ const ProductGalleryModal = ({ onClose, products, boothId }) => {
                         )}
                     </div>
 
-                    {/* Inquiry Form */}
-                    <div className="mt-8 pt-6 border-t border-gray-100">
-                        <h4 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Send Inquiry to Exhibitor</h4>
-                        
-                        {successMessage ? (
-                            <div className="bg-green-50 text-green-700 p-4 rounded-xl border border-green-200 text-xs font-semibold animate-fade-in flex items-center gap-2">
-                                <span>✨</span>
-                                <span>{successMessage}</span>
-                            </div>
-                        ) : (
-                            <form onSubmit={handleQuerySubmit} className="space-y-3">
-                                <div>
-                                    <textarea
-                                        value={query}
-                                        onChange={(e) => setQuery(e.target.value)}
-                                        rows="3"
-                                        className="w-full bg-slate-50 border border-gray-200 rounded-xl p-3.5 text-xs text-gray-800 focus:outline-none focus:border-blue-400 focus:bg-white transition-all font-medium"
-                                        placeholder="Enter your query details..."
-                                        required
-                                    />
-                                </div>
-                                
-                                {errorMessage && (
-                                    <p className="text-[10px] font-semibold text-red-500">{errorMessage}</p>
-                                )}
 
-                                <button
-                                    type="submit"
-                                    disabled={loading || !query.trim()}
-                                    className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-xs cursor-pointer"
-                                >
-                                    <FiSend className="w-3.5 h-3.5" />
-                                    <span>{loading ? 'Submitting...' : 'Submit Query'}</span>
-                                </button>
-                            </form>
-                        )}
-                    </div>
                 </div>
 
             </div>

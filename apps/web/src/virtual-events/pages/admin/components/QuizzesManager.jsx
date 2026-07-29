@@ -97,10 +97,10 @@ const QuizzesManager = () => {
             {/* Create Quiz Form */}
             <form onSubmit={handleCreateQuiz} className="bg-gray-50 p-5 rounded-xl border border-gray-250 flex flex-col gap-4">
                 <h2 className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                    <FiPlusCircle className="text-blue-600" /> Create New Quiz
+                    <FiPlusCircle className="text-[#295ce8]" /> Create New Quiz
                 </h2>
                 <div className="flex flex-col gap-1.5">
-                    <label className="block text-sm font-semibold text-gray-655">Question</label>
+                    <label className="block text-sm font-semibold text-gray-500">Question</label>
                     <input
                         type="text"
                         value={quizQuestion}
@@ -112,8 +112,8 @@ const QuizzesManager = () => {
                 </div>
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center">
-                        <label className="block text-sm font-semibold text-gray-655">Options</label>
-                        <span className="text-xs text-gray-450 italic">Select correct answer using radio button</span>
+                        <label className="block text-sm font-semibold text-gray-500">Options</label>
+                        <span className="text-xs text-gray-400 italic">Select the correct answer</span>
                     </div>
                     {quizOptions.map((opt, index) => (
                         <div key={index} className="flex gap-2 items-center">
@@ -122,7 +122,8 @@ const QuizzesManager = () => {
                                 name="correct-answer-index"
                                 checked={correctOptionIndex === index}
                                 onChange={() => setCorrectOptionIndex(index)}
-                                className="cursor-pointer h-4 w-4 text-[#295ce8] focus:ring-blue-400"
+                                className="cursor-pointer h-4 w-4 accent-[#295ce8] shrink-0"
+                                style={{ width: '16px', minWidth: '16px', height: '16px', padding: 0, flex: '0 0 16px' }}
                                 title="Mark as correct option"
                             />
                             <input
@@ -172,7 +173,7 @@ const QuizzesManager = () => {
             {/* Quizzes List */}
             <div className="flex flex-col gap-3">
                 <h2 className="text-sm font-bold text-gray-700 flex items-center gap-2">
-                    <FiSettings className="text-purple-605" /> Existing Quizzes
+                    <FiSettings className="text-purple-600" /> Existing Quizzes
                 </h2>
                 {quizzes.length === 0 ? (
                     <p className="text-sm text-gray-400 italic">No quizzes created yet.</p>
@@ -201,7 +202,7 @@ const QuizzesManager = () => {
                                             </button>
                                             <button
                                                 onClick={() => handleDeleteQuiz(quiz._id)}
-                                                className="text-gray-400 hover:text-red-655 p-1 rounded transition-colors cursor-pointer animate-fade-in"
+                                                className="text-gray-400 hover:text-red-500 p-1 rounded transition-colors cursor-pointer animate-fade-in"
                                                 title="Delete Quiz"
                                             >
                                                 <FiTrash2 className="w-4 h-4" />
@@ -214,7 +215,7 @@ const QuizzesManager = () => {
                                             const percent = totalVotes > 0 ? Math.round((votesCount / totalVotes) * 100) : 0;
                                             const isCorrect = oIdx === quiz.correctOptionIndex;
                                             return (
-                                                <div key={opt._id} className={`flex flex-col gap-1 text-[11px] p-2 rounded-lg ${isCorrect ? 'bg-green-50 border border-green-150' : 'bg-gray-100/50'}`}>
+                                                <div key={opt._id} className={`flex flex-col gap-1 text-[11px] p-2 rounded-lg ${isCorrect ? 'bg-green-50 border border-green-200' : 'bg-gray-100/50'}`}>
                                                     <div className="flex justify-between text-gray-600">
                                                         <span className="flex items-center gap-1.5">
                                                             {opt.text}

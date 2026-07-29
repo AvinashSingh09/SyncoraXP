@@ -334,17 +334,18 @@ const Booth = () => {
                                     }
                                 };
 
-                                return (
+                                 return (
                                     <div
                                         key={point.id}
                                         className="absolute z-20"
                                         style={{
                                             top: `${point.top}%`,
-                                            left: `${point.left}%`
+                                            left: `${point.left}%`,
+                                            transform: 'translate(-50%, -50%)'
                                         }}
                                     >
                                         <div 
-                                            className="absolute bottom-1 left-0 transform -translate-x-1/2 flex flex-col items-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-10"
+                                            className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex flex-col items-center pointer-events-auto cursor-pointer transition-all hover:scale-105 z-10"
                                             onClick={handlePointClick}
                                         >
                                             <div className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-500/30 max-w-[150px] text-center hover:border-blue-400">
@@ -352,15 +353,29 @@ const Booth = () => {
                                                     {point.text}
                                                 </p>
                                             </div>
-                                            <div className="w-0.5 h-6 bg-gradient-to-b from-blue-500 to-blue-400" />
+                                            <div className="w-0.5 h-4 bg-gradient-to-b from-blue-500 to-blue-400" />
                                         </div>
 
                                         <div 
-                                            className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex h-4 w-4 items-center justify-center pointer-events-auto cursor-pointer z-20"
+                                            className="flex items-center justify-center pointer-events-auto cursor-pointer z-20"
+                                            style={{
+                                                width: `${point.size || 24}px`,
+                                                height: `${point.size || 24}px`
+                                            }}
                                             onClick={handlePointClick}
                                         >
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500 border-2 border-white"></span>
+                                            <span 
+                                                className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                                                style={{ backgroundColor: point.color || '#60a5fa' }}
+                                            ></span>
+                                            <span 
+                                                className="relative inline-flex rounded-full border-2 border-white shadow-md hover:scale-125 transition-transform"
+                                                style={{ 
+                                                    width: `${(point.size || 24) * 0.6}px`, 
+                                                    height: `${(point.size || 24) * 0.6}px`,
+                                                    backgroundColor: point.color || '#3b82f6' 
+                                                }}
+                                            ></span>
                                         </div>
                                     </div>
                                 );

@@ -28,6 +28,40 @@ function registerSockets(fastify) {
     });
     socket.on('join-room', (room) => socket.join(room));
     socket.on('leave-room', (room) => socket.leave(room));
+    socket.on('mark-as-seen', async ({ roomName }) => {
+      if (!roomName) return;
+      const userId = activeSockets.get(socket.id);
+      if (!userId) return;
+
+      try {
+        const Message = require('./models/message.model');
+        const now = new Date();
+        const messages = await Message.find({ room: roomName });
+        const unseenMessages = messages.filter(m => {
+          const isMe = m.sender.toString() === userId.toString();
+          return !isMe && !m.seen;
+        });
+
+        if (unseenMessages.length > 0) {
+          const unseenIds = unseenMessages.map(m => m._id);
+          for (const msg of unseenMessages) {
+            msg.seen = true;
+            msg.seenAt = now;
+            msg.delivered = true;
+            if (!msg.deliveredAt) msg.deliveredAt = now;
+            await msg.save();
+          }
+          io.to(roomName).emit('messages-seen-update', {
+            room: roomName,
+            messageIds: unseenIds,
+            seenAt: now,
+            deliveredAt: now
+          });
+        }
+      } catch (err) {
+        console.error('Error handling mark-as-seen socket event:', err);
+      }
+    });
     socket.on('auditorium-reaction', ({ emoji }) => socket.to('auditorium').emit('auditorium-reaction', { emoji }));
     socket.on('tictactoe:create', ({ username }) => {
       const roomCode = Math.random().toString(36).slice(2, 8).toUpperCase();

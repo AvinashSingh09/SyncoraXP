@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiSearch, FiSend, FiVideo, FiFileText, FiSmile, FiCornerUpLeft, FiCopy, FiCheck, FiEdit2 } from 'react-icons/fi';
+import { FiSend, FiVideo, FiFileText, FiSmile, FiCornerUpLeft, FiCopy, FiCheck, FiEdit2 } from 'react-icons/fi';
+import { IoCheckmarkDoneSharp, IoCheckmarkSharp } from 'react-icons/io5';
 import { TbArrowForwardUpDouble } from 'react-icons/tb';
 import { MdChat, MdGroup } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
@@ -12,7 +13,11 @@ import { useNavigate } from 'react-router-dom';
 const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const isBoothAdmin = user && BOOTH_ADMINS[user.email?.toLowerCase().trim()];
+    const isBoothAdmin = user && (
+        BOOTH_ADMINS[user.email?.toLowerCase().trim()] || 
+        /^booth[0-9]+@/i.test(user.email) ||
+        /^mb[0-9]+@/i.test(user.email)
+    );
     const [rooms, setRooms] = useState([]);
     const [usersList, setUsersList] = useState([]);
     const [selectedRoom, setSelectedRoom] = useState(null);
@@ -52,6 +57,12 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
     const [pendingRoom, setPendingRoom] = useState(null);
     const [enteredPassword, setEnteredPassword] = useState('');
     const [passwordError, setPasswordError] = useState('');
+
+    const getUserDisplayName = (chatUser) => (
+        chatUser?.designation === 'Exhibitor / Stall Owner' && chatUser?.company
+            ? chatUser.company
+            : `${chatUser?.firstName || ''} ${chatUser?.lastName || ''}`.trim()
+    );
 
     const isRoomPasswordProtected = (roomName) => {
         const matchedPoint = loungePoints.find(p => p.text === roomName);
@@ -280,6 +291,7 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
             const response = await chatService.getMessages(selectedRoom.name);
             if (response.data) {
                 setMessages(response.data);
+                socket.emit('mark-as-seen', { roomName: selectedRoom.name });
             }
         } catch (err) {
             console.error('Failed to load messages', err);
@@ -568,9 +580,16 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
             // If it's a custom room (like a Booth Chat) not in the predefined Lounge list
             if (!foundUser && !foundGroup && !initialRoomName.includes('-') && !isBoothAdmin) {
                 // Check if it's a Booth Chat and we can map it to an admin
-                const adminEmail = Object.keys(BOOTH_ADMINS).find(email => BOOTH_ADMINS[email].roomName === initialRoomName);
+                let adminEmail = Object.keys(BOOTH_ADMINS).find(email => BOOTH_ADMINS[email].roomName === initialRoomName);
+                if (!adminEmail) {
+                    const match = initialRoomName.match(/Booth\s+([0-9]+)/i);
+                    if (match && match[1]) {
+                        adminEmail = `booth${match[1]}@virtualevent.com`;
+                    }
+                }
+
                 if (adminEmail) {
-                    const adminUser = usersList.find(u => u.email === adminEmail);
+                    const adminUser = usersList.find(u => u.email?.toLowerCase() === adminEmail.toLowerCase());
                     if (adminUser) {
                         selectDirectUser(adminUser);
                         setActiveTab('Chats');
@@ -578,9 +597,6 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                         return;
                     }
                 }
-
-                // If it's still an unmapped group chat (e.g. Lounge Table), we don't render it since Groups tab is removed.
-                // We'll just ignore it or fallback.
             }
         }
 
@@ -689,7 +705,7 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
         } else {
             // Chats / Direct users list
             return usersList.filter(u =>
-                `${u.firstName} ${u.lastName}`.toLowerCase().includes(query)
+                getUserDisplayName(u).toLowerCase().includes(query)
             );
         }
     };
@@ -891,15 +907,14 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                     </div>
 
                     {/* Search Input */}
-                    <div className="p-3 relative bg-white border-b border-gray-100">
+                    <div className="p-3 relative bg-white border-b border-gray-100 flex items-center">
                         <input
                             type="text"
                             placeholder="Search..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#f0f4f9] text-xs text-gray-800 rounded-full py-2.5 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-blue-400 border border-transparent focus:border-blue-100"
+                            className="w-full bg-[#f0f4f9] text-xs text-gray-800 rounded-full py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-blue-400 border border-transparent focus:border-blue-100"
                         />
-                        <FiSearch className="absolute left-7 top-[22px] text-gray-400 w-4 h-4" />
                     </div>
 
                     {/* List Items */}
@@ -957,7 +972,7 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                                     );
                                 } else {
                                     const u = item;
-                                    const fullName = `${u.firstName} ${u.lastName}`;
+                                    const fullName = getUserDisplayName(u);
                                     const initials = getInitials(fullName);
                                     const myId = user?._id || user?.id;
                                     const directRoomId = [myId, u._id || u.id].sort().join('-');
@@ -1056,7 +1071,7 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                                         </div>
                                     )}
                                     <h3 className="font-bold text-sm truncate">
-                                        {selectedRoom.isDirect ? `Chat with ${selectedRoom.user.firstName} ${selectedRoom.user.lastName}` : selectedRoom.name}
+                                        {selectedRoom.isDirect ? `Chat with ${getUserDisplayName(selectedRoom.user)}` : selectedRoom.name}
                                     </h3>
                                 </div>
 
@@ -1124,10 +1139,16 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                                                                 }>
                                                                     <span>{formatTime(msg.createdAt)}</span>
                                                                     {isMe && (
-                                                                        <span className="text-[10px] leading-none select-none font-bold">
-                                                                            {getMessageStatus(msg) === 'seen' && <span className="text-sky-300 font-extrabold" title="Seen">✓✓</span>}
-                                                                            {getMessageStatus(msg) === 'delivered' && <span className="text-gray-300 font-extrabold" title="Delivered">✓✓</span>}
-                                                                            {getMessageStatus(msg) === 'sent' && <span className="text-gray-300 font-extrabold" title="Sent">✓</span>}
+                                                                        <span className="inline-flex items-center text-xs leading-none select-none">
+                                                                            {getMessageStatus(msg) === 'seen' && (
+                                                                                <IoCheckmarkDoneSharp className="w-3.5 h-3.5 text-cyan-300 drop-shadow-sm" title="Read (Blue Tick)" />
+                                                                            )}
+                                                                            {getMessageStatus(msg) === 'delivered' && (
+                                                                                <IoCheckmarkDoneSharp className="w-3.5 h-3.5 text-gray-200/90" title="Delivered (Double Tick)" />
+                                                                            )}
+                                                                            {getMessageStatus(msg) === 'sent' && (
+                                                                                <IoCheckmarkSharp className="w-3.5 h-3.5 text-gray-200/90" title="Sent (Single Tick)" />
+                                                                            )}
                                                                         </span>
                                                                     )}
                                                                 </span>
@@ -1327,7 +1348,7 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                                 </div>
                             )}
                             <h3 className="font-bold text-sm text-center text-gray-800 leading-snug max-w-[220px]">
-                                {selectedRoom.isDirect ? `Chat with ${selectedRoom.user.firstName} ${selectedRoom.user.lastName}` : selectedRoom.name}
+                                {selectedRoom.isDirect ? `Chat with ${getUserDisplayName(selectedRoom.user)}` : selectedRoom.name}
                             </h3>
                         </div>
 
@@ -1465,7 +1486,7 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                                             const uId = u._id || u.id;
                                             if (uId === myId) return null;
                                             const directRoomId = [myId, uId].sort().join('-');
-                                            const fullName = `${u.firstName} ${u.lastName}`;
+                                            const fullName = getUserDisplayName(u);
                                             return (
                                                 <button
                                                     key={uId}

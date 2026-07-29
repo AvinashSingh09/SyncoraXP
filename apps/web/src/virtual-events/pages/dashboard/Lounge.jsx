@@ -86,10 +86,24 @@ const Lounge = () => {
                         onClick={() => {
                             window.dispatchEvent(new CustomEvent('open-chat', { detail: { roomName: point.text } }));
                         }}
-                        className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex h-3.5 w-3.5 items-center justify-center pointer-events-auto cursor-pointer z-20"
+                        className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center pointer-events-auto cursor-pointer z-20"
+                        style={{
+                            width: `${point.size || 24}px`,
+                            height: `${point.size || 24}px`
+                        }}
                     >
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500 border border-white"></span>
+                        <span 
+                            className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75"
+                            style={{ backgroundColor: point.color || '#f87171' }}
+                        ></span>
+                        <span 
+                            className="relative inline-flex rounded-full border-2 border-white shadow-md hover:scale-125 transition-transform"
+                            style={{ 
+                                width: `${(point.size || 24) * 0.6}px`, 
+                                height: `${(point.size || 24) * 0.6}px`,
+                                backgroundColor: point.color || '#ef4444' 
+                            }}
+                        ></span>
                     </div>
 
                     {/* Content container shifted exactly above the coordinate */}

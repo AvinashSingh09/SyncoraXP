@@ -13,7 +13,11 @@ import UserDashboardModal from '../UserDashboardModal';
 const DashboardLayout = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
-    const isBoothAdmin = user && BOOTH_ADMINS[user.email?.toLowerCase().trim()];
+    const isBoothAdmin = user && (
+        BOOTH_ADMINS[user.email?.toLowerCase().trim()] ||
+        /^booth[0-9]+@/i.test(user.email) ||
+        /^mb[0-9]+@/i.test(user.email)
+    );
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showChat, setShowChat] = useState(isBoothAdmin);
     const [requestedRoomName, setRequestedRoomName] = useState(null);
@@ -301,18 +305,39 @@ const DashboardLayout = () => {
         return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
     };
 
-    const navTabs = [
-        { name: 'Lobby', path: '/virtual-events-platform/app/dashboard/lobby', icon: MdHome },
-        { name: 'Expo Hall', path: '/virtual-events-platform/app/dashboard/expo-hall', icon: MdStorefront },
-        { name: 'Auditorium', path: '/virtual-events-platform/app/dashboard/auditorium', icon: MdEventSeat },
-        { name: 'Lounge', path: '/virtual-events-platform/app/dashboard/lounge', icon: MdMeetingRoom },
-        { name: 'Round Tables', path: '/virtual-events-platform/app/dashboard/round-tables', icon: MdGroup },
-        { name: 'Meeting Room', path: '/virtual-events-platform/app/dashboard/meeting-room', icon: MdPeople },
-        { name: 'Engage', path: '/virtual-events-platform/app/dashboard/games', icon: MdVideogameAsset },
-        { name: 'Survey', path: '/virtual-events-platform/app/dashboard/survey', icon: MdAssignment },
+    const [navbarConfig, setNavbarConfig] = useState(null);
+
+    React.useEffect(() => {
+        const fetchNavConfig = async () => {
+            try {
+                const res = await configService.getConfig('navbar_settings');
+                if (res.data && res.data.value) {
+                    setNavbarConfig(JSON.parse(res.data.value));
+                }
+            } catch (err) {
+                console.error('Failed to fetch navbar_settings in layout', err);
+            }
+        };
+        fetchNavConfig();
+    }, []);
+
+    const allNavTabs = [
+        { key: 'lobby', name: 'Lobby', path: '/virtual-events-platform/app/dashboard/lobby', icon: MdHome },
+        { key: 'expo-hall', name: 'Expo Hall', path: '/virtual-events-platform/app/dashboard/expo-hall', icon: MdStorefront },
+        { key: 'auditorium', name: 'Auditorium', path: '/virtual-events-platform/app/dashboard/auditorium', icon: MdEventSeat },
+        { key: 'lounge', name: 'Lounge', path: '/virtual-events-platform/app/dashboard/lounge', icon: MdMeetingRoom },
+        { key: 'round-tables', name: 'Round Tables', path: '/virtual-events-platform/app/dashboard/round-tables', icon: MdGroup },
+        { key: 'meeting-room', name: 'Meeting Room', path: '/virtual-events-platform/app/dashboard/meeting-room', icon: MdPeople },
+        { key: 'games', name: 'Engage', path: '/virtual-events-platform/app/dashboard/games', icon: MdVideogameAsset },
+        { key: 'survey', name: 'Survey', path: '/virtual-events-platform/app/dashboard/survey', icon: MdAssignment },
     ];
 
-        const isNavVisible = isNavHovered || showNotifications || showProfileMenu || showAttendees || showLeaderboard;
+    const navTabs = allNavTabs.filter(tab => {
+        if (!navbarConfig) return true;
+        return navbarConfig[tab.key] !== false;
+    });
+
+    const isNavVisible = isNavHovered || showNotifications || showProfileMenu || showAttendees || showLeaderboard;
 
         return (
         <div className="h-screen w-full flex flex-col bg-gray-50 overflow-hidden font-sans relative">
@@ -570,14 +595,13 @@ const DashboardLayout = () => {
                         {showAttendees && (
                             <div className="absolute right-0 mt-2 w-72 bg-white rounded-lg shadow-2xl py-2 border border-gray-100 z-50 overflow-hidden">
                                 <div className="px-3 pb-2 border-b border-gray-100 mb-2">
-                                    <div className="relative">
-                                        <FiSearch className="absolute left-3 top-[10px] text-gray-400 w-4 h-4" />
+                                    <div className="relative flex items-center">
                                         <input
                                             type="text"
                                             placeholder="Search attendees..."
                                             value={attendeeSearchQuery}
                                             onChange={(e) => setAttendeeSearchQuery(e.target.value)}
-                                            className="w-full bg-[#f0f4f9] text-xs text-gray-800 rounded-full py-2 pl-9 pr-4 focus:outline-none focus:ring-1 focus:ring-blue-400 border border-transparent"
+                                            className="w-full bg-[#f0f4f9] text-xs text-gray-800 rounded-full py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-blue-400 border border-transparent"
                                         />
                                     </div>
                                 </div>
