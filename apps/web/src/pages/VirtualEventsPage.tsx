@@ -140,7 +140,8 @@ const brandLogos = [
   { name: "PWC", style: { fontWeight: 900, textTransform: "lowercase" } },
 ];
 
-const virtualSpaces = [
+/* Commented out previous virtualSpaces images:
+const virtualSpacesOld = [
   { name: "Exterior", image: "/virtual-events-assets/exterior.jpg" },
   { name: "Lobby", image: "/virtual-events-assets/lobbyimg.jpg" },
   { name: "Booth", image: "/virtual-events-assets/default-booth-bg.png" },
@@ -149,6 +150,18 @@ const virtualSpaces = [
   { name: "Main Stage", image: "/virtual-events-assets/main-stage-v2.png" },
   { name: "Conference Hall", image: "/virtual-events-assets/keynote-v2.jpg" },
   { name: "Virtual Event Venue", image: "/virtual-events-assets/virtual-event.jpg" },
+];
+*/
+
+const virtualSpaces = [
+  { name: "Virtual Event Space 1", image: "/landing-virtualevent/Ref 1.jpeg" },
+  { name: "Virtual Event Space 2", image: "/landing-virtualevent/Ref 2.jpeg" },
+  { name: "Virtual Event Space 3", image: "/landing-virtualevent/Ref 3.jpeg" },
+  { name: "Virtual Event Space 4", image: "/landing-virtualevent/Ref 4.jpeg" },
+  { name: "Virtual Event Space 5", image: "/landing-virtualevent/Ref 5.jpeg" },
+  { name: "Nutanix Stall", image: "/landing-virtualevent/Stall NUTANIX_02.jpg.jpeg" },
+  { name: "AWS Stall 2", image: "/landing-virtualevent/AWS STALL_02.jpg.jpeg" },
+  { name: "AWS Stall 1", image: "/landing-virtualevent/aws1.jpg.jpeg" },
 ];
 
 function EventPhoto({ className, alt, src = eventArtwork }: { className: string; alt: string; src?: string }) {
