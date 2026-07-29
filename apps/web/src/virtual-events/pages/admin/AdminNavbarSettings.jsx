@@ -22,6 +22,7 @@ const DEFAULT_NAVBAR_CONFIG = {
     'meeting-room': true,
     games: true,
     survey: true,
+    navbarStyle: 'hover', // 'hover' (Floating on hover) or 'sticky' (Fixed sticky top)
     logoUrl: '',
     logoWidth: 150,
     logoHeight: 40
@@ -188,6 +189,62 @@ const AdminNavbarSettings = () => {
                 })}
             </div>
 
+            {/* Navbar Position & Behavior Settings */}
+            <div className="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-sm mt-6">
+                <div className="mb-4">
+                    <h2 className="text-lg font-black text-gray-900 tracking-tight">Navbar Position & Display Behavior</h2>
+                    <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                        Choose whether the attendee navigation bar stays permanently fixed at the top or floats in hover-to-show mode.
+                    </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Hover Mode */}
+                    <div 
+                        onClick={() => setNavConfig(prev => ({ ...prev, navbarStyle: 'hover' }))}
+                        className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-3 ${
+                            (navConfig.navbarStyle || 'hover') === 'hover'
+                                ? 'bg-blue-50/50 border-[#295ce8] ring-2 ring-[#295ce8]/20 shadow-sm'
+                                : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                    >
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-bold text-gray-900">Floating / Hover Mode</span>
+                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                                (navConfig.navbarStyle || 'hover') === 'hover' ? 'border-[#295ce8] bg-[#295ce8] text-white' : 'border-gray-300'
+                            }`}>
+                                {(navConfig.navbarStyle || 'hover') === 'hover' && <MdCheck className="w-3.5 h-3.5" />}
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                            Navbar floats at top and slides down smoothly when attendee hovers near the top edge. Keeps the 3D space full-screen.
+                        </p>
+                    </div>
+
+                    {/* Sticky Top Mode */}
+                    <div 
+                        onClick={() => setNavConfig(prev => ({ ...prev, navbarStyle: 'sticky' }))}
+                        className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col gap-3 ${
+                            navConfig.navbarStyle === 'sticky'
+                                ? 'bg-blue-50/50 border-[#295ce8] ring-2 ring-[#295ce8]/20 shadow-sm'
+                                : 'bg-white border-gray-200 hover:border-gray-300'
+                        }`}
+                    >
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-bold text-gray-900">Sticky Top / Fixed Navbar</span>
+                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
+                                navConfig.navbarStyle === 'sticky' ? 'border-[#295ce8] bg-[#295ce8] text-white' : 'border-gray-300'
+                            }`}>
+                                {navConfig.navbarStyle === 'sticky' && <MdCheck className="w-3.5 h-3.5" />}
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-500 font-medium leading-relaxed">
+                            Navbar stays permanently fixed and visible at the top of the browser screen at all times.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
             {/* Logo Settings */}
             <div className="bg-white rounded-2xl p-6 border border-gray-200/80 shadow-sm mt-6">
                 <div className="mb-4">
@@ -224,7 +281,19 @@ const AdminNavbarSettings = () => {
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-600 mb-1.5">Company / Logo Text (Optional)</label>
+                        <input 
+                            type="text" 
+                            value={navConfig.logoText || ''} 
+                            onChange={(e) => setNavConfig(prev => ({ ...prev, logoText: e.target.value }))}
+                            className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 font-bold"
+                            placeholder="e.g. SyncoraXP"
+                        />
+                        <p className="text-[11px] text-gray-400 font-medium mt-1">If your logo image is an icon only, type your brand text here to display next to the logo.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                         <div>
                             <label className="block text-sm font-semibold text-gray-600 mb-2">
                                 Logo Width ({navConfig.logoWidth || 150}px)
@@ -253,11 +322,25 @@ const AdminNavbarSettings = () => {
                                 className="w-full cursor-pointer accent-blue-600"
                             />
                         </div>
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-600 mb-2">
+                                Logo Text Size ({navConfig.logoFontSize || 18}px)
+                            </label>
+                            <input 
+                                type="range"
+                                min="12"
+                                max="40"
+                                step="1"
+                                value={navConfig.logoFontSize || 18}
+                                onChange={(e) => setNavConfig(prev => ({ ...prev, logoFontSize: Number(e.target.value) }))}
+                                className="w-full cursor-pointer accent-blue-600"
+                            />
+                        </div>
                     </div>
 
                     {/* Logo Preview */}
                     {navConfig.logoUrl && (
-                        <div className="mt-4 p-4 border border-gray-200 rounded-xl bg-gray-50 flex items-center justify-center min-h-[100px] overflow-hidden">
+                        <div className="mt-4 p-4 border border-gray-200 rounded-xl bg-gray-50 flex items-center justify-center gap-3 min-h-[100px] overflow-hidden">
                             <img 
                                 src={navConfig.logoUrl} 
                                 alt="Custom Logo Preview"
@@ -267,6 +350,14 @@ const AdminNavbarSettings = () => {
                                     objectFit: 'contain'
                                 }}
                             />
+                            {navConfig.logoText && (
+                                <span 
+                                    className="font-black text-gray-900 tracking-tight"
+                                    style={{ fontSize: `${navConfig.logoFontSize || 18}px` }}
+                                >
+                                    {navConfig.logoText}
+                                </span>
+                            )}
                         </div>
                     )}
                 </div>

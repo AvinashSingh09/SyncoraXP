@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FiSearch, FiBell, FiMessageSquare, FiSettings, FiLogOut, FiInbox, FiTrash2, FiDownload, FiEye, FiX } from 'react-icons/fi';
+import { getUserBagItems, setUserBagItems } from '../../utils/bagStorage';
 import { FaTrophy } from 'react-icons/fa';
 import { MdHome, MdStorefront, MdEventSeat, MdMeetingRoom, MdGroup, MdPeople, MdVideogameAsset, MdAssignment } from 'react-icons/md';
 import { useAuth } from '../../hooks/useAuth';
@@ -34,23 +35,11 @@ const DashboardLayout = () => {
     const [isNavHovered, setIsNavHovered] = useState(false);
     const [layoutConfigs, setLayoutConfigs] = useState({});
     const [showBagModal, setShowBagModal] = useState(false);
-    const [bagItems, setBagItems] = useState(() => {
-        try {
-            const saved = localStorage.getItem('my_bag');
-            return saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            return [];
-        }
-    });
+    const [bagItems, setBagItems] = useState(() => getUserBagItems());
 
     React.useEffect(() => {
         const syncBag = () => {
-            try {
-                const saved = localStorage.getItem('my_bag');
-                setBagItems(saved ? JSON.parse(saved) : []);
-            } catch (e) {
-                console.error(e);
-            }
+            setBagItems(getUserBagItems());
         };
         window.addEventListener('storage', syncBag);
         return () => window.removeEventListener('storage', syncBag);
@@ -136,11 +125,50 @@ const DashboardLayout = () => {
         setLoadingLeaderboard(true);
         try {
             const res = await authService.getLeaderboard();
-            if (res.data && res.data.success) {
-                setLeaderboardData(res.data.data);
+            let list = [];
+            if (res.data) {
+                if (Array.isArray(res.data.data)) list = res.data.data;
+                else if (Array.isArray(res.data)) list = res.data;
+                else if (Array.isArray(res.data.users)) list = res.data.users;
+                else if (Array.isArray(res.data.leaderboard)) list = res.data.leaderboard;
             }
+
+            // Ensure user points from active context/user state are included if missing
+            if (user && (user.points || 0) > 0) {
+                const userId = (user._id || user.id)?.toString();
+                const exists = list.some(u => (u._id || u.id)?.toString() === userId);
+                if (!exists) {
+                    list.push({
+                        _id: user._id || user.id || 'me',
+                        firstName: user.firstName || 'You',
+                        lastName: user.lastName || '',
+                        company: user.company || 'Attendee',
+                        points: user.points
+                    });
+                } else {
+                    // Update user's points in the list if higher in context
+                    list = list.map(u => {
+                        if ((u._id || u.id)?.toString() === userId) {
+                            return { ...u, points: Math.max(u.points || 0, user.points || 0) };
+                        }
+                        return u;
+                    });
+                }
+            }
+
+            list.sort((a, b) => (b.points || 0) - (a.points || 0));
+            setLeaderboardData(list);
         } catch (err) {
             console.error('Failed to load leaderboard', err);
+            if (user && (user.points || 0) > 0) {
+                setLeaderboardData([{
+                    _id: user._id || user.id || 'me',
+                    firstName: user.firstName || 'You',
+                    lastName: user.lastName || '',
+                    company: user.company || 'Attendee',
+                    points: user.points
+                }]);
+            }
         } finally {
             setLoadingLeaderboard(false);
         }
@@ -337,22 +365,27 @@ const DashboardLayout = () => {
         return navbarConfig[tab.key] !== false;
     });
 
-    const isNavVisible = isNavHovered || showNotifications || showProfileMenu || showAttendees || showLeaderboard;
+    const isStickyMode = navbarConfig?.navbarStyle === 'sticky';
+    const isNavVisible = isStickyMode || isNavHovered || showNotifications || showProfileMenu || showAttendees || showLeaderboard;
 
-        return (
+    return (
         <div className="h-screen w-full flex flex-col bg-gray-50 overflow-hidden font-sans relative">
-            {/* Top Hover Trigger Area */}
-            <div
-                className="fixed top-0 left-0 w-full h-8 z-50 pointer-events-auto"
-                onMouseEnter={() => setIsNavHovered(true)}
-                onMouseLeave={() => setIsNavHovered(false)}
-            />
+            {/* Top Hover Trigger Area (only needed in hover mode) */}
+            {!isStickyMode && (
+                <div
+                    className="fixed top-0 left-0 w-full h-8 z-50 pointer-events-auto"
+                    onMouseEnter={() => setIsNavHovered(true)}
+                    onMouseLeave={() => setIsNavHovered(false)}
+                />
+            )}
 
-            {/* Floating Top Navigation Bar - Slides down on hover */}
+            {/* Top Navigation Bar - Sticky or Floating Hover */}
             <div
-                onMouseEnter={() => setIsNavHovered(true)}
-                onMouseLeave={() => setIsNavHovered(false)}
-                className={`fixed top-0 left-1/2 -translate-x-1/2 w-[95%] max-w-[1400px] h-[80px] bg-white/95 backdrop-blur-2xl rounded-b-[2rem] shadow-[0_12px_48px_rgba(41,92,232,0.12),0_4px_12px_rgba(0,0,0,0.06)] border-b border-x border-blue-100/60 flex items-center justify-between px-8 z-50 transition-all duration-300 ease-in-out ${
+                onMouseEnter={() => !isStickyMode && setIsNavHovered(true)}
+                onMouseLeave={() => !isStickyMode && setIsNavHovered(false)}
+                className={`fixed top-0 left-1/2 -translate-x-1/2 ${
+                    isStickyMode ? 'w-full max-w-full rounded-none border-x-0' : 'w-[98%] max-w-[1720px] rounded-b-[1.75rem]'
+                } h-[80px] bg-white/95 backdrop-blur-2xl shadow-[0_12px_48px_rgba(41,92,232,0.12),0_4px_12px_rgba(0,0,0,0.06)] border-b border-blue-100/60 flex items-center justify-between px-3 md:px-6 z-50 transition-all duration-300 ease-in-out ${
                     isNavVisible ? 'translate-y-0 opacity-100' : '-translate-y-[calc(100%-8px)] opacity-40 hover:opacity-100 hover:translate-y-0'
                 }`}
             >
@@ -362,15 +395,25 @@ const DashboardLayout = () => {
                 {/* Logo Area */}
                 <div className="flex items-center gap-3 text-[#295ce8] shrink-0">
                     {navbarConfig?.logoUrl ? (
-                        <img 
-                            src={navbarConfig.logoUrl} 
-                            alt="Event Logo"
-                            style={{
-                                width: `${navbarConfig.logoWidth || 150}px`,
-                                height: `${navbarConfig.logoHeight || 40}px`,
-                                objectFit: 'contain'
-                            }}
-                        />
+                        <div className="flex items-center gap-2.5">
+                            <img 
+                                src={navbarConfig.logoUrl} 
+                                alt="Event Logo"
+                                style={{
+                                    width: `${navbarConfig.logoWidth || 150}px`,
+                                    height: `${navbarConfig.logoHeight || 40}px`,
+                                    objectFit: 'contain'
+                                }}
+                            />
+                            {navbarConfig.logoText && (
+                                <span 
+                                    className="font-black text-gray-900 tracking-tight whitespace-nowrap"
+                                    style={{ fontSize: `${navbarConfig.logoFontSize || 18}px` }}
+                                >
+                                    {navbarConfig.logoText}
+                                </span>
+                            )}
+                        </div>
                     ) : (
                         <>
                             <div className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-[#295ce8] to-[#6366f1] shadow-lg shadow-blue-200">
@@ -381,7 +424,7 @@ const DashboardLayout = () => {
                                 </svg>
                                 <span className="absolute -top-1.5 -right-1.5 text-[10px]">✨</span>
                             </div>
-                            <div className="hidden md:flex flex-col leading-tight">
+                            <div className="hidden lg:flex flex-col leading-tight">
                                 <span className="text-[17px] font-black text-gray-900 tracking-tight">Virtual<span className="text-[#295ce8]">Event</span></span>
                                 <span className="text-[9px] font-semibold text-gray-400 tracking-widest uppercase">Platform</span>
                             </div>
@@ -390,12 +433,12 @@ const DashboardLayout = () => {
                 </div>
 
                 {/* Divider */}
-                <div className="w-px h-8 bg-gray-200 mx-3 shrink-0 rounded-full" />
+                <div className="w-px h-8 bg-gray-200 mx-2 md:mx-3 shrink-0 rounded-full" />
 
                 {/* Main Navigation */}
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 overflow-hidden">
                     <div 
-                        className="flex items-center gap-0.5 overflow-x-auto hide-scrollbar py-3"
+                        className="flex items-center justify-start xl:justify-center gap-1 overflow-x-auto hide-scrollbar py-2"
                         onWheel={(e) => {
                             if (e.currentTarget) {
                                 e.currentTarget.scrollLeft += e.deltaY;
@@ -855,8 +898,7 @@ const DashboardLayout = () => {
                                                     onClick={() => {
                                                         const updated = bagItems.filter(i => !(i.id === item.id && i.type === item.type));
                                                         setBagItems(updated);
-                                                        localStorage.setItem('my_bag', JSON.stringify(updated));
-                                                        window.dispatchEvent(new Event('storage'));
+                                                        setUserBagItems(updated);
                                                     }}
                                                     className="w-8 h-8 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
                                                     title="Remove"

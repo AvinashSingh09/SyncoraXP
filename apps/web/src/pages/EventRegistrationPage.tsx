@@ -434,8 +434,8 @@ export function EventRegistrationPage() {
                 gap: "8px",
               }}>
                 <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.6)", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>Let's talk!</span>
-                <a href="tel:+917039961777" style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", textDecoration: "none" }}>
-                  +91 7039961777
+                <a href="tel:+917039164777" style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", textDecoration: "none" }}>
+                  +91 7039164777
                 </a>
               </div>
             </div>

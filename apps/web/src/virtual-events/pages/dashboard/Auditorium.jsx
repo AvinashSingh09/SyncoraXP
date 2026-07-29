@@ -300,8 +300,7 @@ const Auditorium = () => {
     }, []);
 
     const getEmbedUrl = (url, isLive) => {
-        const controls = isLive ? '0' : '1';
-        const params = `autoplay=1&mute=0&loop=1&controls=${controls}&showinfo=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0`;
+        const params = 'autoplay=1&mute=0&controls=1&enablejsapi=1&rel=0&modestbranding=0&disablekb=0&fs=1';
         if (!url) return `https://www.youtube.com/embed/nE5U0tS-1Yg?${params}&playlist=nE5U0tS-1Yg`;
         if (url.includes('youtube.com/embed/')) {
             return url.includes('?') ? `${url}&${params}` : `${url}?${params}`;
@@ -447,7 +446,7 @@ const Auditorium = () => {
                 >
                     <div className="w-full h-full bg-black rounded shadow-2xl relative flex items-center justify-center overflow-hidden border border-neutral-700/20">
                         <iframe
-                            className={`w-full h-full ${selectedSession ? '' : 'pointer-events-none'}`}
+                            className="w-full h-full pointer-events-auto"
                             src={getEmbedUrl(selectedSession ? selectedSession.videoUrl : auditoriumVideoUrl, !selectedSession)}
                             title="Auditorium Presentation"
                             frameBorder="0"

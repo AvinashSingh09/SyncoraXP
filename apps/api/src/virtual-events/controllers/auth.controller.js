@@ -212,12 +212,25 @@ class AuthController {
 
     getLeaderboard = async (req, res, next) => {
         try {
-            const topUsers = await User.find({}, 'firstName lastName points company')
+            const topUsers = await User.find({ points: { $gt: 0 } }, 'firstName lastName points company')
                 .sort({ points: -1 })
-                .limit(10);
+                .limit(25)
+                .lean();
+
+            let usersList = [...topUsers];
+
+            if (req.user) {
+                const currentUser = await User.findById(req.user.id || req.user._id, 'firstName lastName points company').lean();
+                if (currentUser && currentUser.points > 0 && !usersList.some(u => u._id.toString() === currentUser._id.toString())) {
+                    usersList.push(currentUser);
+                }
+            }
+
+            usersList.sort((a, b) => (b.points || 0) - (a.points || 0));
+
             res.json({
                 success: true,
-                data: topUsers
+                data: usersList
             });
         } catch (error) {
             next(error);

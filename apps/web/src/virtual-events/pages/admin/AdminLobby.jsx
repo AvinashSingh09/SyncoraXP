@@ -15,6 +15,8 @@ const AdminLobby = () => {
     const [lobbyBgImage, setLobbyBgImage] = useState('/virtual-events-assets/lobby-bg.png');
     const [lobbyPoints, setLobbyPoints] = useState([]);
     const [lobbyPosters, setLobbyPosters] = useState([]);
+    const [helpDeskAdminEmail, setHelpDeskAdminEmail] = useState('info@virtualevent.com');
+    const [helpDeskAdminPassword, setHelpDeskAdminPassword] = useState('InfoDesk123');
     const [selectedPointId, setSelectedPointId] = useState(null);
     const [selectedPosterId, setSelectedPosterId] = useState(null);
     const [lobbyLoading, setLobbyLoading] = useState(false);
@@ -29,6 +31,8 @@ const AdminLobby = () => {
                     if (config.bgImage) setLobbyBgImage(config.bgImage);
                     if (config.points) setLobbyPoints(config.points);
                     if (config.posters) setLobbyPosters(config.posters);
+                    if (config.helpDeskAdminEmail) setHelpDeskAdminEmail(config.helpDeskAdminEmail);
+                    if (config.helpDeskAdminPassword) setHelpDeskAdminPassword(config.helpDeskAdminPassword);
                 }
             } catch (err) {
                 console.error('Failed to load lobby layout', err);
@@ -45,7 +49,9 @@ const AdminLobby = () => {
             const lobbyConfig = JSON.stringify({
                 bgImage: lobbyBgImage,
                 points: lobbyPoints,
-                posters: lobbyPosters
+                posters: lobbyPosters,
+                helpDeskAdminEmail,
+                helpDeskAdminPassword
             });
             await configService.setConfig('lobby_layout', lobbyConfig);
             setLobbyStatus('Lobby settings saved successfully!');
@@ -215,6 +221,41 @@ const AdminLobby = () => {
                             >
                                 Upload Image
                             </label>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Information / Help Desk Representative Credentials */}
+                <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/50 border border-blue-200/80 rounded-2xl p-5 shadow-sm">
+                    <div className="mb-3">
+                        <h4 className="text-sm font-black text-gray-900 flex items-center gap-2 tracking-tight">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+                            Information / Help Desk Representative Credentials
+                        </h4>
+                        <p className="text-xs text-gray-500 font-medium leading-relaxed mt-0.5">
+                            Set the login Email ID and Password for the representative sitting at the Information Desk to answer attendee queries live.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Help Desk Email ID</label>
+                            <input 
+                                type="email" 
+                                value={helpDeskAdminEmail} 
+                                onChange={(e) => setHelpDeskAdminEmail(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 font-semibold"
+                                placeholder="info@virtualevent.com"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Help Desk Password</label>
+                            <input 
+                                type="text" 
+                                value={helpDeskAdminPassword} 
+                                onChange={(e) => setHelpDeskAdminPassword(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 font-semibold"
+                                placeholder="InfoDesk123"
+                            />
                         </div>
                     </div>
                 </div>

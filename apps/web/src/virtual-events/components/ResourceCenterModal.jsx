@@ -1,18 +1,12 @@
 import React, { useState } from 'react';
 import { FiX, FiFileText, FiVideo, FiEye, FiDownload, FiPlay, FiArrowLeft, FiFolderPlus, FiFolderMinus } from 'react-icons/fi';
+import { getUserBagItems, setUserBagItems } from '../utils/bagStorage';
 
 const ResourceCenterModal = ({ onClose, resources, boothId }) => {
     const [activeTab, setActiveTab] = useState('documents'); // 'documents' or 'videos'
     const [selectedResource, setSelectedResource] = useState(null); // { type, url, title }
     
-    const [bagItems, setBagItems] = useState(() => {
-        try {
-            const saved = localStorage.getItem('my_bag');
-            return saved ? JSON.parse(saved) : [];
-        } catch (e) {
-            return [];
-        }
-    });
+    const [bagItems, setBagItems] = useState(() => getUserBagItems());
 
     const toggleBagItem = (item, type) => {
         setBagItems(prev => {
@@ -30,8 +24,7 @@ const ResourceCenterModal = ({ onClose, resources, boothId }) => {
                     addedAt: Date.now()
                 }];
             }
-            localStorage.setItem('my_bag', JSON.stringify(updated));
-            window.dispatchEvent(new Event('storage'));
+            setUserBagItems(updated);
             return updated;
         });
     };
