@@ -82,13 +82,14 @@ const brandLogos = [
 ];
 
 const virtualSpaces = [
-  { name: "Exterior", image: "/virtual-events-assets/expo-bg.jpg" },
-  { name: "Lobby", image: "/virtual-events-assets/lobby-bg.png" },
+  { name: "Exterior", image: "/virtual-events-assets/exterior.jpg" },
+  { name: "Lobby", image: "/virtual-events-assets/lobbyimg.jpg" },
   { name: "Booth", image: "/virtual-events-assets/default-booth-bg.png" },
-  { name: "Booth", image: "/virtual-events-assets/meeting-room-bg.png" },
+  { name: "Meeting Room", image: "/virtual-events-assets/meeting-room-bg.png" },
   { name: "Exhibition Hall", image: "/virtual-events-assets/exhibition-hall-v2.jpg" },
   { name: "Main Stage", image: "/virtual-events-assets/main-stage-v2.png" },
   { name: "Conference Hall", image: "/virtual-events-assets/keynote-v2.jpg" },
+  { name: "Virtual Event Venue", image: "/virtual-events-assets/virtual-event.jpg" },
 ];
 
 function EventPhoto({ className, alt, src = eventArtwork }: { className: string; alt: string; src?: string }) {
@@ -315,60 +316,60 @@ export function VirtualEventsPage() {
       <MarketingHeader />
       <div className="landing-theme-pink-dots">
         <section className="virtual-events-hero" id="platform" aria-labelledby="virtual-events-title">
-        <h1 id="virtual-events-title">Virtual events that<br />feel truly together.</h1>
-        <p className="virtual-events-intro">Create branded live experiences that bring every session, conversation, and connection into one seamless place.</p>
-        <div className="virtual-events-actions">
-          <Link className="virtual-events-primary" to="/virtual-events-platform/app/login">Explore the platform <ArrowRight size={18} weight="bold" /></Link>
-          <a className="virtual-events-watch" href="#capabilities"><PlayCircle size={22} weight="fill" /> Watch overview</a>
-        </div>
-
-        <section className="event-stage" id="experience" aria-label="A live SyncoraXP virtual event experience">
-          <article className="event-stage-keynote">
-            <EventPhoto className="event-stage-keynote-photo" src={keynoteArtwork} alt="A keynote speaker addressing an online event audience" />
-            <span className="event-stage-label"><i /> Launch Keynote</span>
-          </article>
-
-          <div className="event-stage-left-lower">
-            <article className="event-stage-chat">
-              <header><ChatCircleDots size={17} weight="fill" /> Event chat</header>
-              <div><EventPhoto className="event-stage-avatar avatar-one" alt="Alex R. attending the event" /><p><b>Alex R.</b><span>Great insights!</span></p><time>10:24 AM</time></div>
-              <div><EventPhoto className="event-stage-avatar avatar-two" alt="Maya S. attending the event" /><p><b>Maya S.</b><span>Loving this session ✨</span></p></div>
-              <div><EventPhoto className="event-stage-avatar avatar-three" alt="Jordan K. attending the event" /><p><b>Jordan K.</b><span>Thanks for sharing!</span></p></div>
-            </article>
-            <article className="event-stage-attendance">
-              <UsersThree size={25} weight="fill" />
-              <strong>1,256</strong><span>Attendees online</span>
-              <div className="event-stage-sparkline" aria-hidden="true"><i /><i /><i /><i /><i /></div>
-            </article>
+          <h1 id="virtual-events-title">Virtual events that<br />feel truly together.</h1>
+          <p className="virtual-events-intro">Create branded live experiences that bring every session, conversation, and connection into one seamless place.</p>
+          <div className="virtual-events-actions">
+            <Link className="virtual-events-primary" to="/virtual-events-platform/app/login">Explore the platform <ArrowRight size={18} weight="bold" /></Link>
+            <a className="virtual-events-watch" href="#capabilities"><PlayCircle size={22} weight="fill" /> Watch overview</a>
           </div>
 
-          <article className="event-stage-host">
-            <EventPhoto className="event-stage-host-photo" src={hostArtwork} alt="A live event host presenting to attendees" />
-            <span className="event-stage-live"><Broadcast size={14} weight="fill" /> Live</span>
-            <span className="event-stage-viewers"><UsersThree size={14} weight="fill" /> 1,256</span>
-          </article>
+          <section className="event-stage" id="experience" aria-label="A live SyncoraXP virtual event experience">
+            <article className="event-stage-keynote">
+              <EventPhoto className="event-stage-keynote-photo" src={keynoteArtwork} alt="A keynote speaker addressing an online event audience" />
+              <span className="event-stage-label"><i /> Launch Keynote</span>
+            </article>
 
-          <article className="event-stage-audience">
-            <EventPhoto className="event-stage-audience-photo" src={keynoteArtwork} alt="An engaged virtual event audience" />
-            <span><i /> Connected</span>
-          </article>
+            <div className="event-stage-left-lower">
+              <article className="event-stage-chat">
+                <header><ChatCircleDots size={17} weight="fill" /> Event chat</header>
+                <div><EventPhoto className="event-stage-avatar avatar-one" alt="Alex R. attending the event" /><p><b>Alex R.</b><span>Great insights!</span></p><time>10:24 AM</time></div>
+                <div><EventPhoto className="event-stage-avatar avatar-two" alt="Maya S. attending the event" /><p><b>Maya S.</b><span>Loving this session ✨</span></p></div>
+                <div><EventPhoto className="event-stage-avatar avatar-three" alt="Jordan K. attending the event" /><p><b>Jordan K.</b><span>Thanks for sharing!</span></p></div>
+              </article>
+              <article className="event-stage-attendance">
+                <UsersThree size={25} weight="fill" />
+                <strong>1,256</strong><span>Attendees online</span>
+                <div className="event-stage-sparkline" aria-hidden="true"><i /><i /><i /><i /><i /></div>
+              </article>
+            </div>
 
-          <section className="event-stage-speakers" aria-label="Connected attendees">
-            <img className="event-stage-attendee-grid" src={attendeeArtwork} alt="Four virtual event attendees connected live" />
+            <article className="event-stage-host">
+              <EventPhoto className="event-stage-host-photo" src={hostArtwork} alt="A live event host presenting to attendees" />
+              <span className="event-stage-live"><Broadcast size={14} weight="fill" /> Live</span>
+              <span className="event-stage-viewers"><UsersThree size={14} weight="fill" /> 1,256</span>
+            </article>
+
+            <article className="event-stage-audience">
+              <EventPhoto className="event-stage-audience-photo" src={keynoteArtwork} alt="An engaged virtual event audience" />
+              <span><i /> Connected</span>
+            </article>
+
+            <section className="event-stage-speakers" aria-label="Connected attendees">
+              <img className="event-stage-attendee-grid" src={attendeeArtwork} alt="Four virtual event attendees connected live" />
+            </section>
+
+            <article className="event-stage-networking">
+              <div><UsersThree size={19} weight="fill" /><b>Networking</b><span>Find and connect<br />with the right people.</span></div>
+              <div className="event-stage-mini-avatars"><EventPhoto className="avatar-one" alt="" /><EventPhoto className="avatar-two" alt="" /><EventPhoto className="avatar-three" alt="" /><b>+32</b></div>
+              <ArrowRight size={19} weight="bold" />
+            </article>
+
+            <article className="event-stage-engagement">
+              <div><span>Engagement score</span><strong>92%</strong><b>Excellent</b></div>
+              <div className="event-stage-engagement-line" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
+            </article>
           </section>
-
-          <article className="event-stage-networking">
-            <div><UsersThree size={19} weight="fill" /><b>Networking</b><span>Find and connect<br />with the right people.</span></div>
-            <div className="event-stage-mini-avatars"><EventPhoto className="avatar-one" alt="" /><EventPhoto className="avatar-two" alt="" /><EventPhoto className="avatar-three" alt="" /><b>+32</b></div>
-            <ArrowRight size={19} weight="bold" />
-          </article>
-
-          <article className="event-stage-engagement">
-            <div><span>Engagement score</span><strong>92%</strong><b>Excellent</b></div>
-            <div className="event-stage-engagement-line" aria-hidden="true"><i /><i /><i /><i /><i /><i /></div>
-          </article>
         </section>
-      </section>
       </div>
 
       <section className="virtual-events-capabilities" id="capabilities" aria-labelledby="virtual-events-capabilities-title">
@@ -421,494 +422,494 @@ export function VirtualEventsPage() {
       {/* ── DOT MATRIX BACKGROUND GRID ── */}
       <div className="landing-theme-pink-dots">
 
-      {/* ── CONTACT/DEMO FORM CARD ── */}
-      <section ref={formRef} style={{
-        padding: "80px 24px",
-        width: "100%",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        boxSizing: "border-box",
-      }}>
-        <div className="webinar-form-card">
-          {/* Left Column Info */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "20px", textAlign: "left" }}>
-            <h2 style={{
-              fontSize: "clamp(30px, 4vw, 44px)",
-              fontWeight: 850,
-              color: "#ffffff",
-              margin: 0,
-              lineHeight: 1.15,
-              letterSpacing: "-0.02em",
-            }}>
-              Let's Get<br />Your Event Going!
-            </h2>
-            <p style={{
-              fontSize: "16px",
-              color: "rgba(255, 255, 255, 0.7)",
-              margin: 0,
-              fontWeight: 500,
-            }}>
-              Connect With Us Today!
-            </p>
+        {/* ── CONTACT/DEMO FORM CARD ── */}
+        <section ref={formRef} style={{
+          padding: "80px 24px",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          boxSizing: "border-box",
+        }}>
+          <div className="webinar-form-card">
+            {/* Left Column Info */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "20px", textAlign: "left" }}>
+              <h2 style={{
+                fontSize: "clamp(30px, 4vw, 44px)",
+                fontWeight: 850,
+                color: "#ffffff",
+                margin: 0,
+                lineHeight: 1.15,
+                letterSpacing: "-0.02em",
+              }}>
+                Let's Get<br />Your Event Going!
+              </h2>
+              <p style={{
+                fontSize: "16px",
+                color: "rgba(255, 255, 255, 0.7)",
+                margin: 0,
+                fontWeight: 500,
+              }}>
+                Connect With Us Today!
+              </p>
 
-            <div style={{
-              marginTop: "24px",
-              borderTop: "1px solid rgba(255, 255, 255, 0.1)",
-              paddingTop: "24px",
-              display: "flex",
-              flexDirection: "column",
-              gap: "8px",
-            }}>
-              <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>Let's talk!</span>
-              <a href="tel:+919509936100" style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", textDecoration: "none" }}>
-                +91 90000000000
-              </a>
-            </div>
-          </div>
-
-          {/* Right Column Form */}
-          <div style={{ width: "100%" }}>
-            {submitted ? (
               <div style={{
+                marginTop: "24px",
+                borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+                paddingTop: "24px",
                 display: "flex",
                 flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
-                gap: "16px",
-                padding: "24px 0",
+                gap: "8px",
               }}>
+                <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.5)", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>Let's talk!</span>
+                <a href="tel:+917039961777" style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", textDecoration: "none" }}>
+                  +91 7039961777
+                </a>
+              </div>
+            </div>
+
+            {/* Right Column Form */}
+            <div style={{ width: "100%" }}>
+              {submitted ? (
                 <div style={{
-                  width: "56px",
-                  height: "56px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                  gap: "16px",
+                  padding: "24px 0",
+                }}>
+                  <div style={{
+                    width: "56px",
+                    height: "56px",
+                    borderRadius: "50%",
+                    background: "rgba(59, 130, 246, 0.1)",
+                    border: "2px solid #3b82f6",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#3b82f6",
+                    marginBottom: "8px",
+                  }}>
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  </div>
+                  <h3 style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", margin: 0 }}>
+                    Demo Request Received!
+                  </h3>
+                  <p style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "14px", lineHeight: 1.5, margin: 0, maxWidth: "340px" }}>
+                    Thank you! Our event specialists will get in touch with you within 24 hours.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmit} className="webinar-contact-form" noValidate>
+                  {submitError && (
+                    <div style={{
+                      background: "rgba(239, 68, 68, 0.1)",
+                      border: "1px solid rgba(239, 68, 68, 0.3)",
+                      borderRadius: "10px",
+                      padding: "12px 14px",
+                      color: "#f87171",
+                      fontSize: "13px",
+                      fontWeight: 600,
+                      textAlign: "left"
+                    }}>
+                      ⚠️ {submitError}
+                    </div>
+                  )}
+
+                  {/* Form Row 1 */}
+                  <div className="form-row three-cols">
+                    {/* Full Name */}
+                    <div className="form-field">
+                      <input
+                        name="fullName"
+                        value={form.fullName}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        maxLength={60}
+                        placeholder="Full Name* (Max 60 chars)"
+                        style={inputStyle("fullName")}
+                      />
+                      {renderError("fullName")}
+                    </div>
+
+                    {/* Work Email */}
+                    <div className="form-field">
+                      <input
+                        name="workEmail"
+                        type="email"
+                        value={form.workEmail}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        placeholder="Your Work Email*"
+                        style={inputStyle("workEmail")}
+                      />
+                      {renderError("workEmail")}
+                    </div>
+
+                    {/* Phone */}
+                    <div className="form-field">
+                      <div className="phone-combo-field">
+                        <div className="country-custom-dropdown-container" ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
+                          <button
+                            type="button"
+                            className="country-dropdown-btn"
+                            onClick={() => setIsCountryOpen((prev) => !prev)}
+                            style={{
+                              ...inputStyle("phone"),
+                              minWidth: "85px",
+                              paddingRight: "24px",
+                              appearance: "none",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              position: "relative",
+                            }}
+                          >
+                            <img
+                              src={COUNTRY_CODES.find((c) => c.dial === form.countryCode)?.flagUrl || "https://flagcdn.com/w40/in.png"}
+                              alt={form.countryCode}
+                              className="country-btn-flag-img"
+                              style={{ width: "20px", height: "auto", borderRadius: "2px" }}
+                            />
+                            <span className="country-btn-code">
+                              {COUNTRY_CODES.find((c) => c.dial === form.countryCode)?.code || "IN"}
+                            </span>
+                            <span style={{
+                              position: "absolute",
+                              right: "10px",
+                              top: "50%",
+                              transform: "translateY(-50%)",
+                              fontSize: "8px",
+                              color: "rgba(255, 255, 255, 0.5)",
+                              pointerEvents: "none",
+                            }}>▼</span>
+                          </button>
+
+                          {isCountryOpen && (
+                            <div className="custom-country-menu" style={{
+                              position: "absolute",
+                              top: "calc(100% + 8px)",
+                              left: 0,
+                              background: "#0c1033",
+                              border: "1px solid rgba(255, 255, 255, 0.15)",
+                              borderRadius: "12px",
+                              boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
+                              zIndex: 100,
+                              width: "160px",
+                              maxHeight: "220px",
+                              overflowY: "auto",
+                              padding: "6px",
+                              boxSizing: "border-box",
+                            }}>
+                              {COUNTRY_CODES.map((c) => (
+                                <button
+                                  key={c.code}
+                                  type="button"
+                                  className={`country-menu-item ${c.dial === form.countryCode ? "active" : ""}`}
+                                  onClick={() => {
+                                    setForm((prev) => ({
+                                      ...prev,
+                                      countryCode: c.dial,
+                                    }));
+                                    setIsCountryOpen(false);
+                                  }}
+                                  style={{
+                                    width: "100%",
+                                    padding: "8px 10px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: "8px",
+                                    background: c.dial === form.countryCode ? "rgba(255,255,255,0.1)" : "transparent",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    cursor: "pointer",
+                                    textAlign: "left",
+                                    fontSize: "13.5px",
+                                    color: "#ffffff",
+                                  }}
+                                >
+                                  <img src={c.flagUrl} alt={c.code} style={{ width: "18px", height: "auto", borderRadius: "1px" }} />
+                                  <span style={{ fontWeight: 600 }}>{c.code}</span>
+                                  <span style={{ color: "rgba(255,255,255,0.6)", marginLeft: "auto" }}>{c.dial}</span>
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <input
+                          name="phone"
+                          type="tel"
+                          value={form.phone}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          placeholder="Phone No.*"
+                          style={{ ...inputStyle("phone"), border: "none", paddingLeft: "10px" }}
+                        />
+                      </div>
+                      {renderError("phone")}
+                    </div>
+                  </div>
+
+                  {/* Form Row 2 */}
+                  <div className="form-row three-cols">
+                    {/* City */}
+                    <div className="form-field">
+                      <input
+                        name="city"
+                        value={form.city}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        maxLength={60}
+                        placeholder="City* (Max 60 chars)"
+                        style={inputStyle("city")}
+                      />
+                      {renderError("city")}
+                    </div>
+
+                    {/* Company */}
+                    <div className="form-field">
+                      <input
+                        name="company"
+                        value={form.company}
+                        onChange={handleChange}
+                        onBlur={handleBlur}
+                        maxLength={60}
+                        placeholder="Company* (Max 60 chars)"
+                        style={inputStyle("company")}
+                      />
+                      {renderError("company")}
+                    </div>
+
+                    {/* Category of Business */}
+                    <div className="form-field">
+                      <div style={{ position: "relative" }}>
+                        <select
+                          name="category"
+                          value={form.category}
+                          onChange={handleChange}
+                          onBlur={handleBlur}
+                          style={{
+                            ...inputStyle("category"),
+                            appearance: "none",
+                            cursor: "pointer",
+                            color: form.category ? "#0f172a" : "rgba(15, 23, 42, 0.5)",
+                            width: "100%",
+                            backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
+                            backgroundRepeat: "no-repeat",
+                            backgroundPosition: "right 16px center",
+                            backgroundSize: "16px",
+                          }}
+                        >
+                          <option value="" disabled>
+                            Category of Business*
+                          </option>
+                          {CATEGORIES.map((cat) => (
+                            <option key={cat} value={cat}>
+                              {cat}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {renderError("category")}
+                    </div>
+                  </div>
+
+                  {/* Form Row 3 */}
+                  <div className="form-row single-col">
+                    <div className="form-field">
+                      <textarea
+                        name="message"
+                        value={form.message}
+                        onChange={handleChange}
+                        maxLength={2000}
+                        rows={3}
+                        placeholder="Message (Max 2000 chars)"
+                        style={{
+                          ...inputStyle("message"),
+                          resize: "vertical",
+                          minHeight: "80px",
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Form Row 4: Submit Button */}
+                  <div className="form-row button-row">
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="form-submit-btn"
+                      style={{
+                        background: loading ? "rgba(255, 255, 255, 0.5)" : "#ffffff",
+                        color: "#6d28d9",
+                        border: "none",
+                        borderRadius: "10px",
+                        padding: "14px 20px",
+                        fontWeight: 800,
+                        fontSize: "14.5px",
+                        cursor: loading ? "not-allowed" : "pointer",
+                        transition: "all 0.2s ease",
+                      }}
+                    >
+                      {loading ? "Submitting…" : "Submit"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* ── INTERACTIVE EVENT SPACES CAROUSEL ── */}
+        <section style={{
+          padding: "80px 24px 40px",
+          width: "100%",
+          maxWidth: "1400px",
+          margin: "0 auto",
+          boxSizing: "border-box",
+          textAlign: "left",
+        }}>
+          {/* Header Row */}
+          <div style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-end",
+            marginBottom: "40px",
+            width: "100%",
+          }}>
+            <div>
+              <p style={{
+                fontSize: "12px",
+                fontWeight: 700,
+                color: "#7e22ce",
+                textTransform: "uppercase",
+                letterSpacing: "1.5px",
+                margin: "0 0 8px 0",
+              }}>
+                Host A Virtual Event
+              </p>
+              <h2 style={{
+                fontSize: "clamp(24px, 3.5vw, 36px)",
+                fontWeight: 850,
+                color: "#1e1035",
+                margin: 0,
+                letterSpacing: "-0.02em",
+              }}>
+                Your Audience - Your Way
+              </h2>
+            </div>
+
+            {/* Navigation Buttons */}
+            <div style={{ display: "flex", gap: "12px" }}>
+              <button
+                onClick={() => setCarouselIndex((prev) => (prev - 1 + virtualSpaces.length) % virtualSpaces.length)}
+                style={{
+                  width: "40px",
+                  height: "40px",
                   borderRadius: "50%",
-                  background: "rgba(59, 130, 246, 0.1)",
-                  border: "2px solid #3b82f6",
+                  background: "rgba(126, 34, 206, 0.08)",
+                  border: "1px solid rgba(126, 34, 206, 0.18)",
+                  color: "#7e22ce",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  color: "#3b82f6",
-                  marginBottom: "8px",
-                }}>
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                </div>
-                <h3 style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", margin: 0 }}>
-                  Demo Request Received!
-                </h3>
-                <p style={{ color: "rgba(255, 255, 255, 0.7)", fontSize: "14px", lineHeight: 1.5, margin: 0, maxWidth: "340px" }}>
-                  Thank you! Our event specialists will get in touch with you within 24 hours.
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleSubmit} className="webinar-contact-form" noValidate>
-                {submitError && (
-                  <div style={{
-                    background: "rgba(239, 68, 68, 0.1)",
-                    border: "1px solid rgba(239, 68, 68, 0.3)",
-                    borderRadius: "10px",
-                    padding: "12px 14px",
-                    color: "#f87171",
-                    fontSize: "13px",
-                    fontWeight: 600,
-                    textAlign: "left"
-                  }}>
-                    ⚠️ {submitError}
-                  </div>
-                )}
-
-                {/* Form Row 1 */}
-                <div className="form-row three-cols">
-                  {/* Full Name */}
-                  <div className="form-field">
-                    <input
-                      name="fullName"
-                      value={form.fullName}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      maxLength={60}
-                      placeholder="Full Name* (Max 60 chars)"
-                      style={inputStyle("fullName")}
-                    />
-                    {renderError("fullName")}
-                  </div>
-
-                  {/* Work Email */}
-                  <div className="form-field">
-                    <input
-                      name="workEmail"
-                      type="email"
-                      value={form.workEmail}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      placeholder="Your Work Email*"
-                      style={inputStyle("workEmail")}
-                    />
-                    {renderError("workEmail")}
-                  </div>
-
-                  {/* Phone */}
-                  <div className="form-field">
-                    <div className="phone-combo-field">
-                      <div className="country-custom-dropdown-container" ref={dropdownRef} style={{ position: "relative", flexShrink: 0 }}>
-                        <button
-                          type="button"
-                          className="country-dropdown-btn"
-                          onClick={() => setIsCountryOpen((prev) => !prev)}
-                          style={{
-                            ...inputStyle("phone"),
-                            minWidth: "85px",
-                            paddingRight: "24px",
-                            appearance: "none",
-                            cursor: "pointer",
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            position: "relative",
-                          }}
-                        >
-                          <img
-                            src={COUNTRY_CODES.find((c) => c.dial === form.countryCode)?.flagUrl || "https://flagcdn.com/w40/in.png"}
-                            alt={form.countryCode}
-                            className="country-btn-flag-img"
-                            style={{ width: "20px", height: "auto", borderRadius: "2px" }}
-                          />
-                          <span className="country-btn-code">
-                            {COUNTRY_CODES.find((c) => c.dial === form.countryCode)?.code || "IN"}
-                          </span>
-                          <span style={{
-                            position: "absolute",
-                            right: "10px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            fontSize: "8px",
-                            color: "rgba(255, 255, 255, 0.5)",
-                            pointerEvents: "none",
-                          }}>▼</span>
-                        </button>
-
-                        {isCountryOpen && (
-                          <div className="custom-country-menu" style={{
-                            position: "absolute",
-                            top: "calc(100% + 8px)",
-                            left: 0,
-                            background: "#0c1033",
-                            border: "1px solid rgba(255, 255, 255, 0.15)",
-                            borderRadius: "12px",
-                            boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
-                            zIndex: 100,
-                            width: "160px",
-                            maxHeight: "220px",
-                            overflowY: "auto",
-                            padding: "6px",
-                            boxSizing: "border-box",
-                          }}>
-                            {COUNTRY_CODES.map((c) => (
-                              <button
-                                key={c.code}
-                                type="button"
-                                className={`country-menu-item ${c.dial === form.countryCode ? "active" : ""}`}
-                                onClick={() => {
-                                  setForm((prev) => ({
-                                    ...prev,
-                                    countryCode: c.dial,
-                                  }));
-                                  setIsCountryOpen(false);
-                                }}
-                                style={{
-                                  width: "100%",
-                                  padding: "8px 10px",
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: "8px",
-                                  background: c.dial === form.countryCode ? "rgba(255,255,255,0.1)" : "transparent",
-                                  border: "none",
-                                  borderRadius: "8px",
-                                  cursor: "pointer",
-                                  textAlign: "left",
-                                  fontSize: "13.5px",
-                                  color: "#ffffff",
-                                }}
-                              >
-                                <img src={c.flagUrl} alt={c.code} style={{ width: "18px", height: "auto", borderRadius: "1px" }} />
-                                <span style={{ fontWeight: 600 }}>{c.code}</span>
-                                <span style={{ color: "rgba(255,255,255,0.6)", marginLeft: "auto" }}>{c.dial}</span>
-                              </button>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <input
-                        name="phone"
-                        type="tel"
-                        value={form.phone}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        placeholder="Phone No.*"
-                        style={{ ...inputStyle("phone"), border: "none", paddingLeft: "10px" }}
-                      />
-                    </div>
-                    {renderError("phone")}
-                  </div>
-                </div>
-
-                {/* Form Row 2 */}
-                <div className="form-row three-cols">
-                  {/* City */}
-                  <div className="form-field">
-                    <input
-                      name="city"
-                      value={form.city}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      maxLength={60}
-                      placeholder="City* (Max 60 chars)"
-                      style={inputStyle("city")}
-                    />
-                    {renderError("city")}
-                  </div>
-
-                  {/* Company */}
-                  <div className="form-field">
-                    <input
-                      name="company"
-                      value={form.company}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                      maxLength={60}
-                      placeholder="Company* (Max 60 chars)"
-                      style={inputStyle("company")}
-                    />
-                    {renderError("company")}
-                  </div>
-
-                  {/* Category of Business */}
-                  <div className="form-field">
-                    <div style={{ position: "relative" }}>
-                      <select
-                        name="category"
-                        value={form.category}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        style={{
-                          ...inputStyle("category"),
-                          appearance: "none",
-                          cursor: "pointer",
-                          color: form.category ? "#0f172a" : "rgba(15, 23, 42, 0.5)",
-                          width: "100%",
-                          backgroundImage: `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`,
-                          backgroundRepeat: "no-repeat",
-                          backgroundPosition: "right 16px center",
-                          backgroundSize: "16px",
-                        }}
-                      >
-                        <option value="" disabled>
-                          Category of Business*
-                        </option>
-                        {CATEGORIES.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    {renderError("category")}
-                  </div>
-                </div>
-
-                {/* Form Row 3 */}
-                <div className="form-row single-col">
-                  <div className="form-field">
-                    <textarea
-                      name="message"
-                      value={form.message}
-                      onChange={handleChange}
-                      maxLength={2000}
-                      rows={3}
-                      placeholder="Message (Max 2000 chars)"
-                      style={{
-                        ...inputStyle("message"),
-                        resize: "vertical",
-                        minHeight: "80px",
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Form Row 4: Submit Button */}
-                <div className="form-row button-row">
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="form-submit-btn"
-                    style={{
-                      background: loading ? "rgba(255, 255, 255, 0.5)" : "#ffffff",
-                      color: "#6d28d9",
-                      border: "none",
-                      borderRadius: "10px",
-                      padding: "14px 20px",
-                      fontWeight: 800,
-                      fontSize: "14.5px",
-                      cursor: loading ? "not-allowed" : "pointer",
-                      transition: "all 0.2s ease",
-                    }}
-                  >
-                    {loading ? "Submitting…" : "Submit"}
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        </div>
-      </section>
-
-         {/* ── INTERACTIVE EVENT SPACES CAROUSEL ── */}
-      <section style={{
-        padding: "80px 24px 40px",
-        width: "100%",
-        maxWidth: "1400px",
-        margin: "0 auto",
-        boxSizing: "border-box",
-        textAlign: "left",
-      }}>
-        {/* Header Row */}
-        <div style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-end",
-          marginBottom: "40px",
-          width: "100%",
-        }}>
-          <div>
-            <p style={{
-              fontSize: "12px",
-              fontWeight: 700,
-              color: "#7e22ce",
-              textTransform: "uppercase",
-              letterSpacing: "1.5px",
-              margin: "0 0 8px 0",
-            }}>
-              Host A Virtual Event
-            </p>
-            <h2 style={{
-              fontSize: "clamp(24px, 3.5vw, 36px)",
-              fontWeight: 850,
-              color: "#1e1035",
-              margin: 0,
-              letterSpacing: "-0.02em",
-            }}>
-              Your Audience - Your Way
-            </h2>
-          </div>
-
-          {/* Navigation Buttons */}
-          <div style={{ display: "flex", gap: "12px" }}>
-            <button
-              onClick={() => setCarouselIndex((prev) => (prev - 1 + virtualSpaces.length) % virtualSpaces.length)}
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                background: "rgba(126, 34, 206, 0.08)",
-                border: "1px solid rgba(126, 34, 206, 0.18)",
-                color: "#7e22ce",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.18)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; }}
-            >
-              ←
-            </button>
-            <button
-              onClick={() => setCarouselIndex((prev) => (prev + 1) % virtualSpaces.length)}
-              style={{
-                width: "40px",
-                height: "40px",
-                borderRadius: "50%",
-                background: "rgba(126, 34, 206, 0.08)",
-                border: "1px solid rgba(126, 34, 206, 0.18)",
-                color: "#7e22ce",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-                transition: "all 0.2s ease",
-              }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.18)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; }}
-            >
-              →
-            </button>
-          </div>
-        </div>
-
-        {/* Carousel Viewport */}
-        <div style={{
-          width: "100%",
-          overflow: "hidden",
-          position: "relative",
-          padding: "10px 0",
-        }}>
-          <div style={{
-            display: "flex",
-            gap: "24px",
-            transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
-            transform: `translateX(-${carouselIndex * 484}px)`,
-          }}>
-            {virtualSpaces.map((space, idx) => (
-              <div
-                key={idx}
-                style={{
-                  minWidth: "460px",
-                  width: "460px",
-                  height: "310px",
-                  borderRadius: "20px",
-                  overflow: "hidden",
-                  position: "relative",
-                  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.3)",
-                  border: "1px solid rgba(255, 255, 255, 0.08)",
-                  transition: "all 0.3s ease",
                   cursor: "pointer",
+                  transition: "all 0.2s ease",
                 }}
-                onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)"; }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.18)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; }}
               >
-                <img
-                  src={space.image}
-                  alt={space.name}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-                {/* Space Label Badge */}
-                <div style={{
-                  position: "absolute",
-                  bottom: "12px",
-                  right: "12px",
-                  background: "rgba(0, 0, 0, 0.75)",
-                  backdropFilter: "blur(4px)",
-                  color: "#ffffff",
-                  padding: "4px 12px",
-                  borderRadius: "20px",
-                  fontSize: "11px",
-                  fontWeight: 700,
-                  letterSpacing: "0.5px",
-                }}>
-                  {space.name}
-                </div>
-              </div>
-            ))}
+                ←
+              </button>
+              <button
+                onClick={() => setCarouselIndex((prev) => (prev + 1) % virtualSpaces.length)}
+                style={{
+                  width: "40px",
+                  height: "40px",
+                  borderRadius: "50%",
+                  background: "rgba(126, 34, 206, 0.08)",
+                  border: "1px solid rgba(126, 34, 206, 0.18)",
+                  color: "#7e22ce",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.18)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(126, 34, 206, 0.08)"; }}
+              >
+                →
+              </button>
+            </div>
           </div>
-        </div>
-      </section>
+
+          {/* Carousel Viewport */}
+          <div style={{
+            width: "100%",
+            overflow: "hidden",
+            position: "relative",
+            padding: "10px 0",
+          }}>
+            <div style={{
+              display: "flex",
+              gap: "28px",
+              transition: "transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)",
+              transform: `translateX(-${carouselIndex * 608}px)`,
+            }}>
+              {virtualSpaces.map((space, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    minWidth: "580px",
+                    width: "580px",
+                    height: "380px",
+                    borderRadius: "20px",
+                    overflow: "hidden",
+                    position: "relative",
+                    boxShadow: "0 10px 30px rgba(0, 0, 0, 0.3)",
+                    border: "1px solid rgba(255, 255, 255, 0.08)",
+                    transition: "all 0.3s ease",
+                    cursor: "pointer",
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-4px)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.2)"; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.borderColor = "rgba(255, 255, 255, 0.08)"; }}
+                >
+                  <img
+                    src={space.image}
+                    alt={space.name}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  {/* Space Label Badge */}
+                  <div style={{
+                    position: "absolute",
+                    bottom: "12px",
+                    right: "12px",
+                    background: "rgba(0, 0, 0, 0.75)",
+                    backdropFilter: "blur(4px)",
+                    color: "#ffffff",
+                    padding: "4px 12px",
+                    borderRadius: "20px",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    letterSpacing: "0.5px",
+                  }}>
+                    {space.name}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
       </div>
 
       {/* ── LIGHT THEME DOT MATRIX BACKGROUND GRID ── */}
@@ -927,25 +928,25 @@ export function VirtualEventsPage() {
           boxSizing: "border-box",
         }}>
           <p style={{
-            fontSize: "13px",
-            fontWeight: 700,
+            fontSize: "15px",
+            fontWeight: 800,
             color: "#6d28d9",
             textTransform: "uppercase",
-            letterSpacing: "1px",
+            letterSpacing: "1.5px",
             marginBottom: "16px",
           }}>
-            Do More With Events, Power them With Inter
+            Elevate Every Experience With SyncoraXP
           </p>
           <h2 style={{
-            fontSize: "clamp(24px, 3.5vw, 38px)",
+            fontSize: "clamp(28px, 4.2vw, 46px)",
             fontWeight: 850,
             color: "#1e1b4b",
-            maxWidth: "800px",
+            maxWidth: "850px",
             margin: "0 auto 20px",
-            lineHeight: 1.25,
-            letterSpacing: "-0.01em",
+            lineHeight: 1.2,
+            letterSpacing: "-0.02em",
           }}>
-            Virtual Events Are The New Way<br />Businesses Engage With Customers
+            Transform Virtual Events Into<br />High-Impact, Interactive Experiences
           </h2>
         </section>
 
@@ -979,8 +980,8 @@ export function VirtualEventsPage() {
                   desc: "Dynamic Banners are very helpful – As in the same space, the host is able to display a number of brands at the same time due to the dynamic functionality. This enhances the sponsorship at the virtual events additionally it also provides the benefit to the displayed brand, as an attendee can easily reach out to their brand booth directly during the event.",
                 },
                 {
-                  title: "AI Matchmaking Tool",
-                  desc: "This enables exhibitors & attendees to get an entire list of people who have matched with their interest areas. The exhibitors & attendees can further connect & network with each individual from that list. In fact attendees can also directly reach out to the exhibitor booth directly via that matched list.",
+                  title: "1-on-1 Chat Functionality",
+                  desc: "Enable attendees, exhibitors, and speakers to connect directly via private text, audio, or video 1-on-1 chats. Attendees can initiate instant conversations, ask questions, and build meaningful professional relationships effortlessly.",
                 },
               ].map((tab, idx) => {
                 const isActive = activeTabRow1 === idx;
@@ -1041,52 +1042,58 @@ export function VirtualEventsPage() {
                 border: "1px solid rgba(109, 40, 217, 0.08)",
               }}>
                 {activeTabRow1 === 0 && (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", color: "#1e1b4b" }}>
-                    {/* Networking Tables Mockup */}
-                    <div style={{ width: "100px", height: "100px", borderRadius: "50%", border: "4px dashed #7c3aed", display: "grid", placeItems: "center", position: "relative" }}>
-                      <div style={{ width: "60px", height: "60px", borderRadius: "50%", background: "#ede9fe", display: "grid", placeItems: "center", fontWeight: "bold" }}>Table 1</div>
-                      <div style={{ position: "absolute", top: "-10px", width: "24px", height: "24px", borderRadius: "50%", background: "#3b82f6" }} />
-                      <div style={{ position: "absolute", bottom: "-10px", width: "24px", height: "24px", borderRadius: "50%", background: "#10b981" }} />
-                      <div style={{ position: "absolute", left: "-10px", width: "24px", height: "24px", borderRadius: "50%", background: "#ec4899" }} />
-                      <div style={{ position: "absolute", right: "-10px", width: "24px", height: "24px", borderRadius: "50%", background: "#f59e0b" }} />
-                    </div>
-                    <span style={{ fontSize: "14px", fontWeight: "bold" }}>Interactive Networking Lounge</span>
-                  </div>
+                  <img
+                    src="/virtual-events-assets/networking-tables-bg.png"
+                    alt="Networking Tables Preview"
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
                 )}
 
                 {activeTabRow1 === 1 && (
                   <img
-                    src="https://cdn5.godcstatic.com/dreamcast/solutions/virtual-event-platform/Slider_05.png"
+                    src="/virtual-events-assets/hall.jpg"
                     alt="Dynamic Banners Preview"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 )}
 
                 {activeTabRow1 === 2 && (
-                  <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", gap: "28px", color: "#1e1b4b", position: "relative" }}>
-                    {/* AI Matchmaking Mockup */}
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?fit=crop&w=80&h=80&q=80" style={{ width: "70px", height: "70px", borderRadius: "50%", border: "3px solid #7c3aed" }} alt="" />
-                      <span style={{ fontSize: "11px", fontWeight: 700 }}>Alex R.</span>
-                      <span style={{ fontSize: "8px", background: "#ede9fe", color: "#7c3aed", padding: "2px 6px", borderRadius: "8px", fontWeight: 800 }}>Business Tech</span>
+                  <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "12px", background: "#f8fafc", padding: "16px", borderRadius: "14px", border: "1px solid #e2e8f0", boxShadow: "0 4px 12px rgba(0,0,0,0.03)" }}>
+                    {/* 1-on-1 Chat Header */}
+                    <div style={{ display: "flex", alignItems: "center", justifyBetween: "space-between", borderBottom: "1px solid #e2e8f0", paddingBottom: "10px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div style={{ position: "relative" }}>
+                          <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?fit=crop&w=80&h=80&q=80" style={{ width: "34px", height: "34px", borderRadius: "50%" }} alt="Maya S." />
+                          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e", position: "absolute", bottom: 0, right: 0, border: "2px solid #fff" }} />
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span style={{ fontSize: "12.5px", fontWeight: 700, color: "#0f172a" }}>Maya S.</span>
+                          <span style={{ fontSize: "10px", color: "#22c55e", fontWeight: 600 }}>Active Now</span>
+                        </div>
+                      </div>
+                      <span style={{ fontSize: "10px", background: "#ede9fe", color: "#7c3aed", padding: "3px 8px", borderRadius: "10px", fontWeight: 700, marginLeft: "auto" }}>1-on-1 Direct Chat</span>
                     </div>
 
-                    {/* Glowing Connect Path */}
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", position: "relative" }}>
-                      <div style={{ width: "50px", height: "2px", background: "linear-gradient(to right, #7c3aed, #ec4899)", animation: "pulse 1.5s infinite" }} />
-                      <span style={{ fontSize: "12px", position: "absolute", background: "#ffffff", padding: "2px 6px", borderRadius: "10px", border: "1px solid #ddd", fontWeight: 800 }}>98% Match</span>
+                    {/* Chat Messages Body */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "4px 0" }}>
+                      <div style={{ alignSelf: "flex-start", background: "#ffffff", border: "1px solid #e2e8f0", color: "#334155", padding: "8px 12px", borderRadius: "12px 12px 12px 2px", fontSize: "12px", maxWidth: "82%" }}>
+                        Hi Maya! Great meeting you in the networking lounge.
+                      </div>
+                      <div style={{ alignSelf: "flex-end", background: "#7c3aed", color: "#ffffff", padding: "8px 12px", borderRadius: "12px 12px 2px 12px", fontSize: "12px", maxWidth: "82%" }}>
+                        Hey Alex! Loved your talk. Let's discuss a quick collab! 💬
+                      </div>
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-                      <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?fit=crop&w=80&h=80&q=80" style={{ width: "70px", height: "70px", borderRadius: "50%", border: "3px solid #ec4899" }} alt="" />
-                      <span style={{ fontSize: "11px", fontWeight: 700 }}>Maya S.</span>
-                      <span style={{ fontSize: "8px", background: "#fce7f3", color: "#ec4899", padding: "2px 6px", borderRadius: "8px", fontWeight: 800 }}>Product Design</span>
+                    {/* Input Bar Preview */}
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#ffffff", border: "1px solid #cbd5e1", borderRadius: "20px", padding: "6px 12px", marginTop: "4px" }}>
+                      <span style={{ fontSize: "11.5px", color: "#94a3b8", flex: 1 }}>Type a private message...</span>
+                      <div style={{ width: "22px", height: "22px", borderRadius: "50%", background: "#7c3aed", display: "grid", placeItems: "center", color: "#fff", fontSize: "10px", fontWeight: "bold" }}>➔</div>
                     </div>
                   </div>
                 )}
+              </div>
             </div>
           </div>
-        </div>
 
           {/* ROW 2: VISUAL (LEFT) | TABS (RIGHT) */}
           <div style={{
@@ -1127,8 +1134,9 @@ export function VirtualEventsPage() {
                         <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#ffbd2e" }} />
                         <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#27c93f" }} />
                       </div>
-                      <div style={{ height: "106px", display: "grid", placeItems: "center", background: "#295ce8", color: "#fff", fontSize: "10px", fontWeight: "bold" }}>
-                        SyncoraXP Lobby
+                      <div style={{ height: "106px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", background: "#295ce8", color: "#fff" }}>
+                        <img src="/SyncoraXP_Logo.png" alt="SyncoraXP Logo" style={{ height: "26px", width: "auto", objectFit: "contain" }} />
+                        <span style={{ fontSize: "11px", fontWeight: "bold", letterSpacing: "0.3px" }}>SyncoraXP Lobby</span>
                       </div>
                     </div>
                     <span style={{ fontSize: "14px", fontWeight: "bold" }}>No Install Browser App</span>
@@ -1137,42 +1145,44 @@ export function VirtualEventsPage() {
 
                 {activeTabRow2 === 1 && (
                   <img
-                    src="https://cdn5.godcstatic.com/dreamcast/solutions/virtual-event-platform/Slider_04.png"
+                    src="/virtual-events-assets/custom-environment-bg.png"
                     alt="Custom Environment Preview"
                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
                   />
                 )}
 
                 {activeTabRow2 === 2 && (
-                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "14px", width: "100%", color: "#1e1b4b" }}>
-                    {/* DIY Booth Editor Mockup */}
-                    <div style={{ display: "flex", gap: "10px", width: "95%", height: "130px", background: "#f3f4f6", borderRadius: "10px", padding: "10px", boxSizing: "border-box", border: "1px solid #e5e7eb" }}>
-                      {/* Left Toolbar */}
-                      <div style={{ width: "30px", background: "#e5e7eb", borderRadius: "6px", display: "flex", flexDirection: "column", gap: "6px", padding: "4px", boxSizing: "border-box" }}>
-                        <div style={{ width: "100%", height: "14px", background: "#7c3aed", borderRadius: "4px" }} />
-                        <div style={{ width: "100%", height: "14px", background: "#ccc", borderRadius: "4px" }} />
-                        <div style={{ width: "100%", height: "14px", background: "#ccc", borderRadius: "4px" }} />
+                  <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "10px", padding: "16px", background: "linear-gradient(135deg, #1e1b4b 0%, #31104b 100%)", borderRadius: "16px", color: "#fff", boxSizing: "border-box" }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "8px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 800, letterSpacing: "0.5px", textTransform: "uppercase", color: "#c084fc" }}>🎮 Gamification & Arcade</span>
+                      <span style={{ fontSize: "10px", background: "rgba(168, 85, 247, 0.25)", color: "#e9d5ff", padding: "2px 8px", borderRadius: "10px", fontWeight: 700 }}>7 Active Games</span>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                      <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <span style={{ fontSize: "16px" }}>📸</span>
+                        <span style={{ fontSize: "11px", fontWeight: 800 }}>AI Photobooth</span>
+                        <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.6)" }}>Avatars & Style Transfer</span>
                       </div>
-                      {/* Booth Preview Center */}
-                      <div style={{ flex: 1, background: "#fff", border: "1px solid #ddd", borderRadius: "6px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px", position: "relative" }}>
-                        <span style={{ fontSize: "9px", fontWeight: "bold", color: "#1e1b4b" }}>Interactive Booth</span>
-                        <div style={{ display: "flex", gap: "4px" }}>
-                          <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#3b82f6" }} />
-                          <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: "#ec4899" }} />
-                        </div>
+                      <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <span style={{ fontSize: "16px" }}>❌⭕</span>
+                        <span style={{ fontSize: "11px", fontWeight: 800 }}>Tic-Tac-Toe</span>
+                        <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.6)" }}>Play vs Smart CPU Bot</span>
                       </div>
-                      {/* Right Presets */}
-                      <div style={{ width: "55px", background: "#e5e7eb", borderRadius: "6px", padding: "6px", display: "flex", flexDirection: "column", gap: "6px", boxSizing: "border-box" }}>
-                        <div style={{ width: "100%", height: "8px", background: "#10b981", borderRadius: "2px" }} />
-                        <div style={{ width: "100%", height: "8px", background: "#3b82f6", borderRadius: "2px" }} />
-                        <div style={{ width: "100%", height: "8px", background: "#f59e0b", borderRadius: "2px" }} />
+                      <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <span style={{ fontSize: "16px" }}>🎴</span>
+                        <span style={{ fontSize: "11px", fontWeight: 800 }}>Memory Match</span>
+                        <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.6)" }}>Sponsor logo matching</span>
+                      </div>
+                      <div style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)", borderRadius: "10px", padding: "10px", display: "flex", flexDirection: "column", gap: "4px" }}>
+                        <span style={{ fontSize: "16px" }}>🐍</span>
+                        <span style={{ fontSize: "11px", fontWeight: 800 }}>Snake & Word Puzzles</span>
+                        <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.6)" }}>Scramble & Leaderboards</span>
                       </div>
                     </div>
-                    <span style={{ fontSize: "13px", fontWeight: "bold" }}>DIY Banner, Colors & Button Customizer</span>
                   </div>
                 )}
+              </div>
             </div>
-          </div>
 
             {/* Tabs Right Column */}
             <div style={{ display: "flex", flexDirection: "column", gap: "16px", textAlign: "left", order: window.innerWidth > 768 ? 2 : 1 }}>
@@ -1186,8 +1196,8 @@ export function VirtualEventsPage() {
                   desc: "SyncoraXP virtual event platform supports you to customise the entire environment of your event. You can inculcate different functionalities, designs, music, tabs, icons, touchpoints etc that uplift the overall ambience of your event, basis of your brand requirement.",
                 },
                 {
-                  title: "DIY Booth Button Icons And Names",
-                  desc: "Our virtual event platform offers a completely 'Do It Yourself' Booth Module. The exhibitors are empowered to adjust various colours, banners, functionality, icons, symbols along with video recordings, pictures, or even PDF in a jiffy. Do it yourself & make your booth your way!",
+                  title: "Gamification & Interactive Games",
+                  desc: "Drive peak engagement with built-in event games like AI Photobooth, Tic-Tac-Toe, Memory Match, Snake, Word Scramble, Memory Matrix, and real-time Leaderboards that reward attendee participation throughout your event.",
                 },
               ].map((tab, idx) => {
                 const isActive = activeTabRow2 === idx;
@@ -1523,23 +1533,6 @@ export function VirtualEventsPage() {
                   }}
                 >
                   Talk To An Expert
-                </Link>
-                <Link
-                  to="/book-demo"
-                  style={{
-                    background: "transparent",
-                    color: "#7e22ce",
-                    border: "2px solid rgba(126, 34, 206, 0.4)",
-                    borderRadius: "10px",
-                    padding: "12px 24px",
-                    fontWeight: 800,
-                    fontSize: "14px",
-                    textDecoration: "none",
-                    display: "inline-block",
-                    textAlign: "center",
-                  }}
-                >
-                  Free Demo
                 </Link>
               </div>
             </div>
