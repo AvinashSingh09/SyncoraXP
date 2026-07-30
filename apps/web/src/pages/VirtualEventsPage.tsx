@@ -152,7 +152,7 @@ const virtualSpacesOld = [
   { name: "Virtual Event Venue", image: "/virtual-events-assets/virtual-event.jpg" },
 ];
 */
-
+//
 const virtualSpaces = [
   { name: "Virtual Event Space 1", image: "/landing-virtualevent/Ref 1.jpeg" },
   { name: "Virtual Event Space 2", image: "/landing-virtualevent/Ref 2.jpeg" },
