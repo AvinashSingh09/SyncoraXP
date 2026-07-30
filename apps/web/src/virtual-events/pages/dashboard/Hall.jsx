@@ -199,8 +199,14 @@ const Hall = () => {
                                     }
                                 }}
                             >
-                                <div className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-500/30 max-w-[150px] text-center hover:border-blue-400">
-                                    <p className="text-[10px] font-semibold leading-tight whitespace-nowrap">
+                                <div 
+                                    className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-500/30 text-center hover:border-blue-400"
+                                    style={{ maxWidth: `${point.boxWidth || 150}px` }}
+                                >
+                                    <p 
+                                        className="font-semibold leading-tight whitespace-normal break-words"
+                                        style={{ fontSize: `${point.fontSize || 10}px` }}
+                                    >
                                         {point.text}
                                     </p>
                                 </div>

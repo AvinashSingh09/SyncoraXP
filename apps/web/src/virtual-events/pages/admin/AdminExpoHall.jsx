@@ -765,7 +765,10 @@ const AdminExpoHall = () => {
                                             setSelectedItemType('point');
                                         }}
                                     >
-                                        <div className={`bg-black text-white rounded-xl p-2 shadow-2xl border relative ${selectedItemId === point.id ? 'border-blue-400 ring-2 ring-blue-400/50' : 'border-blue-500/30'} max-w-[150px] text-center`}>
+                                        <div 
+                                            className={`bg-black text-white rounded-xl p-2 shadow-2xl border relative ${selectedItemId === point.id ? 'border-blue-400 ring-2 ring-blue-400/50' : 'border-blue-500/30'} text-center`}
+                                            style={{ maxWidth: `${point.boxWidth || 150}px` }}
+                                        >
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
@@ -778,7 +781,10 @@ const AdminExpoHall = () => {
                                             >
                                                 ✕
                                             </button>
-                                            <p className="text-sm font-semibold leading-tight whitespace-nowrap">
+                                            <p 
+                                                className="font-semibold leading-tight whitespace-normal break-words"
+                                                style={{ fontSize: `${point.fontSize || 14}px` }}
+                                            >
                                                 {point.text || 'New Point'}
                                             </p>
                                         </div>
@@ -888,6 +894,36 @@ const AdminExpoHall = () => {
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setPoints(prev => prev.map(p => p.id === selectedItemId ? { ...p, size: val } : p));
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-3">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Box Width (px)</label>
+                                <input
+                                    type="number"
+                                    min="50"
+                                    max="400"
+                                    value={selectedPoint.boxWidth || 150}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        setPoints(prev => prev.map(p => p.id === selectedItemId ? { ...p, boxWidth: val } : p));
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Font Size (px)</label>
+                                <input
+                                    type="number"
+                                    min="8"
+                                    max="32"
+                                    value={selectedPoint.fontSize || 14}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        setPoints(prev => prev.map(p => p.id === selectedItemId ? { ...p, fontSize: val } : p));
                                     }}
                                     className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
                                 />

@@ -164,8 +164,14 @@ const Lounge = () => {
                         className="absolute bottom-1 left-0 transform -translate-x-1/2 flex flex-col items-center pointer-events-auto cursor-pointer transition-all z-10 hover:scale-105"
                     >
                         {/* Discussion Text Bubble */}
-                        <div className="bg-black/90 text-white rounded-xl p-3 shadow-2xl border border-red-500/30 max-w-[200px] text-center">
-                            <p className="text-[10px] font-semibold leading-normal whitespace-nowrap">
+                        <div 
+                            className="bg-black/90 text-white rounded-xl p-3 shadow-2xl border border-red-500/30 text-center"
+                            style={{ maxWidth: `${point.boxWidth || 200}px` }}
+                        >
+                            <p 
+                                className="font-semibold leading-normal whitespace-normal break-words"
+                                style={{ fontSize: `${point.fontSize || 10}px` }}
+                            >
                                 {point.text}
                             </p>
                         </div>
