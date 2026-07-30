@@ -227,14 +227,14 @@ const AdminRoundTables = () => {
                         {roundTablesPosters.map(poster => (
                             <div
                                 key={poster.id}
-                                className={`rt-item absolute border-2 ${selectedRtItemId === poster.id ? 'border-indigo-400 z-30 shadow-2xl ring-4 ring-indigo-500/50' : 'border-transparent z-10 hover:border-white/50 hover:shadow-xl'} bg-black/20 flex items-center justify-center overflow-hidden cursor-move pointer-events-auto`}
+                                className={`rt-item absolute border-2 ${selectedRtItemId === poster.id ? 'border-indigo-400 z-30 shadow-2xl ring-4 ring-indigo-500/50' : 'border-transparent z-10 hover:border-white/50 hover:shadow-xl'} ${poster.type === 'youtube' ? 'bg-transparent' : 'bg-black/20'} flex items-center justify-center overflow-hidden cursor-move pointer-events-auto`}
                                 style={{
                                     top: `${poster.top}%`,
                                     left: `${poster.left}%`,
                                     width: `${poster.width}%`,
                                     height: `${poster.height}%`,
                                     transform: 'translate(-50%, -50%)',
-                                    backgroundImage: poster.imageUrl ? `url(${poster.imageUrl})` : 'none',
+                                    backgroundImage: poster.type === 'youtube' ? 'none' : (poster.imageUrl ? `url(${poster.imageUrl})` : 'none'),
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center'
                                 }}
@@ -244,8 +244,12 @@ const AdminRoundTables = () => {
                                     setSelectedRtItemType('poster');
                                 }}
                             >
-                                {!poster.imageUrl && (
-                                    <span className="text-white text-xs font-bold opacity-50 text-center px-1">POSTER ({poster.width}% &times; {poster.height}%)</span>
+                                {poster.type === 'youtube' && poster.videoUrl ? (
+                                    <iframe src={poster.videoUrl} className="w-full h-full border-0 pointer-events-none" title="YouTube Video" />
+                                ) : (
+                                    !poster.imageUrl && (
+                                        <span className="text-white text-xs font-bold opacity-50 text-center px-1">POSTER ({poster.width}% &times; {poster.height}%)</span>
+                                    )
                                 )}
                             </div>
                         ))}
@@ -313,8 +317,14 @@ const AdminRoundTables = () => {
                                              setSelectedRtItemType('point');
                                          }}
                                     >
-                                        <div className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-400 max-w-[150px] text-center relative">
-                                            <p className="text-sm font-semibold leading-tight whitespace-nowrap overflow-hidden text-ellipsis">
+                                        <div 
+                                            className="bg-black text-white rounded-xl p-2 shadow-2xl border border-blue-400 text-center relative"
+                                            style={{ maxWidth: `${point.boxWidth || 150}px` }}
+                                        >
+                                            <p 
+                                                className="font-semibold leading-tight whitespace-normal break-words"
+                                                style={{ fontSize: `${point.fontSize || 14}px` }}
+                                            >
                                                 {point.text || 'New Point'}
                                             </p>
                                         </div>
@@ -393,6 +403,36 @@ const AdminRoundTables = () => {
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setRoundTablesPoints(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, size: val } : p));
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-3">
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Box Width (px)</label>
+                                <input
+                                    type="number"
+                                    min="50"
+                                    max="400"
+                                    value={selectedRtPoint.boxWidth || 150}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        setRoundTablesPoints(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, boxWidth: val } : p));
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Font Size (px)</label>
+                                <input
+                                    type="number"
+                                    min="8"
+                                    max="32"
+                                    value={selectedRtPoint.fontSize || 14}
+                                    onChange={(e) => {
+                                        const val = Number(e.target.value);
+                                        setRoundTablesPoints(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, fontSize: val } : p));
                                     }}
                                     className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
                                 />
@@ -614,34 +654,66 @@ const AdminRoundTables = () => {
                             </button>
                         </div>
                         
-                        <div>
-                            <label className="block text-sm font-semibold text-gray-600 mb-1">Poster Image</label>
-                            <div className="flex items-center gap-3">
-                                <input 
-                                    type="text" 
-                                    value={selectedRtPoster.imageUrl} 
+                        <div className="mb-2">
+                            <label className="block text-sm font-semibold text-gray-600 mb-1">Content Type</label>
+                            <select
+                                value={selectedRtPoster.type || 'image'}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setRoundTablesPosters(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, type: val } : p));
+                                }}
+                                className="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm focus:outline-none focus:border-indigo-500"
+                            >
+                                <option value="image">Static Image</option>
+                                <option value="youtube">YouTube Video</option>
+                            </select>
+                        </div>
+
+                        {(selectedRtPoster.type || 'image') === 'image' ? (
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">Poster Image</label>
+                                <div className="flex items-center gap-3">
+                                    <input 
+                                        type="text" 
+                                        value={selectedRtPoster.imageUrl || ''} 
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setRoundTablesPosters(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, imageUrl: val } : p));
+                                        }}
+                                        className="flex-1 bg-white border border-indigo-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-indigo-500"
+                                        placeholder="https://example.com/poster.jpg"
+                                    />
+                                    <input 
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleRtPosterImageUpload}
+                                        className="hidden"
+                                        id="rt-poster-upload"
+                                    />
+                                    <label 
+                                        htmlFor="rt-poster-upload"
+                                        className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border border-indigo-300 font-bold px-3 py-2.5 rounded-lg text-sm cursor-pointer block text-center whitespace-nowrap"
+                                    >
+                                        Upload Poster
+                                    </label>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="mb-2">
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">YouTube Embed URL</label>
+                                <input
+                                    type="text"
+                                    value={selectedRtPoster.videoUrl || ''}
                                     onChange={(e) => {
                                         const val = e.target.value;
-                                        setRoundTablesPosters(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, imageUrl: val } : p));
+                                        setRoundTablesPosters(prev => prev.map(p => p.id === selectedRtItemId ? { ...p, videoUrl: val } : p));
                                     }}
-                                    className="flex-1 bg-white border border-indigo-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-indigo-500"
-                                    placeholder="https://example.com/poster.jpg"
+                                    className="w-full bg-white border border-indigo-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-indigo-500"
+                                    placeholder="https://www.youtube.com/embed/YOUR_VIDEO_ID"
                                 />
-                                <input 
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleRtPosterImageUpload}
-                                    className="hidden"
-                                    id="rt-poster-upload"
-                                />
-                                <label 
-                                    htmlFor="rt-poster-upload"
-                                    className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 border border-indigo-300 font-bold px-3 py-2 rounded-lg text-sm cursor-pointer block text-center whitespace-nowrap"
-                                >
-                                    Upload Poster
-                                </label>
+                                <p className="text-sm text-indigo-500 mt-1">Make sure to use the "Embed" link from YouTube.</p>
                             </div>
-                        </div>
+                        )}
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>

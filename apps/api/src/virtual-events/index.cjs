@@ -181,13 +181,17 @@ async function registerVirtualEvents(app) {
     const base64Data = req.body.image;
     if (!base64Data) return res.status(400).json({ success: false, message: 'Image data is required' });
 
-    try {
-      const cloudinaryUrl = await photobooth.uploadToCloudinary(base64Data);
-      if (cloudinaryUrl) {
-        return res.json({ success: true, url: cloudinaryUrl });
+    const isPdf = base64Data.startsWith('data:application/pdf');
+
+    if (!isPdf) {
+      try {
+        const cloudinaryUrl = await photobooth.uploadToCloudinary(base64Data);
+        if (cloudinaryUrl) {
+          return res.json({ success: true, url: cloudinaryUrl });
+        }
+      } catch (e) {
+        console.warn('Cloudinary upload fallback to local disk:', e.message);
       }
-    } catch (e) {
-      console.warn('Cloudinary upload fallback to local disk:', e.message);
     }
 
     const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);

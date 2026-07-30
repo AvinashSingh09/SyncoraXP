@@ -323,7 +323,7 @@ const Games = () => {
     }, []);
 
     if (activeSection === 'photobooth') {
-        return <Photobooth onBack={() => setActiveSection('games')} />;
+        return <Photobooth onBack={() => setActiveSection('engage')} />;
     }
 
     if (activeSection === 'games') {

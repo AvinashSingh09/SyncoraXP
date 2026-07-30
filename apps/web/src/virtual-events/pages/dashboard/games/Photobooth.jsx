@@ -11,7 +11,8 @@ import {
     MdChevronRight,
     MdFileDownload,
     MdPrint,
-    MdQrCode
+    MdQrCode,
+    MdFlip
 } from 'react-icons/md';
 import { photoboothService } from '../../../services/api';
 import { renderPersonaCard, PERSONA_QUOTES, PERSONA_BADGES } from '../../../utils/personaCanvasRenderer';
@@ -260,6 +261,7 @@ const Photobooth = ({ onBack }) => {
     const [activeTab, setActiveTab] = useState('all');
     const [imageSrc, setImageSrc] = useState(null);
     const [isCameraActive, setIsCameraActive] = useState(false);
+    const [isMirrored, setIsMirrored] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
     const [swappedImage, setSwappedImage] = useState(null);
     const [nickname, setNickname] = useState('');
@@ -375,6 +377,11 @@ const Photobooth = ({ onBack }) => {
             canvas.width = videoRef.current.videoWidth || 640;
             canvas.height = videoRef.current.videoHeight || 480;
             const ctx = canvas.getContext('2d');
+            // Mirror horizontally to match the mirrored camera preview if active
+            if (isMirrored) {
+                ctx.translate(canvas.width, 0);
+                ctx.scale(-1, 1);
+            }
             ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
             const dataUrl = canvas.toDataURL('image/jpeg');
             setImageSrc(dataUrl);
@@ -688,13 +695,20 @@ const Photobooth = ({ onBack }) => {
                             <div className="flex-1 w-full relative bg-slate-50 border border-slate-100 rounded-2xl overflow-hidden flex flex-col items-center justify-center min-h-[350px]">
                                 {isCameraActive ? (
                                     <div className="w-full h-full relative flex flex-col items-center justify-center bg-black min-h-[350px]">
-                                        <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover max-h-[360px]"></video>
+                                        <video ref={videoRef} autoPlay playsInline className={`w-full h-full object-cover max-h-[360px] ${isMirrored ? 'scale-x-[-1]' : ''}`}></video>
                                         <div className="absolute bottom-4 flex gap-4">
                                             <button
                                                 onClick={capturePhoto}
                                                 className="px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white rounded-full font-bold shadow-lg flex items-center gap-2 transition-transform hover:scale-105"
                                             >
                                                 <MdCameraAlt className="w-5 h-5" /> Capture
+                                            </button>
+                                            <button
+                                                onClick={() => setIsMirrored(!isMirrored)}
+                                                className="px-4 py-3 bg-white/20 hover:bg-white/30 text-white rounded-full font-semibold transition-colors flex items-center gap-1.5"
+                                                title="Flip camera view"
+                                            >
+                                                <MdFlip className="w-4 h-4" /> Flip
                                             </button>
                                             <button
                                                 onClick={stopCamera}

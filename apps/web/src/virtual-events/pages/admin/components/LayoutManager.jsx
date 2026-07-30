@@ -297,11 +297,11 @@ const LayoutManager = () => {
                                     left: `${poster.left}%`,
                                     width: `${poster.width}%`,
                                     height: `${poster.height}%`,
-                                    backgroundImage: poster.imageUrl ? `url(${poster.imageUrl})` : 'none',
-                                    backgroundColor: poster.imageUrl ? 'transparent' : 'rgba(255,255,255,0.8)',
+                                    backgroundImage: poster.type === 'youtube' ? 'none' : (poster.imageUrl ? `url(${poster.imageUrl})` : 'none'),
+                                    backgroundColor: poster.type === 'youtube' ? 'transparent' : (poster.imageUrl ? 'transparent' : 'rgba(255,255,255,0.8)'),
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
-                                    border: poster.imageUrl ? 'none' : '1px dashed #ccc'
+                                    border: (poster.type === 'youtube' || poster.imageUrl) ? 'none' : '1px dashed #ccc'
                                 }}
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -309,7 +309,11 @@ const LayoutManager = () => {
                                 }}
                                 onMouseDown={(e) => e.stopPropagation()}
                             >
-                                {!poster.imageUrl && <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500 font-bold text-center px-1 leading-tight">POSTER<br/>({poster.width}% &times; {poster.height}%)</div>}
+                                {poster.type === 'youtube' && poster.videoUrl ? (
+                                    <iframe src={poster.videoUrl} className="w-full h-full border-0 pointer-events-none" title="YouTube Video" />
+                                ) : (
+                                    !poster.imageUrl && <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500 font-bold text-center px-1 leading-tight">POSTER<br/>({poster.width}% &times; {poster.height}%)</div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -337,38 +341,72 @@ const LayoutManager = () => {
                                     </button>
                                 </div>
                                 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-850">
-                                    <div>
-                                        <label className="block text-sm font-semibold text-gray-500 mb-1">Poster Image URL</label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                value={selectedPoster.imageUrl}
-                                                onChange={(e) => {
-                                                    const val = e.target.value;
-                                                    setAuditoriumPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, imageUrl: val } : p));
-                                                }}
-                                                className="flex-1 bg-white border border-emerald-200 rounded-lg p-2 text-sm text-gray-800 focus:outline-none focus:border-emerald-500"
-                                                placeholder="e.g. /poster.png"
-                                            />
-                                            <div className="relative">
-                                                <input 
-                                                    type="file"
-                                                    accept="image/*"
-                                                    onChange={(e) => handlePosterImageUpload(e, selectedPosterId)}
-                                                    className="hidden"
-                                                    id={`poster-upload-${selectedPosterId}`}
+                                <div className="mb-2">
+                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Content Type</label>
+                                    <select
+                                        value={selectedPoster.type || 'image'}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setAuditoriumPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, type: val } : p));
+                                        }}
+                                        className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm focus:outline-none focus:border-emerald-500"
+                                    >
+                                        <option value="image">Static Image</option>
+                                        <option value="youtube">YouTube Video</option>
+                                    </select>
+                                </div>
+
+                                {(selectedPoster.type || 'image') === 'image' ? (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-850">
+                                        <div className="md:col-span-2">
+                                            <label className="block text-sm font-semibold text-gray-500 mb-1">Poster Image URL</label>
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    value={selectedPoster.imageUrl || ''}
+                                                    onChange={(e) => {
+                                                        const val = e.target.value;
+                                                        setAuditoriumPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, imageUrl: val } : p));
+                                                    }}
+                                                    className="flex-1 bg-white border border-emerald-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-emerald-500"
+                                                    placeholder="https://example.com/poster.jpg"
                                                 />
-                                                <label 
-                                                    htmlFor={`poster-upload-${selectedPosterId}`}
-                                                    className="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-300 font-bold px-2 py-2 rounded-lg text-sm cursor-pointer block text-center whitespace-nowrap"
-                                                >
-                                                    Upload
-                                                </label>
+                                                <div className="relative">
+                                                    <input 
+                                                        type="file"
+                                                        accept="image/*"
+                                                        onChange={(e) => handlePosterImageUpload(e, selectedPosterId)}
+                                                        className="hidden"
+                                                        id={`poster-upload-${selectedPosterId}`}
+                                                    />
+                                                    <label 
+                                                        htmlFor={`poster-upload-${selectedPosterId}`}
+                                                        className="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 border border-emerald-300 font-bold px-3 py-2.5 rounded-lg text-sm cursor-pointer block text-center whitespace-nowrap"
+                                                    >
+                                                        Upload
+                                                    </label>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    
+                                ) : (
+                                    <div className="mb-4">
+                                        <label className="block text-sm font-semibold text-gray-500 mb-1">YouTube Embed URL</label>
+                                        <input
+                                            type="text"
+                                            value={selectedPoster.videoUrl || ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setAuditoriumPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, videoUrl: val } : p));
+                                            }}
+                                            className="w-full bg-white border border-emerald-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-emerald-500"
+                                            placeholder="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                                        />
+                                        <p className="text-sm text-emerald-500 mt-1">Make sure to use the "Embed" link from YouTube, not the regular watch link.</p>
+                                    </div>
+                                )}
+                                
+                                <div className="grid grid-cols-2 gap-4 text-gray-850 mt-4">
                                     <div className="grid grid-cols-2 gap-2 text-gray-850">
                                         <div>
                                             <label className="block text-sm font-semibold text-gray-500 mb-1">X Position ({selectedPoster.left}%)</label>
