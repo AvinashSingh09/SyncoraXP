@@ -677,7 +677,7 @@ const AdminExpoHall = () => {
                                         )
                                     ) : (
                                         !poster.imageUrl && (
-                                            <span className="text-white text-sm font-bold opacity-50 text-center px-1">Poster</span>
+                                            <span className="text-white text-xs font-bold opacity-50 text-center px-1">POSTER ({poster.width}% &times; {poster.height}%)</span>
                                         )
                                     )}
                                 </div>
@@ -977,51 +977,63 @@ const AdminExpoHall = () => {
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-600 mb-1">X Position (%)</label>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">X Position ({selectedPoster.left}%)</label>
                                 <input
-                                    type="number"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    step="0.5"
                                     value={selectedPoster.left}
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setPosters(prev => prev.map(p => p.id === selectedItemId ? { ...p, left: val } : p));
                                     }}
-                                    className="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm"
+                                    className="w-full cursor-pointer accent-indigo-600"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-600 mb-1">Y Position (%)</label>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">Y Position ({selectedPoster.top}%)</label>
                                 <input
-                                    type="number"
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    step="0.5"
                                     value={selectedPoster.top}
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setPosters(prev => prev.map(p => p.id === selectedItemId ? { ...p, top: val } : p));
                                     }}
-                                    className="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm"
+                                    className="w-full cursor-pointer accent-indigo-600"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-600 mb-1">Width (%)</label>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">Width ({selectedPoster.width}%)</label>
                                 <input
-                                    type="number"
+                                    type="range"
+                                    min="1"
+                                    max="100"
+                                    step="0.5"
                                     value={selectedPoster.width}
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setPosters(prev => prev.map(p => p.id === selectedItemId ? { ...p, width: val } : p));
                                     }}
-                                    className="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm"
+                                    className="w-full cursor-pointer accent-indigo-600"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-600 mb-1">Height (%)</label>
+                                <label className="block text-sm font-semibold text-gray-600 mb-1">Height ({selectedPoster.height}%)</label>
                                 <input
-                                    type="number"
+                                    type="range"
+                                    min="1"
+                                    max="100"
+                                    step="0.5"
                                     value={selectedPoster.height}
                                     onChange={(e) => {
                                         const val = Number(e.target.value);
                                         setPosters(prev => prev.map(p => p.id === selectedItemId ? { ...p, height: val } : p));
                                     }}
-                                    className="w-full bg-white border border-indigo-200 rounded-lg p-2 text-sm"
+                                    className="w-full cursor-pointer accent-indigo-600"
                                 />
                             </div>
                         </div>

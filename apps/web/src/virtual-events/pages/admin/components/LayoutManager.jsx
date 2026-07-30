@@ -309,7 +309,7 @@ const LayoutManager = () => {
                                 }}
                                 onMouseDown={(e) => e.stopPropagation()}
                             >
-                                {!poster.imageUrl && <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-bold">Poster</div>}
+                                {!poster.imageUrl && <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-500 font-bold text-center px-1 leading-tight">POSTER<br/>({poster.width}% &times; {poster.height}%)</div>}
                             </div>
                         ))}
                     </div>
@@ -371,51 +371,63 @@ const LayoutManager = () => {
                                     
                                     <div className="grid grid-cols-2 gap-2 text-gray-850">
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-500 mb-1">Left (%)</label>
-                                            <input
-                                                type="number"
+                                            <label className="block text-sm font-semibold text-gray-500 mb-1">X Position ({selectedPoster.left}%)</label>
+                                            <input 
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                step="0.5"
                                                 value={selectedPoster.left}
                                                 onChange={(e) => {
                                                     const val = Number(e.target.value);
                                                     setAuditoriumPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, left: val } : p));
                                                 }}
-                                                className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm focus:outline-none focus:border-emerald-500 text-gray-800"
+                                                className="w-full cursor-pointer accent-[#295ce8]"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-500 mb-1">Top (%)</label>
-                                            <input
-                                                type="number"
+                                            <label className="block text-sm font-semibold text-gray-500 mb-1">Y Position ({selectedPoster.top}%)</label>
+                                            <input 
+                                                type="range"
+                                                min="0"
+                                                max="100"
+                                                step="0.5"
                                                 value={selectedPoster.top}
                                                 onChange={(e) => {
                                                     const val = Number(e.target.value);
                                                     setAuditoriumPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, top: val } : p));
                                                 }}
-                                                className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm focus:outline-none focus:border-emerald-500 text-gray-800"
+                                                className="w-full cursor-pointer accent-[#295ce8]"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-500 mb-1">Width (%)</label>
-                                            <input
-                                                type="number"
+                                            <label className="block text-sm font-semibold text-gray-500 mb-1">Width ({selectedPoster.width}%)</label>
+                                            <input 
+                                                type="range"
+                                                min="1"
+                                                max="100"
+                                                step="0.5"
                                                 value={selectedPoster.width}
                                                 onChange={(e) => {
                                                     const val = Number(e.target.value);
                                                     setAuditoriumPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, width: val } : p));
                                                 }}
-                                                className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm focus:outline-none focus:border-emerald-500 text-gray-800"
+                                                className="w-full cursor-pointer accent-[#295ce8]"
                                             />
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-semibold text-gray-500 mb-1">Height (%)</label>
-                                            <input
-                                                type="number"
+                                            <label className="block text-sm font-semibold text-gray-500 mb-1">Height ({selectedPoster.height}%)</label>
+                                            <input 
+                                                type="range"
+                                                min="1"
+                                                max="100"
+                                                step="0.5"
                                                 value={selectedPoster.height}
                                                 onChange={(e) => {
                                                     const val = Number(e.target.value);
                                                     setAuditoriumPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, height: val } : p));
                                                 }}
-                                                className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm focus:outline-none focus:border-emerald-500 text-gray-800"
+                                                className="w-full cursor-pointer accent-[#295ce8]"
                                             />
                                         </div>
                                     </div>

@@ -1,0 +1,1 @@
+const {query} = require('./apps/api/src/virtual-events/utils/db.js'); query('SELECT value FROM ve_configs WHERE key = ''navbar_settings''').then(res => console.log(res.rows[0])).catch(console.error).finally(() => process.exit(0));

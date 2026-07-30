@@ -15,6 +15,8 @@ const AdminLobby = () => {
     const [lobbyBgImage, setLobbyBgImage] = useState('/virtual-events-assets/lobby-bg.png');
     const [lobbyPoints, setLobbyPoints] = useState([]);
     const [lobbyPosters, setLobbyPosters] = useState([]);
+    const [helpDeskAdminEmail, setHelpDeskAdminEmail] = useState('info@virtualevent.com');
+    const [helpDeskAdminPassword, setHelpDeskAdminPassword] = useState('InfoDesk123');
     const [selectedPointId, setSelectedPointId] = useState(null);
     const [selectedPosterId, setSelectedPosterId] = useState(null);
     const [lobbyLoading, setLobbyLoading] = useState(false);
@@ -29,6 +31,8 @@ const AdminLobby = () => {
                     if (config.bgImage) setLobbyBgImage(config.bgImage);
                     if (config.points) setLobbyPoints(config.points);
                     if (config.posters) setLobbyPosters(config.posters);
+                    if (config.helpDeskAdminEmail) setHelpDeskAdminEmail(config.helpDeskAdminEmail);
+                    if (config.helpDeskAdminPassword) setHelpDeskAdminPassword(config.helpDeskAdminPassword);
                 }
             } catch (err) {
                 console.error('Failed to load lobby layout', err);
@@ -45,7 +49,9 @@ const AdminLobby = () => {
             const lobbyConfig = JSON.stringify({
                 bgImage: lobbyBgImage,
                 points: lobbyPoints,
-                posters: lobbyPosters
+                posters: lobbyPosters,
+                helpDeskAdminEmail,
+                helpDeskAdminPassword
             });
             await configService.setConfig('lobby_layout', lobbyConfig);
             setLobbyStatus('Lobby settings saved successfully!');
@@ -219,6 +225,41 @@ const AdminLobby = () => {
                     </div>
                 </div>
 
+                {/* Information / Help Desk Representative Credentials */}
+                <div className="bg-gradient-to-r from-blue-50/80 to-indigo-50/50 border border-blue-200/80 rounded-2xl p-5 shadow-sm">
+                    <div className="mb-3">
+                        <h4 className="text-sm font-black text-gray-900 flex items-center gap-2 tracking-tight">
+                            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse"></span>
+                            Information / Help Desk Representative Credentials
+                        </h4>
+                        <p className="text-xs text-gray-500 font-medium leading-relaxed mt-0.5">
+                            Set the login Email ID and Password for the representative sitting at the Information Desk to answer attendee queries live.
+                        </p>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Help Desk Email ID</label>
+                            <input 
+                                type="email" 
+                                value={helpDeskAdminEmail} 
+                                onChange={(e) => setHelpDeskAdminEmail(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 font-semibold"
+                                placeholder="info@virtualevent.com"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-bold text-gray-700 mb-1">Help Desk Password</label>
+                            <input 
+                                type="text" 
+                                value={helpDeskAdminPassword} 
+                                onChange={(e) => setHelpDeskAdminPassword(e.target.value)}
+                                className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 font-semibold"
+                                placeholder="InfoDesk123"
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 {/* Interactive click preview */}
                 <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center">
@@ -259,7 +300,7 @@ const AdminLobby = () => {
                                     setSelectedPointId(null);
                                 }}
                             >
-                                {!poster.imageUrl && <div className="w-full h-full flex items-center justify-center text-sm text-gray-500 font-bold">Poster</div>}
+                                {!poster.imageUrl && <div className="w-full h-full flex items-center justify-center text-xs text-gray-500 font-bold text-center px-1">POSTER ({poster.width}% &times; {poster.height}%)</div>}
                             </div>
                         ))}
 
@@ -298,6 +339,21 @@ const AdminLobby = () => {
                                             backgroundColor: point.color || '#ef4444' 
                                         }}
                                     ></span>
+                                    {/* Delete Button */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setLobbyPoints(prev => prev.filter(p => p.id !== point.id));
+                                            if (selectedPointId === point.id) {
+                                                setSelectedPointId(null);
+                                            }
+                                        }}
+                                        className="absolute -top-3 -right-3 w-4 h-4 bg-red-600 hover:bg-red-700 text-white rounded-full font-extrabold text-[8px] flex items-center justify-center border border-white shadow-lg z-40 transition-transform hover:scale-125 cursor-pointer"
+                                        title="Delete point"
+                                    >
+                                        ✕
+                                    </button>
                                 </div>
 
 
@@ -450,51 +506,63 @@ const AdminLobby = () => {
                             
                             <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Left (%)</label>
+                                    <label className="block text-sm font-semibold text-gray-500 mb-1">X Position ({selectedPoster.left}%)</label>
                                     <input
-                                        type="number"
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        step="0.5"
                                         value={selectedPoster.left}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
                                             setLobbyPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, left: val } : p));
                                         }}
-                                        className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm text-gray-800"
+                                        className="w-full cursor-pointer accent-[#295ce8]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Top (%)</label>
+                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Y Position ({selectedPoster.top}%)</label>
                                     <input
-                                        type="number"
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        step="0.5"
                                         value={selectedPoster.top}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
                                             setLobbyPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, top: val } : p));
                                         }}
-                                        className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm text-gray-800"
+                                        className="w-full cursor-pointer accent-[#295ce8]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Width (%)</label>
+                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Width ({selectedPoster.width}%)</label>
                                     <input
-                                        type="number"
+                                        type="range"
+                                        min="1"
+                                        max="100"
+                                        step="0.5"
                                         value={selectedPoster.width}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
                                             setLobbyPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, width: val } : p));
                                         }}
-                                        className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm text-gray-800"
+                                        className="w-full cursor-pointer accent-[#295ce8]"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Height (%)</label>
+                                    <label className="block text-sm font-semibold text-gray-500 mb-1">Height ({selectedPoster.height}%)</label>
                                     <input
-                                        type="number"
+                                        type="range"
+                                        min="1"
+                                        max="100"
+                                        step="0.5"
                                         value={selectedPoster.height}
                                         onChange={(e) => {
                                             const val = Number(e.target.value);
                                             setLobbyPosters(prev => prev.map(p => p.id === selectedPosterId ? { ...p, height: val } : p));
                                         }}
-                                        className="w-full bg-white border border-emerald-200 rounded-lg p-2 text-sm text-gray-800"
+                                        className="w-full cursor-pointer accent-[#295ce8]"
                                     />
                                 </div>
                             </div>

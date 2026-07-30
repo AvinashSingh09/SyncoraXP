@@ -39,6 +39,7 @@ const AdminSurvey = () => {
     
     // Detailed modal state
     const [selectedResponse, setSelectedResponse] = useState(null);
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
     // Question form state
     const [isEditing, setIsEditing] = useState(false);
@@ -139,15 +140,20 @@ const AdminSurvey = () => {
         });
     };
 
-    const handleDeleteClick = async (id) => {
-        if (window.confirm('Are you sure you want to delete this question? This will affect how future surveys are displayed.')) {
-            try {
-                await surveyService.deleteQuestion(id);
-                await fetchAllData();
-            } catch (error) {
-                console.error('Failed to delete question', error);
-                alert('Failed to delete question.');
-            }
+    const handleDeleteClick = (id) => {
+        setDeleteConfirmId(id);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteConfirmId) return;
+        try {
+            await surveyService.deleteQuestion(deleteConfirmId);
+            await fetchAllData();
+        } catch (error) {
+            console.error('Failed to delete question', error);
+            alert('Failed to delete question.');
+        } finally {
+            setDeleteConfirmId(null);
         }
     };
 
@@ -841,6 +847,35 @@ const AdminSurvey = () => {
                                 className="bg-[#295ce8] hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-xl text-xs transition-colors cursor-pointer"
                             >
                                 Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {/* Delete Confirmation Modal */}
+            {deleteConfirmId && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)}></div>
+                    <div className="bg-white rounded-3xl p-8 max-w-sm w-full relative z-10 shadow-2xl border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+                        <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-rose-100">
+                            <FiTrash2 className="w-8 h-8 text-rose-500" />
+                        </div>
+                        <h3 className="text-xl font-black text-gray-900 text-center tracking-tight mb-2">Delete Question?</h3>
+                        <p className="text-xs font-semibold text-gray-500 text-center mb-8 leading-relaxed">
+                            Are you sure you want to delete this question? This will permanently remove it and affect how future surveys are displayed.
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteConfirmId(null)}
+                                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-600 font-bold py-3 px-4 rounded-xl text-xs transition-all cursor-pointer border border-transparent hover:border-gray-300"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDelete}
+                                className="flex-1 bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 px-4 rounded-xl text-xs transition-all cursor-pointer shadow-md shadow-rose-200"
+                            >
+                                Delete
                             </button>
                         </div>
                     </div>

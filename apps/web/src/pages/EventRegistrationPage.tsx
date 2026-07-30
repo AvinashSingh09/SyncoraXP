@@ -434,8 +434,8 @@ export function EventRegistrationPage() {
                 gap: "8px",
               }}>
                 <span style={{ fontSize: "13px", color: "rgba(255, 255, 255, 0.6)", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" }}>Let's talk!</span>
-                <a href="tel:+9190000000000" style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", textDecoration: "none" }}>
-                  +91 90000000000
+                <a href="tel:+917039164777" style={{ fontSize: "22px", fontWeight: 800, color: "#ffffff", textDecoration: "none" }}>
+                  +91 7039164777
                 </a>
               </div>
             </div>
@@ -1218,7 +1218,7 @@ export function EventRegistrationPage() {
           </h2>
 
           {/* Marquee Wrapper */}
-          <div 
+          <div
             className="event-reg-marquee-container"
             style={{
               overflow: "hidden",
@@ -1229,7 +1229,7 @@ export function EventRegistrationPage() {
               WebkitMaskImage: "linear-gradient(to right, transparent, white 10%, white 90%, transparent)",
             }}
           >
-            <div 
+            <div
               className="event-reg-marquee-content"
               style={{
                 display: "flex",
@@ -1241,67 +1241,83 @@ export function EventRegistrationPage() {
             >
               {/* Main List & Duplicated List to create infinite loop */}
               {[
-                { title: "Event Ticketing Platform", bg: "#fce7f3", stroke: "#db2777", icon: (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#db2777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
-                    <line x1="13" x2="13" y1="5" y2="19" strokeDasharray="3 3"/>
-                  </svg>
-                )},
-                { title: "Mobile Event App", bg: "#ccfbf1", stroke: "#0d9488", icon: (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-                    <line x1="12" x2="12" y1="18" y2="18.01"/>
-                    <path d="M12 6a3 3 0 0 1 3 3v1"/>
-                  </svg>
-                )},
-                { title: "Event Check-In & Badge Printing", bg: "#ffedd5", stroke: "#ea580c", icon: (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="16" rx="2"/>
-                    <circle cx="12" cy="10" r="3"/>
-                    <path d="M6 20a6 6 0 0 1 12 0"/>
-                  </svg>
-                )},
-                { title: "Event Reg Platform", bg: "#eedffc", stroke: "#7c3aed", icon: (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                  </svg>
-                )},
+                {
+                  title: "Event Ticketing Platform", bg: "#fce7f3", stroke: "#db2777", icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#db2777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                      <line x1="13" x2="13" y1="5" y2="19" strokeDasharray="3 3" />
+                    </svg>
+                  )
+                },
+                {
+                  title: "Mobile Event App", bg: "#ccfbf1", stroke: "#0d9488", icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                      <line x1="12" x2="12" y1="18" y2="18.01" />
+                      <path d="M12 6a3 3 0 0 1 3 3v1" />
+                    </svg>
+                  )
+                },
+                {
+                  title: "Event Check-In & Badge Printing", bg: "#ffedd5", stroke: "#ea580c", icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="16" rx="2" />
+                      <circle cx="12" cy="10" r="3" />
+                      <path d="M6 20a6 6 0 0 1 12 0" />
+                    </svg>
+                  )
+                },
+                {
+                  title: "Event Reg Platform", bg: "#eedffc", stroke: "#7c3aed", icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                      <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                  )
+                },
               ].concat([
-                { title: "Event Ticketing Platform", bg: "#fce7f3", stroke: "#db2777", icon: (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#db2777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
-                    <line x1="13" x2="13" y1="5" y2="19" strokeDasharray="3 3"/>
-                  </svg>
-                )},
-                { title: "Mobile Event App", bg: "#ccfbf1", stroke: "#0d9488", icon: (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-                    <line x1="12" x2="12" y1="18" y2="18.01"/>
-                    <path d="M12 6a3 3 0 0 1 3 3v1"/>
-                  </svg>
-                )},
-                { title: "Event Check-In & Badge Printing", bg: "#ffedd5", stroke: "#ea580c", icon: (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="4" width="18" height="16" rx="2"/>
-                    <circle cx="12" cy="10" r="3"/>
-                    <path d="M6 20a6 6 0 0 1 12 0"/>
-                  </svg>
-                )},
-                { title: "Event Reg Platform", bg: "#eedffc", stroke: "#7c3aed", icon: (
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14 2 14 8 20 8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10 9 9 9 8 9"/>
-                  </svg>
-                )},
+                {
+                  title: "Event Ticketing Platform", bg: "#fce7f3", stroke: "#db2777", icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#db2777" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z" />
+                      <line x1="13" x2="13" y1="5" y2="19" strokeDasharray="3 3" />
+                    </svg>
+                  )
+                },
+                {
+                  title: "Mobile Event App", bg: "#ccfbf1", stroke: "#0d9488", icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#0d9488" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                      <line x1="12" x2="12" y1="18" y2="18.01" />
+                      <path d="M12 6a3 3 0 0 1 3 3v1" />
+                    </svg>
+                  )
+                },
+                {
+                  title: "Event Check-In & Badge Printing", bg: "#ffedd5", stroke: "#ea580c", icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="3" y="4" width="18" height="16" rx="2" />
+                      <circle cx="12" cy="10" r="3" />
+                      <path d="M6 20a6 6 0 0 1 12 0" />
+                    </svg>
+                  )
+                },
+                {
+                  title: "Event Reg Platform", bg: "#eedffc", stroke: "#7c3aed", icon: (
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                      <polyline points="14 2 14 8 20 8" />
+                      <line x1="16" y1="13" x2="8" y2="13" />
+                      <line x1="16" y1="17" x2="8" y2="17" />
+                      <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                  )
+                },
               ]).map((card, idx) => (
-                <div 
+                <div
                   key={idx}
                   style={{
                     display: "flex",

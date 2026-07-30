@@ -24,7 +24,7 @@ const STYLES = [
         description: 'Bold comic colors & exaggerated features',
         color: 'from-purple-500 to-pink-500',
         emoji: '🎨',
-        image: '/photobooth/caricature1.jpg',
+        image: '/virtual-events-assets/photobooth/caricature1.jpg',
         categories: ['cartoon'],
         popular: true
     },
@@ -34,7 +34,7 @@ const STYLES = [
         description: 'Raw hand-drawn charcoal aesthetic',
         color: 'from-gray-600 to-gray-900',
         emoji: '✏️',
-        image: '/photobooth/caricature2.jpg',
+        image: '/virtual-events-assets/photobooth/caricature2.jpg',
         categories: ['artistic']
     },
     {
@@ -43,7 +43,7 @@ const STYLES = [
         description: 'Clean Pixar-inspired 3D look',
         color: 'from-blue-400 to-indigo-600',
         emoji: '👾',
-        image: '/photobooth/caricature3.jpg',
+        image: '/virtual-events-assets/photobooth/caricature3.jpg',
         categories: ['3d']
     },
     {
@@ -52,7 +52,7 @@ const STYLES = [
         description: 'Blend of photo face with hand-drawn vector art',
         color: 'from-emerald-500 to-teal-600',
         emoji: '📷',
-        image: '/photobooth/caricature4.jpeg',
+        image: '/virtual-events-assets/photobooth/caricature4.jpeg',
         categories: ['realistic']
     },
     {
@@ -61,7 +61,7 @@ const STYLES = [
         description: '3D bobblehead figurine with oversized head',
         color: 'from-orange-400 to-red-500',
         emoji: '🧸',
-        image: '/photobooth/caricature5.png',
+        image: '/virtual-events-assets/photobooth/caricature5.png',
         categories: ['3d', 'cartoon']
     },
     {
@@ -70,7 +70,7 @@ const STYLES = [
         description: 'Hand-drawn linework with soft watercolor washes',
         color: 'from-cyan-400 to-blue-500',
         emoji: '🖌️',
-        image: '/photobooth/watercolor.png',
+        image: '/virtual-events-assets/photobooth/watercolor.png',
         categories: ['artistic']
     },
     // Persona Poster Styles
@@ -81,7 +81,7 @@ const STYLES = [
         color: 'from-red-500 to-yellow-500',
         isPersona: true,
         emoji: '🎪',
-        image: '/photobooth/creator.png',
+        image: '/virtual-events-assets/photobooth/creator.png',
         categories: ['artistic', 'folkart']
     },
     {
@@ -91,7 +91,7 @@ const STYLES = [
         color: 'from-blue-400 to-teal-500',
         isPersona: true,
         emoji: '💡',
-        image: '/photobooth/innovator.png',
+        image: '/virtual-events-assets/photobooth/innovator.png',
         categories: ['artistic', 'folkart']
     },
     {
@@ -101,7 +101,7 @@ const STYLES = [
         color: 'from-yellow-500 to-orange-600',
         isPersona: true,
         emoji: '👑',
-        image: '/photobooth/leader.png',
+        image: '/virtual-events-assets/photobooth/leader.png',
         categories: ['artistic', 'folkart']
     },
     {
@@ -111,7 +111,7 @@ const STYLES = [
         color: 'from-purple-400 to-pink-500',
         isPersona: true,
         emoji: '🌟',
-        image: '/photobooth/dreamer.png',
+        image: '/virtual-events-assets/photobooth/dreamer.png',
         categories: ['artistic', 'folkart']
     },
     {
@@ -121,7 +121,7 @@ const STYLES = [
         color: 'from-green-400 to-emerald-600',
         isPersona: true,
         emoji: '🧭',
-        image: '/photobooth/Explorer.png',
+        image: '/virtual-events-assets/photobooth/Explorer.png',
         categories: ['artistic', 'folkart']
     },
     // Style Transfer Styles
@@ -131,7 +131,7 @@ const STYLES = [
         description: 'Soft watercolor Ghibli magic with warm golden hues',
         color: 'from-green-300 to-teal-400',
         emoji: '🌿',
-        image: '/style-transfer-images/ghibli-style.png',
+        image: '/virtual-events-assets/style-transfer-images/ghibli-style.png',
         categories: ['style-transfer'],
         popular: true
     },
@@ -141,7 +141,7 @@ const STYLES = [
         description: 'Smooth Pixar-style CGI with cinematic lighting',
         color: 'from-blue-400 to-indigo-500',
         emoji: '🎬',
-        image: '/style-transfer-images/pixar-style.png',
+        image: '/virtual-events-assets/style-transfer-images/pixar-style.png',
         categories: ['style-transfer']
     },
     {
@@ -150,7 +150,7 @@ const STYLES = [
         description: 'High-quality modern anime cel-shading',
         color: 'from-pink-400 to-purple-500',
         emoji: '⚡',
-        image: '/style-transfer-images/anime-style.png',
+        image: '/virtual-events-assets/style-transfer-images/anime-style.png',
         categories: ['style-transfer']
     },
     {
@@ -159,7 +159,7 @@ const STYLES = [
         description: 'Detailed graphite pencil with cross-hatched shading',
         color: 'from-gray-400 to-gray-700',
         emoji: '✏️',
-        image: '/style-transfer-images/sketch-style.png',
+        image: '/virtual-events-assets/style-transfer-images/sketch-style.png',
         categories: ['style-transfer']
     },
     {
@@ -168,7 +168,7 @@ const STYLES = [
         description: 'Fine-art watercolor with luminous pigment blooms',
         color: 'from-cyan-300 to-blue-400',
         emoji: '💧',
-        image: '/style-transfer-images/watercolor-style.png',
+        image: '/virtual-events-assets/style-transfer-images/watercolor-style.png',
         categories: ['style-transfer']
     },
     {
@@ -177,7 +177,7 @@ const STYLES = [
         description: 'Classical Rembrandt-style oil portrait with impasto',
         color: 'from-amber-500 to-orange-600',
         emoji: '🖼️',
-        image: '/style-transfer-images/oilpainting-style.png',
+        image: '/virtual-events-assets/style-transfer-images/oilpainting-style.png',
         categories: ['style-transfer']
     },
     {
@@ -186,7 +186,7 @@ const STYLES = [
         description: 'Bold ink outlines, halftone textures, flat colors',
         color: 'from-yellow-400 to-red-500',
         emoji: '💥',
-        image: '/style-transfer-images/comicbook-style.png',
+        image: '/virtual-events-assets/style-transfer-images/comicbook-style.png',
         categories: ['style-transfer']
     },
     {
@@ -195,7 +195,7 @@ const STYLES = [
         description: 'Neon-lit futuristic portrait with holographic glitch',
         color: 'from-purple-500 to-cyan-500',
         emoji: '🤖',
-        image: '/style-transfer-images/cyberpunk-style.png',
+        image: '/virtual-events-assets/style-transfer-images/cyberpunk-style.png',
         categories: ['style-transfer']
     },
     {
@@ -204,7 +204,7 @@ const STYLES = [
         description: 'Andy Warhol / Lichtenstein bold graphic style',
         color: 'from-red-400 to-yellow-400',
         emoji: '🎭',
-        image: '/style-transfer-images/popart-style.png',
+        image: '/virtual-events-assets/style-transfer-images/popart-style.png',
         categories: ['style-transfer']
     },
     {
@@ -213,7 +213,7 @@ const STYLES = [
         description: 'Laika-style polymer clay sculpted portrait',
         color: 'from-orange-300 to-amber-500',
         emoji: '🏺',
-        image: '/style-transfer-images/claymation-style.png',
+        image: '/virtual-events-assets/style-transfer-images/claymation-style.png',
         categories: ['style-transfer']
     },
     {
@@ -222,7 +222,7 @@ const STYLES = [
         description: 'Retro 64x64 pixel sprite with Bayer dithering',
         color: 'from-green-400 to-emerald-600',
         emoji: '🕹️',
-        image: '/style-transfer-images/pixelart-style.png',
+        image: '/virtual-events-assets/style-transfer-images/pixelart-style.png',
         categories: ['style-transfer']
     },
     {
@@ -231,7 +231,7 @@ const STYLES = [
         description: 'Kodak Portra analog grain with faded milky blacks',
         color: 'from-amber-300 to-yellow-600',
         emoji: '📽️',
-        image: '/style-transfer-images/vintagefilm-style.png',
+        image: '/virtual-events-assets/style-transfer-images/vintagefilm-style.png',
         categories: ['style-transfer']
     },
     {
@@ -240,7 +240,7 @@ const STYLES = [
         description: 'Retail action-figure box with your likeness',
         color: 'from-blue-500 to-purple-600',
         emoji: '🦸',
-        image: '/style-transfer-images/actionfigure-style.png',
+        image: '/virtual-events-assets/style-transfer-images/actionfigure-style.png',
         categories: ['style-transfer']
     }
 ];
