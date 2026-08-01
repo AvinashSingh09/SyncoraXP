@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
-import { FiAward, FiCheckCircle, FiPrinter, FiRefreshCcw, FiDownload, FiInfo } from 'react-icons/fi';
+import { FiAward, FiCheckCircle, FiPrinter, FiRefreshCcw, FiDownload, FiInfo, FiAlertCircle, FiX } from 'react-icons/fi';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { surveyService, configService } from '../../services/api';
@@ -13,6 +13,8 @@ const Survey = () => {
     const [questions, setQuestions] = useState([]);
     const [answers, setAnswers] = useState({});
     const [surveyActive, setSurveyActive] = useState(true);
+    const [showCertificate, setShowCertificate] = useState(true);
+    const [popupModal, setPopupModal] = useState(null); // { title?: string, message: string, type?: 'info' | 'error' | 'warning' }
 
     useEffect(() => {
         const loadSurveyData = async () => {
@@ -37,8 +39,12 @@ const Survey = () => {
 
                 // Fetch active status config
                 const configRes = await configService.getConfig('survey_active');
+                const certConfigRes = await configService.getConfig('survey_certificate_active');
                 if (configRes.data) {
                     setSurveyActive(configRes.data.value !== 'false');
+                }
+                if (certConfigRes.data) {
+                    setShowCertificate(certConfigRes.data.value !== 'false');
                 }
             } catch (err) {
                 console.error('Failed to check survey status or questions', err);
@@ -69,7 +75,12 @@ const Survey = () => {
             }
         } catch (err) {
             console.error('Failed to submit survey', err);
-            alert(err.response?.data?.message || 'Failed to submit survey. Please try again.');
+            const msg = err.response?.data?.message || 'Failed to submit survey. Please try again.';
+            setPopupModal({
+                title: 'Survey Submission',
+                message: msg,
+                type: 'warning'
+            });
         }
     };
 
@@ -119,7 +130,11 @@ const Survey = () => {
             pdf.save(`${user?.firstName || 'User'}_Certificate.pdf`);
         } catch (err) {
             console.error('Error generating PDF', err);
-            alert('Failed to generate PDF. Please try again.');
+            setPopupModal({
+                title: 'PDF Generation',
+                message: 'Failed to generate PDF. Please try again.',
+                type: 'error'
+            });
         } finally {
             setIsGenerating(false);
         }
@@ -189,8 +204,12 @@ const Survey = () => {
                 ) : !isSubmitted ? (
                     <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                         <div className="mb-8 text-center">
-                            <h2 className="text-3xl font-bold text-gray-800 tracking-tight">Event Feedback Survey</h2>
-                            <p className="text-gray-500 mt-2">Please share your thoughts with us to get your certificate of completion.</p>
+                            <h2 className="text-2xl font-black text-[#1e293b] tracking-tight">Event Feedback Survey</h2>
+                            <p className="text-gray-500 mt-2">
+                                {showCertificate
+                                    ? 'Please share your thoughts with us to get your certificate of completion.'
+                                    : 'Please share your thoughts and feedback with us to help us improve future events.'}
+                            </p>
                         </div>
 
                         <form onSubmit={handleSubmit} className="space-y-6">
@@ -257,12 +276,28 @@ const Survey = () => {
                                 className="w-full bg-[#295ce8] hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2 text-lg mt-8 pointer-events-auto cursor-pointer"
                             >
                                 <FiCheckCircle className="w-6 h-6" />
-                                Submit & Get Certificate
+                                {showCertificate ? 'Submit & Get Certificate' : 'Submit Feedback'}
                             </button>
                         </form>
                     </div>
                 ) : (
                     <div className="flex flex-col items-center animate-fade-in-up">
+                        {!showCertificate ? (
+                            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-xl max-w-lg text-center space-y-4 my-8">
+                                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-2xl shadow-inner">
+                                    ✓
+                                </div>
+                                <h3 className="text-2xl font-black text-gray-900">Thank You for Your Response!</h3>
+                                <p className="text-sm text-gray-600">Your feedback has been recorded successfully. We appreciate your valuable response.</p>
+                                <button
+                                    onClick={() => setIsSubmitted(false)}
+                                    className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2.5 px-6 rounded-xl transition-colors cursor-pointer text-sm mt-4"
+                                >
+                                    Retake Survey
+                                </button>
+                            </div>
+                        ) : (
+                            <>
                         <div className="mb-6 flex gap-4 print:hidden">
                             <button
                                 onClick={handleDownloadPDF}
@@ -285,7 +320,6 @@ const Survey = () => {
                         <div id="certificate" className="bg-[#ffffff] p-2 w-full max-w-[800px] aspect-[1.414/1] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] rounded relative print:shadow-none print:w-[100vw] print:h-[100vh] print:max-w-none print:p-0">
                             {/* Inner Border */}
                             <div className="w-full h-full border-[12px] border-double border-[#bda662] p-8 flex flex-col items-center justify-center relative bg-[#fffcf5]">
-
                                 {/* Corner Decorations */}
                                 <div className="absolute top-4 left-4 w-12 h-12 border-t-4 border-l-4 border-[#bda662]"></div>
                                 <div className="absolute top-4 right-4 w-12 h-12 border-t-4 border-r-4 border-[#bda662]"></div>
@@ -342,7 +376,7 @@ const Survey = () => {
                             </div>
                         </div>
 
-                        <style>{`
+                        <style dangerouslySetInnerHTML={{ __html: `
                             @media print {
                                 body * {
                                     visibility: hidden;
@@ -367,9 +401,12 @@ const Survey = () => {
                             .animate-fade-in-up {
                                 animation: fadeInUp 0.6s ease-out forwards;
                             }
-                        `}</style>
+                        ` }} />
+                        </>
+                        )}
                     </div>
                 )}
+            </div>
             </div>
 
             {pointsEarnedToast && (
@@ -385,7 +422,39 @@ const Survey = () => {
                     </div>
                 </div>
             )}
-        </div>
+
+            {popupModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md">
+                    <div className="bg-white rounded-3xl p-7 max-w-sm w-full shadow-2xl border border-slate-100 text-center relative flex flex-col items-center space-y-4">
+                        <button
+                            onClick={() => setPopupModal(null)}
+                            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors p-1 rounded-full hover:bg-slate-100 cursor-pointer"
+                        >
+                            <FiX className="w-5 h-5" />
+                        </button>
+                        
+                        <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center border border-amber-200/60 shadow-inner">
+                            <FiAlertCircle className="w-8 h-8" />
+                        </div>
+                        
+                        <div className="space-y-1">
+                            <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                                {popupModal.title || 'Notification'}
+                            </h3>
+                            <p className="text-sm font-medium text-slate-600 leading-relaxed px-2">
+                                {popupModal.message}
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={() => setPopupModal(null)}
+                            className="w-full bg-[#295ce8] hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer text-sm mt-2"
+                        >
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

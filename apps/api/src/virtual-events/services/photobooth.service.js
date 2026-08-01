@@ -10,15 +10,19 @@ const uploadToCloudinary = async (base64Data, format = 'png') => {
         const uploadPreset = 'virtualevent';
 
         let filePayload = base64Data;
+        const isPdf = base64Data.startsWith('data:application/pdf') || base64Data.includes('/pdf;');
+
         if (!filePayload.startsWith('data:')) {
-            filePayload = `data:image/${format};base64,${base64Data}`;
+            filePayload = `data:${isPdf ? 'application/pdf' : `image/${format}`};base64,${base64Data}`;
         }
+
+        const resourceType = 'auto';
 
         const formData = new FormData();
         formData.append('file', filePayload);
         formData.append('upload_preset', uploadPreset);
 
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
             method: 'POST',
             body: formData
         });

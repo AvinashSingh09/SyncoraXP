@@ -222,3 +222,25 @@ exports.clearHistory = async (req, res) => {
         res.status(500).json({ message: 'Error clearing chats', error: error.message });
     }
 };
+
+exports.deleteMessage = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const message = await Message.findById(id);
+        if (!message) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        
+        await Message.deleteMany({ _id: id });
+        
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('message-deleted', { messageId: id, room: message.room });
+        }
+        
+        res.json({ message: 'Message deleted successfully', messageId: id });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting message', error: error.message });
+    }
+};
+

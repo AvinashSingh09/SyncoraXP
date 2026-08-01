@@ -85,3 +85,19 @@ exports.upvoteQuestion = async (req, res) => {
         res.status(500).json({ message: 'Error upvoting question', error: error.message });
     }
 };
+
+exports.deleteQuestion = async (req, res) => {
+    try {
+        const question = await Qna.findByIdAndDelete(req.params.id);
+        if (!question) {
+            return res.status(404).json({ message: 'Question not found' });
+        }
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('question-deleted', { questionId: req.params.id });
+        }
+        res.json({ message: 'Question deleted successfully', questionId: req.params.id });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting question', error: error.message });
+    }
+};

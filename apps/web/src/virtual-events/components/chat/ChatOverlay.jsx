@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiSend, FiVideo, FiFileText, FiSmile, FiCornerUpLeft, FiCopy, FiCheck, FiEdit2 } from 'react-icons/fi';
+import { FiSend, FiVideo, FiFileText, FiSmile, FiCornerUpLeft, FiCopy, FiCheck, FiEdit2, FiTrash2, FiPlus, FiDownload } from 'react-icons/fi';
 import { IoCheckmarkDoneSharp, IoCheckmarkSharp } from 'react-icons/io5';
 import { TbArrowForwardUpDouble } from 'react-icons/tb';
 import { MdChat, MdGroup } from 'react-icons/md';
@@ -12,7 +12,36 @@ import { useNavigate } from 'react-router-dom';
 
 const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
     const { user, logout } = useAuth();
-    const navigate = useNavigate();
+    const [dynamicBoothName, setDynamicBoothName] = useState('');
+
+    useEffect(() => {
+        if (!user) return;
+        const fetchCustomBoothName = async () => {
+            try {
+                const userEmail = user.email?.toLowerCase().trim();
+                for (let b = 1; b <= 20; b++) {
+                    const confRes = await configService.getConfig(`booth_${b}_layout`);
+                    if (confRes.data && confRes.data.value) {
+                        const parsed = JSON.parse(confRes.data.value);
+                        if (parsed.boothAdminEmail && parsed.boothAdminEmail.toLowerCase().trim() === userEmail) {
+                            if (parsed.boothName) {
+                                setDynamicBoothName(parsed.boothName.trim());
+                            }
+                            break;
+                        }
+                    }
+                }
+            } catch (err) {}
+        };
+        fetchCustomBoothName();
+    }, [user]);
+
+    const displayName = dynamicBoothName || 
+        ((user?.firstName && !user.firstName.startsWith('Booth ')) 
+            ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` 
+            : (user?.company && !user.company.startsWith('Booth ')) 
+                ? user.company 
+                : (user?.email ? user.email.split('@')[0] : 'User'));
     const isBoothAdmin = user && (
         BOOTH_ADMINS[user.email?.toLowerCase().trim()] || 
         /^booth[0-9]+@/i.test(user.email) ||
@@ -34,6 +63,9 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
     const [replyingTo, setReplyingTo] = useState(null);
      const [editingMsg, setEditingMsg] = useState(null);
      const [copiedMessageId, setCopiedMessageId] = useState(null);
+     const [deleteConfirmMsgId, setDeleteConfirmMsgId] = useState(null);
+     const [directoryUsers, setDirectoryUsers] = useState([]);
+     const [showNewChatList, setShowNewChatList] = useState(false);
      const [typingUsers, setTypingUsers] = useState({}); // roomName -> Array of { userId, userName }
      const [isMeTyping, setIsMeTyping] = useState(false);
      const typingTimeoutRef = useRef(null);
@@ -170,6 +202,14 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
         }
     };
 
+    const handleDeleteMessage = async (messageId) => {
+        try {
+            await chatService.deleteMessage(messageId);
+        } catch (err) {
+            console.error('Failed to delete message', err);
+        }
+    };
+
     const [forwardingMsg, setForwardingMsg] = useState(null);
 
     const handleForwardMessage = async (targetRoom) => {
@@ -267,17 +307,17 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
         }
 
         try {
-            if (isBoothAdmin) {
-                const historyRes = await chatService.getHistory();
-                if (historyRes.data) {
-                    setUsersList(historyRes.data);
-                }
-            } else {
-                const usersRes = await chatService.getUsers();
-                if (usersRes.data) {
-                    const validUsers = usersRes.data.filter(u => u.firstName && u.lastName);
-                    setUsersList(validUsers);
-                }
+            // Both attendees and booth admins get their chat history as active conversations
+            const historyRes = await chatService.getHistory();
+            if (historyRes.data) {
+                setUsersList(historyRes.data);
+            }
+            
+            // Fetch all users for the new chat directory
+            const usersRes = await chatService.getUsers();
+            if (usersRes.data) {
+                const validUsers = usersRes.data.filter(u => u.firstName && u.lastName);
+                setDirectoryUsers(validUsers);
             }
         } catch (err) {
             console.error('Failed to load users from backend', err);
@@ -429,6 +469,10 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
             loadData();
         };
 
+        const handleDeleted = (data) => {
+            setMessages(prev => prev.filter(m => m._id !== data.messageId));
+        };
+
         const handleReaction = (data) => {
             if (data.room === selectedRoom.name) {
                 setMessages(prev => prev.map(m => m._id === data.messageId ? { ...m, reactions: data.reactions } : m));
@@ -497,6 +541,7 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
 
         socket.on('new-message', handleNewMessage);
         socket.on('chat-cleared', handleChatCleared);
+        socket.on('message-deleted', handleDeleted);
         socket.on('message-reaction', handleReaction);
         socket.on('message-edited', handleEdited);
         socket.on('messages-seen-update', handleMessagesSeenUpdate);
@@ -508,6 +553,7 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
             socket.emit('leave-room', selectedRoom.name);
             socket.off('new-message', handleNewMessage);
             socket.off('chat-cleared', handleChatCleared);
+            socket.off('message-deleted', handleDeleted);
             socket.off('message-reaction', handleReaction);
             socket.off('message-edited', handleEdited);
             socket.off('messages-seen-update', handleMessagesSeenUpdate);
@@ -702,6 +748,11 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
         const query = searchQuery.toLowerCase();
         if (activeTab === 'Groups') {
             return rooms.filter(room => room.name.toLowerCase().includes(query));
+        } else if (showNewChatList) {
+            // New chat directory list
+            return directoryUsers.filter(u =>
+                getUserDisplayName(u).toLowerCase().includes(query)
+            );
         } else {
             // Chats / Direct users list
             return usersList.filter(u =>
@@ -848,17 +899,78 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                     <div className={`${theme.primary} px-5 py-4 flex items-center justify-between text-white border-b ${theme.border}`}>
                         <div className="flex items-center gap-3 min-w-0">
                             <div className={`w-10 h-10 rounded-full ${theme.primary} text-white font-bold flex items-center justify-center text-sm border-2 border-white shadow-sm shrink-0`}>
-                                {getInitials(`${user?.firstName} ${user?.lastName}`)}
+                                {getInitials(displayName)}
                             </div>
-                            <span className="font-bold text-sm truncate">{user?.firstName} {user?.lastName}</span>
+                            <span className="font-bold text-sm truncate" title={displayName}>
+                                {displayName}
+                            </span>
                         </div>
                         {isBoothAdmin ? (
-                            <button
-                                onClick={() => { logout(); navigate('/virtual-events-platform/app/login'); }}
-                                className="text-white font-bold text-xs cursor-pointer px-3 py-1.5 bg-red-500 rounded hover:bg-red-600 transition-colors flex items-center justify-center"
-                            >
-                                Logout
-                            </button>
+                            <div className="flex items-center gap-2">
+                                {isBoothAdmin && (
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const usersRes = await chatService.getUsers();
+                                                const allUsers = Array.isArray(usersRes.data) ? usersRes.data : [];
+                                                const myIdStr = (user?._id || user?.id)?.toString();
+
+                                                let csv = 'Timestamp,Room/Chat,Sender Name,Message\n';
+                                                let totalMessagesFound = 0;
+
+                                                for (const targetUser of allUsers) {
+                                                    const targetIdStr = (targetUser._id || targetUser.id)?.toString();
+                                                    if (!targetIdStr || targetIdStr === myIdStr) continue;
+
+                                                    const roomName = [myIdStr, targetIdStr].sort().join('-');
+                                                    try {
+                                                        const res = await chatService.getMessages(roomName);
+                                                        const msgs = Array.isArray(res.data) ? res.data : [];
+                                                        if (msgs.length > 0) {
+                                                            const recipientName = `${targetUser.firstName || ''} ${targetUser.lastName || ''}`.trim() || targetUser.email || 'User';
+                                                            msgs.forEach(m => {
+                                                                totalMessagesFound++;
+                                                                const time = m.createdAt ? new Date(m.createdAt).toLocaleString() : '';
+                                                                const roomLabel = `"Direct Chat with ${recipientName.replace(/"/g, '""')}"`;
+                                                                const sender = `"${(m.senderName || '').replace(/"/g, '""')}"`;
+                                                                const text = `"${(m.text || '').replace(/"/g, '""')}"`;
+                                                                csv += `${time},${roomLabel},${sender},${text}\n`;
+                                                            });
+                                                        }
+                                                    } catch (err) {}
+                                                }
+
+                                                if (totalMessagesFound === 0) {
+                                                    alert('No chat messages found across all attendee conversations.');
+                                                    return;
+                                                }
+
+                                                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                                const url = URL.createObjectURL(blob);
+                                                const link = document.createElement('a');
+                                                link.href = url;
+                                                link.setAttribute('download', `All_Booth_Chats_Export_${Date.now()}.csv`);
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                            } catch (err) {
+                                                console.error('Failed to export all chats', err);
+                                                alert('Failed to export all chats.');
+                                            }
+                                        }}
+                                        className="w-8 h-8 text-white font-bold cursor-pointer bg-white/20 hover:bg-white/30 rounded border border-white/30 transition-colors flex items-center justify-center shadow-xs shrink-0"
+                                        title="Download All Conversations CSV"
+                                    >
+                                        <FiDownload className="w-4 h-4" />
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => { logout(); navigate('/virtual-events-platform/app/login'); }}
+                                    className="text-white font-bold text-xs cursor-pointer px-3 py-1.5 bg-red-500 rounded hover:bg-red-600 transition-colors flex items-center justify-center shrink-0"
+                                >
+                                    Logout
+                                </button>
+                            </div>
                         ) : (
                             <button
                                 onClick={onClose}
@@ -907,14 +1019,38 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                     </div>
 
                     {/* Search Input */}
-                    <div className="p-3 relative bg-white border-b border-gray-100 flex items-center">
+                    <div className="p-3 bg-white border-b border-gray-100 flex items-center gap-2">
+                        {showNewChatList ? (
+                            <button
+                                onClick={() => {
+                                    setShowNewChatList(false);
+                                    setSearchQuery('');
+                                }}
+                                className="p-2 text-gray-500 hover:bg-gray-150 rounded-full transition-colors cursor-pointer text-xs font-black shrink-0 border border-gray-200 shadow-sm"
+                                title="Back to Chats"
+                            >
+                                ←
+                            </button>
+                        ) : null}
                         <input
                             type="text"
-                            placeholder="Search..."
+                            placeholder={showNewChatList ? "Search directory..." : "Search chats..."}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-[#f0f4f9] text-xs text-gray-800 rounded-full py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-blue-400 border border-transparent focus:border-blue-100"
+                            className="flex-1 bg-[#f0f4f9] text-xs text-gray-800 rounded-full py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-blue-400 border border-transparent focus:border-blue-100"
                         />
+                        {!showNewChatList && activeTab === 'Chats' && (
+                            <button
+                                onClick={() => {
+                                    setShowNewChatList(true);
+                                    setSearchQuery('');
+                                }}
+                                className="p-2 bg-blue-50 text-[#1e70e9] hover:bg-blue-100 rounded-full transition-colors cursor-pointer shrink-0 border border-blue-100"
+                                title="New Chat"
+                            >
+                                <FiPlus className="w-4 h-4" />
+                            </button>
+                        )}
                     </div>
 
                     {/* List Items */}
@@ -987,7 +1123,13 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                                     return (
                                         <button
                                             key={u._id}
-                                            onClick={() => selectDirectUser(u)}
+                                            onClick={() => {
+                                                selectDirectUser(u);
+                                                if (showNewChatList) {
+                                                    setShowNewChatList(false);
+                                                    setSearchQuery('');
+                                                }
+                                            }}
                                             className={`w-full text-left px-5 py-4 flex items-center gap-3 border-b border-gray-100 transition-colors ${isSelected ? 'bg-gray-100' : 'hover:bg-gray-50'}`}
                                         >
                                             <div className={`w-10 h-10 rounded-full ${theme.primary} text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-inner relative`}>
@@ -1074,6 +1216,48 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                                         {selectedRoom.isDirect ? `Chat with ${getUserDisplayName(selectedRoom.user)}` : selectedRoom.name}
                                     </h3>
                                 </div>
+
+                                {isBoothAdmin && selectedRoom && (
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                const roomName = selectedRoom.isDirect
+                                                    ? [user?._id || user?.id, selectedRoom.user?._id || selectedRoom.user?.id].sort().join('-')
+                                                    : selectedRoom.name;
+                                                const res = await chatService.getMessages(roomName);
+                                                const msgs = Array.isArray(res.data) ? res.data : [];
+                                                if (msgs.length === 0) {
+                                                    alert('No messages to export for this chat.');
+                                                    return;
+                                                }
+
+                                                let csv = 'Timestamp,Sender,Message\n';
+                                                msgs.forEach(m => {
+                                                    const time = m.createdAt ? new Date(m.createdAt).toLocaleString() : '';
+                                                    const sender = `"${(m.senderName || '').replace(/"/g, '""')}"`;
+                                                    const text = `"${(m.text || '').replace(/"/g, '""')}"`;
+                                                    csv += `${time},${sender},${text}\n`;
+                                                });
+
+                                                const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                                const url = URL.createObjectURL(blob);
+                                                const link = document.createElement('a');
+                                                link.href = url;
+                                                link.setAttribute('download', `Chat_Export_${(selectedRoom.name || 'transcript').replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}.csv`);
+                                                document.body.appendChild(link);
+                                                link.click();
+                                                document.body.removeChild(link);
+                                            } catch (err) {
+                                                console.error('Failed to export chat transcript', err);
+                                                alert('Failed to export chat transcript.');
+                                            }
+                                        }}
+                                        className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors cursor-pointer shrink-0 shadow-xs border border-white/20 ml-2"
+                                        title="Export all chat messages as CSV"
+                                    >
+                                        <FiDownload className="w-3.5 h-3.5" /> Export Chat
+                                    </button>
+                                )}
 
                             </div>
 
@@ -1206,6 +1390,11 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                                                                         <button onClick={() => handleCopy(msg)} className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-blue-600 transition-colors cursor-pointer" title="Copy Text">
                                                                             {copiedMessageId === msg._id ? <FiCheck className="w-3.5 h-3.5 text-green-500" /> : <FiCopy className="w-3.5 h-3.5" />}
                                                                         </button>
+                                                                        {(isMe || isBoothAdmin || user?.email?.toLowerCase().includes('admin')) && (
+                                                                            <button onClick={() => setDeleteConfirmMsgId(msg._id)} className="p-1.5 hover:bg-gray-100 rounded text-gray-500 hover:text-red-550 transition-colors cursor-pointer" title="Delete">
+                                                                                <FiTrash2 className="w-3.5 h-3.5" />
+                                                                            </button>
+                                                                        )}
                                                                     </div>
                                                                 )
                                                             )}
@@ -1585,6 +1774,54 @@ const ChatOverlay = ({ onClose, initialRoomName, initialUser }) => {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Message Delete Confirmation Modal */}
+            {deleteConfirmMsgId && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-fade-in">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-gray-150 overflow-hidden relative">
+                        {/* Header */}
+                        <div className="bg-red-600 text-white px-6 py-4 flex items-center justify-between shadow-md">
+                            <h3 className="font-extrabold text-sm tracking-wider uppercase flex items-center gap-2">
+                                ⚠️ Delete Message?
+                            </h3>
+                            <button
+                                onClick={() => setDeleteConfirmMsgId(null)}
+                                className="text-white hover:text-red-100 font-bold text-xl cursor-pointer p-0.5"
+                                title="Cancel"
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 flex flex-col gap-4">
+                            <p className="text-xs text-gray-500 font-semibold leading-relaxed">
+                                Are you sure you want to delete this message? This action is permanent and cannot be undone.
+                            </p>
+
+                            <div className="flex gap-3 mt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setDeleteConfirmMsgId(null)}
+                                    className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-3 rounded-xl text-xs transition-all cursor-pointer"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        handleDeleteMessage(deleteConfirmMsgId);
+                                        setDeleteConfirmMsgId(null);
+                                    }}
+                                    className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-xs transition-all cursor-pointer shadow-md shadow-red-200"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}

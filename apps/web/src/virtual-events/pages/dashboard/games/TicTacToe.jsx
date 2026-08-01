@@ -337,30 +337,7 @@ const TicTacToe = ({ onBack }) => {
     };
 
     return (
-        <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-slate-50 via-slate-100 to-indigo-50 text-slate-800 px-6 pb-6 pt-[90px] overflow-hidden font-sans z-10">
-            {/* Main background gradient */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#ebf4ff] via-[#e0e7ff] to-[#f3e8ff] z-0"></div>
-
-            {/* Grid pattern overlay */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-[size:24px_24px] z-0"></div>
-
-            {/* Blur Circles */}
-            <div className="absolute top-20 right-[-10%] w-[45%] h-[45%] bg-[#F472B6]/15 rounded-full blur-[120px] z-0"></div>
-            <div className="absolute top-10 left-[-10%] w-[40%] h-[40%] bg-[#3B82F6]/10 rounded-full blur-[100px] z-0"></div>
-            <div className="absolute bottom-10 right-[-5%] w-[35%] h-[35%] bg-[#F43F5E]/10 rounded-full blur-[90px] z-0"></div>
-
-            {/* Floating Sparkles and Stars */}
-            <svg className="absolute inset-0 w-full h-full opacity-60 z-0 pointer-events-none" xmlns="http://www.w3.org/2000/svg">
-                {/* Blue Sparkle */}
-                <path d="M180 160 L182 165 L187 167 L182 169 L180 174 L178 169 L173 167 L178 165 Z" fill="#60A5FA" />
-                {/* Orange Sparkle */}
-                <path d="M340 230 L341 234 L345 235 L341 236 L340 240 L339 236 L335 235 L339 234 Z" fill="#FDBA74" />
-                {/* Pink Sparkle */}
-                <path d="M680 180 L681 184 L685 185 L681 186 L680 190 L679 186 L675 185 L679 184 Z" fill="#F9A8D4" />
-                {/* Small dots */}
-                <circle cx="220" cy="280" r="2" fill="#93C5FD" />
-                <circle cx="620" cy="140" r="2.5" fill="#FCA5A5" />
-            </svg>
+        <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center bg-white text-slate-800 px-6 pb-6 pt-[90px] overflow-hidden font-sans z-10">
 
             {/* Top Bar */}
             <div className="w-full max-w-xl flex items-center justify-between mb-2 z-10">
@@ -374,7 +351,7 @@ const TicTacToe = ({ onBack }) => {
 
             {/* Header */}
             <div className="text-center mb-3 z-10">
-                <h1 className="text-3xl font-black tracking-tight bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-650 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-black tracking-tight text-indigo-700">
                     Tic-Tac-Toe
                 </h1>
                 <p className="text-[11px] text-slate-550 mt-1 font-semibold">Play X and O in the Virtual Event Arena</p>
@@ -385,7 +362,7 @@ const TicTacToe = ({ onBack }) => {
                 <button
                     onClick={() => handleModeChange('bot')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${gameMode === 'bot'
-                            ? 'bg-gradient-to-r from-blue-600 to-indigo-650 text-white shadow-md'
+                            ? 'bg-indigo-700 text-white shadow-md'
                             : 'text-slate-500 hover:text-slate-850 hover:bg-slate-50'
                         }`}
                 >
@@ -394,7 +371,7 @@ const TicTacToe = ({ onBack }) => {
                 <button
                     onClick={() => handleModeChange('online')}
                     className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${gameMode === 'online'
-                            ? 'bg-gradient-to-r from-blue-600 to-indigo-650 text-white shadow-md'
+                            ? 'bg-indigo-700 text-white shadow-md'
                             : 'text-slate-500 hover:text-slate-850 hover:bg-slate-50'
                         }`}
                 >
@@ -427,7 +404,7 @@ const TicTacToe = ({ onBack }) => {
                     <div className="border-t border-slate-100 pt-5 flex flex-col gap-4">
                         <button
                             onClick={handleCreateRoom}
-                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-700 text-white font-black py-3 rounded-xl shadow-md hover:shadow-lg text-xs transition-all cursor-pointer active:scale-98"
+                            className="w-full flex items-center justify-center gap-2 bg-indigo-700 hover:bg-indigo-800 text-white font-black py-3 rounded-xl shadow-md hover:shadow-lg text-xs transition-all cursor-pointer active:scale-98"
                         >
                             <FiPlus className="w-4 h-4" /> Create Online Room
                         </button>

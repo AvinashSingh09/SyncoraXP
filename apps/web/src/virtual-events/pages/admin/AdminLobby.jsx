@@ -116,6 +116,32 @@ const AdminLobby = () => {
         reader.readAsDataURL(file);
     };
 
+    const handlePdfFileUpload = async (e, pointId) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            const base64Data = reader.result;
+            setLobbyLoading(true);
+            setLobbyStatus('Uploading PDF document...');
+            try {
+                const response = await configService.uploadImage(base64Data);
+                if (response.data && response.data.success) {
+                    setLobbyPoints(prev => prev.map(p => p.id === pointId ? { ...p, pdfUrl: response.data.url } : p));
+                    setLobbyStatus('PDF document uploaded successfully!');
+                    setTimeout(() => setLobbyStatus(''), 4000);
+                }
+            } catch (err) {
+                console.error('PDF upload failed', err);
+                setLobbyStatus('PDF upload failed. Try again.');
+            } finally {
+                setLobbyLoading(false);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
     const handleLobbyPreviewClick = (e) => {
         // Prevent click if we clicked on an existing point or poster
         if (e.target.closest('.interactive-element')) return;
@@ -170,6 +196,7 @@ const AdminLobby = () => {
         { path: '/virtual-events-platform/app/dashboard/games', label: 'Game Zone' },
         { path: '/virtual-events-platform/app/dashboard/games?section=photobooth', label: 'Photo Booth' },
         { path: '#info-modal', label: 'Open Information Desk (Modal)' },
+        { path: '#pdf-modal', label: 'Open PDF Document (Modal)' },
     ];
 
     return (
@@ -343,6 +370,20 @@ const AdminLobby = () => {
                                             backgroundColor: point.color || '#ef4444' 
                                         }}
                                     ></span>
+                                    {/* Text Bubble Tooltip */}
+                                    {point.showBubble !== false && point.text && (
+                                        <div 
+                                            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2.5 py-1 bg-gray-900/90 text-white font-bold rounded-lg whitespace-normal text-center shadow-lg pointer-events-none z-50 flex items-center justify-center gap-1 border border-white/20"
+                                            style={{
+                                                width: point.boxWidth ? `${point.boxWidth}px` : 'auto',
+                                                maxWidth: '300px',
+                                                fontSize: point.fontSize ? `${point.fontSize}px` : '11px'
+                                            }}
+                                        >
+                                            <span>{point.text}</span>
+                                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900/90"></div>
+                                        </div>
+                                    )}
                                     {/* Delete Button */}
                                     <button
                                         type="button"
@@ -401,6 +442,40 @@ const AdminLobby = () => {
                                     ))}
                                 </select>
                             </div>
+                            {selectedPoint.targetPage === '#pdf-modal' && (
+                                <div className="col-span-2 bg-blue-50/70 border border-blue-200 p-3.5 rounded-xl space-y-2">
+                                    <label className="block text-xs font-bold text-blue-900">PDF File URL / Upload</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={selectedPoint.pdfUrl || ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setLobbyPoints(prev => prev.map(p => p.id === selectedPointId ? { ...p, pdfUrl: val } : p));
+                                            }}
+                                            className="flex-1 bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500 font-medium"
+                                            placeholder="https://example.com/document.pdf or upload from PC ->"
+                                            required
+                                        />
+                                        <div className="relative shrink-0">
+                                            <input 
+                                                type="file"
+                                                accept="application/pdf,image/*"
+                                                onChange={(e) => handlePdfFileUpload(e, selectedPointId)}
+                                                className="hidden"
+                                                id={`pdf-file-upload-${selectedPointId}`}
+                                            />
+                                            <label 
+                                                htmlFor={`pdf-file-upload-${selectedPointId}`}
+                                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-3.5 py-2.5 rounded-lg text-xs cursor-pointer flex items-center gap-1.5 whitespace-nowrap shadow-xs transition-colors"
+                                            >
+                                                📁 Upload PDF
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <p className="text-[11px] text-blue-600 font-medium">Click "Upload PDF" to choose a file from your PC or paste a direct PDF URL above.</p>
+                                </div>
+                            )}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-500 mb-1">Label Text</label>
                                 <input
@@ -451,6 +526,51 @@ const AdminLobby = () => {
                                         setLobbyPoints(prev => prev.map(p => p.id === selectedPointId ? { ...p, size: val } : p));
                                     }}
                                     className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Box Width (px)</label>
+                                <input
+                                    type="number"
+                                    min="50"
+                                    max="400"
+                                    placeholder="auto (e.g. 150)"
+                                    value={selectedPoint.boxWidth || ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value ? Number(e.target.value) : '';
+                                        setLobbyPoints(prev => prev.map(p => p.id === selectedPointId ? { ...p, boxWidth: val } : p));
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-500 mb-1">Font Size (px)</label>
+                                <input
+                                    type="number"
+                                    min="8"
+                                    max="32"
+                                    placeholder="12"
+                                    value={selectedPoint.fontSize || ''}
+                                    onChange={(e) => {
+                                        const val = e.target.value ? Number(e.target.value) : '';
+                                        setLobbyPoints(prev => prev.map(p => p.id === selectedPointId ? { ...p, fontSize: val } : p));
+                                    }}
+                                    className="w-full bg-white border border-gray-200 rounded-lg p-2.5 text-sm text-gray-800 focus:outline-none focus:border-blue-500"
+                                />
+                            </div>
+                            <div className="col-span-2 bg-slate-100/70 border border-slate-200 p-3 rounded-xl flex items-center justify-between">
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-800">Show Label Bubble Tooltip</label>
+                                    <p className="text-[11px] text-gray-500">Display a floating text bubble above the point in the lobby</p>
+                                </div>
+                                <input
+                                    type="checkbox"
+                                    checked={selectedPoint.showBubble !== false}
+                                    onChange={(e) => {
+                                        const checked = e.target.checked;
+                                        setLobbyPoints(prev => prev.map(p => p.id === selectedPointId ? { ...p, showBubble: checked } : p));
+                                    }}
+                                    className="w-5 h-5 accent-blue-600 rounded cursor-pointer"
                                 />
                             </div>
                         </div>
