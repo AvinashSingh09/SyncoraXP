@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import Input from '../components/Input';
 import Button from '../components/Button';
 import { useToast } from '../context/ToastContext';
@@ -61,7 +61,11 @@ const Login = () => {
     const [showLandingButtons, setShowLandingButtons] = useState(true);
     const [showLandingDescription, setShowLandingDescription] = useState(false);
     const [showAgendaModal, setShowAgendaModal] = useState(false);
-    const [showLoginModal, setShowLoginModal] = useState(false);
+    const location = useLocation();
+    const [showLoginModal, setShowLoginModal] = useState(() => {
+        // Auto-open login modal when navigated from Register page
+        return new URLSearchParams(location.search).get('modal') === 'login';
+    });
 
     useEffect(() => {
         const fetchConfig = async () => {
@@ -224,9 +228,9 @@ const Login = () => {
 
         return (
             <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0a0a] overflow-hidden font-sans">
-                {/* 16:9 Aspect Ratio Canvas */}
+                {/* Responsive Canvas: Full screen on mobile, 16:9 aspect ratio on desktop */}
                 <div
-                    className="relative w-full aspect-video max-h-screen bg-cover bg-center shadow-2xl overflow-hidden"
+                    className="relative w-full min-h-screen md:min-h-0 md:aspect-video md:max-h-screen bg-cover bg-center shadow-2xl overflow-hidden"
                     style={bgImage ? { backgroundImage: `url(${bgImage})` } : { backgroundColor: '#1a1a1a' }}
                 >
                     {/* Dark overlay for readability */}

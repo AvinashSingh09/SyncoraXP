@@ -243,7 +243,7 @@ const Register = () => {
                 customFields: payloadCustomFields
             });
             addToast('Registration successful! Please login.', 'success');
-            navigate('/virtual-events-platform/app/login');
+            navigate('/virtual-events-platform/app/login?modal=login');
         } catch (error) {
             const message = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || 'Registration failed';
             addToast(message, 'error');
@@ -289,9 +289,9 @@ const Register = () => {
 
         return (
             <div className="min-h-screen w-full flex items-center justify-center bg-[#0a0a0a] overflow-hidden font-sans">
-                {/* 16:9 Aspect Ratio Canvas */}
+                {/* Responsive Canvas: Full screen on mobile, 16:9 aspect ratio on desktop */}
                 <div
-                    className="relative w-full aspect-video max-h-screen bg-cover bg-center shadow-2xl overflow-hidden"
+                    className="relative w-full min-h-screen md:min-h-0 md:aspect-video md:max-h-screen bg-cover bg-center shadow-2xl overflow-hidden"
                     style={bgImage ? { backgroundImage: `url(${bgImage})` } : { backgroundColor: '#1a1a1a' }}
                 >
                     {/* Dark overlay for readability */}
@@ -669,7 +669,7 @@ const Register = () => {
                             <p className="text-center mt-6 text-sm text-blue-105">
                                 Already have an account?{' '}
                                 <Link
-                                    to="/virtual-events-platform/app/login"
+                                    to="/virtual-events-platform/app/login?modal=login"
                                     className="font-bold text-white hover:text-blue-200 transition-colors"
                                 >
                                     Log in
@@ -998,7 +998,7 @@ const Register = () => {
 
                         <p className="text-center mt-6 text-sm text-blue-105">
                             Already have an account?{' '}
-                            <Link to="/virtual-events-platform/app/login" className="font-bold text-white hover:text-blue-200 transition-colors">
+                            <Link to="/virtual-events-platform/app/login?modal=login" className="font-bold text-white hover:text-blue-200 transition-colors">
                                 Log in
                             </Link>
                         </p>
@@ -1326,7 +1326,7 @@ const Register = () => {
 
                 <p className="text-center mt-6 text-sm text-blue-100">
                     Already have an account?{' '}
-                    <Link to="/virtual-events-platform/app/login" className="font-bold text-white hover:text-blue-200 transition-colors">
+                    <Link to="/virtual-events-platform/app/login?modal=login" className="font-bold text-white hover:text-blue-200 transition-colors">
                         Log in
                     </Link>
                 </p>

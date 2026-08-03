@@ -53,6 +53,7 @@ const Lobby = () => {
     });
     const [isZooming, setIsZooming] = useState(null);
     const [activePosterUrl, setActivePosterUrl] = useState(null);
+    const [activePdfModal, setActivePdfModal] = useState(null); // { title, url }
 
     // Chat State
     const [chatMessages, setChatMessages] = useState([
@@ -125,10 +126,10 @@ const Lobby = () => {
     };
 
     return (
-        <div className="absolute inset-0 w-full h-full animate-fade-in bg-black overflow-auto hide-scrollbar">
-            {/* Background Canvas automatically scales to image aspect ratio */}
+        <div className="absolute inset-0 w-full h-full animate-fade-in bg-black overflow-auto hide-scrollbar flex md:block">
+            {/* Background Canvas: Portrait mobile has full-height panoramic scroll, desktop has standard full-width */}
             <div 
-                className="relative w-full min-w-[1200px] h-auto mx-auto z-0 transition-all duration-1000 ease-in-out"
+                className="relative h-full w-auto md:w-full md:min-w-[1200px] md:h-auto shrink-0 mx-auto z-0 transition-all duration-1000 ease-in-out"
                 style={isZooming ? {
                     transformOrigin: `${isZooming.left}% ${isZooming.top}%`,
                     transform: 'scale(6)',
@@ -142,7 +143,7 @@ const Lobby = () => {
                 <img 
                     src={lobbyConfig.bgImage || '/virtual-events-assets/lobby-bg.png'} 
                     alt="Lobby"
-                    className="w-full h-auto pointer-events-none block"
+                    className="h-full w-auto md:w-full md:h-auto max-w-none pointer-events-none block"
                 />
                     {/* Render Posters */}
                     {lobbyConfig.posters && lobbyConfig.posters.map(poster => (
@@ -184,6 +185,8 @@ const Lobby = () => {
                                 onClick={() => {
                                     if (point.targetPage === '#info-modal') {
                                         window.dispatchEvent(new CustomEvent('open-chat', { detail: { roomName: 'Information Desk' } }));
+                                    } else if (point.targetPage === '#pdf-modal' || point.pdfUrl) {
+                                        setActivePdfModal({ title: point.text || 'Document Viewer', url: point.pdfUrl });
                                     } else if (point.targetPage) {
                                         setIsZooming(point);
                                         setTimeout(() => {
@@ -209,6 +212,20 @@ const Lobby = () => {
                                         backgroundColor: point.color || '#ef4444' 
                                     }}
                                 ></span>
+                                {/* Text Bubble Tooltip */}
+                                {point.showBubble !== false && point.text && (
+                                    <div 
+                                        className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-[#1e293b]/90 backdrop-blur-sm text-white font-bold rounded-xl whitespace-normal text-center shadow-xl pointer-events-none z-50 border border-white/20 flex items-center justify-center"
+                                        style={{
+                                            width: point.boxWidth ? `${point.boxWidth}px` : 'auto',
+                                            maxWidth: '300px',
+                                            fontSize: point.fontSize ? `${point.fontSize}px` : '12px'
+                                        }}
+                                    >
+                                        <span>{point.text}</span>
+                                        <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-[#1e293b]/90"></div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}
@@ -350,6 +367,64 @@ const Lobby = () => {
                             alt="Poster Full View"
                             className="max-w-full max-h-[85vh] object-contain rounded"
                         />
+                    </div>
+                </div>
+            )}
+
+            {/* PDF Document Viewer Modal */}
+            {activePdfModal && (
+                <div 
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in"
+                >
+                    <div className="relative w-full max-w-5xl h-[88vh] bg-gray-900 rounded-2xl overflow-hidden border border-gray-700 shadow-2xl flex flex-col">
+                        {/* Modal Header */}
+                        <div className="bg-gray-800 text-white px-6 py-3 flex justify-between items-center border-b border-gray-700 shrink-0">
+                            <div className="flex items-center gap-3">
+                                <span className="p-2 bg-red-500/20 text-red-400 rounded-lg text-lg font-bold">📄</span>
+                                <div>
+                                    <h3 className="font-bold text-sm text-gray-100">{activePdfModal.title || 'PDF Document'}</h3>
+                                    <p className="text-[11px] text-gray-400">Virtual Event Document Preview</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {activePdfModal.url && (
+                                    <a
+                                        href={activePdfModal.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="bg-[#295ce8] hover:bg-blue-700 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition-colors flex items-center gap-1 cursor-pointer"
+                                    >
+                                        Open Full / Download
+                                    </a>
+                                )}
+                                <button
+                                    onClick={() => setActivePdfModal(null)}
+                                    className="p-1.5 text-gray-400 hover:text-white rounded-lg hover:bg-gray-700 transition-colors cursor-pointer"
+                                >
+                                    <FiX className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+                        {/* PDF iFrame */}
+                        <div className="flex-1 w-full relative bg-gray-950">
+                            {activePdfModal.url ? (
+                                <iframe
+                                    src={
+                                        activePdfModal.url.startsWith('http')
+                                            ? `https://docs.google.com/viewer?url=${encodeURIComponent(activePdfModal.url)}&embedded=true`
+                                            : activePdfModal.url.startsWith('/')
+                                            ? `${activePdfModal.url}#zoom=page-width`
+                                            : `/${activePdfModal.url}#zoom=page-width`
+                                    }
+                                    className="absolute inset-0 w-full h-full border-0 bg-white"
+                                    title={activePdfModal.title || 'PDF Preview'}
+                                />
+                            ) : (
+                                <div className="absolute inset-0 flex items-center justify-center text-gray-400 text-sm">
+                                    No PDF URL specified. Please set a valid PDF URL in Lobby Settings.
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}

@@ -36,6 +36,7 @@ import AdminMeetingRoom from './pages/admin/AdminMeetingRoom';
 import AdminPoints from './pages/admin/AdminPoints';
 import AdminRegSettings from './pages/admin/AdminRegSettings';
 import AdminGameSettings from './pages/admin/AdminGameSettings';
+import AdminPhotoboothSettings from './pages/admin/AdminPhotoboothSettings';
 import AdminNavbarSettings from './pages/admin/AdminNavbarSettings';
 
 // Base path for all VE routes
@@ -114,6 +115,7 @@ function VERoutes() {
         <Route path="users" element={<AdminUsers />} />
         <Route path="reg-settings" element={<AdminRegSettings />} />
         <Route path="game-settings" element={<AdminGameSettings />} />
+        <Route path="photobooth-settings" element={<AdminPhotoboothSettings />} />
         <Route path="navbar-settings" element={<AdminNavbarSettings />} />
         <Route path="placeholder" element={<AdminPlaceholder />} />
       </Route>

@@ -296,11 +296,7 @@ const Snake = ({ onBack }) => {
     }, [snake, food]);
 
     return (
-        <div className="absolute inset-0 w-full h-full text-slate-800 overflow-hidden font-sans">
-            {/* Background design */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#f0fdf4] via-[#ecfdf5] to-[#f0fdf4] z-0 pointer-events-none"></div>
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
-            <div className="absolute top-20 right-[-10%] w-[45%] h-[45%] bg-[#10B981]/5 rounded-full blur-[120px] pointer-events-none"></div>
+        <div className="absolute inset-0 w-full h-full text-slate-800 overflow-hidden font-sans bg-white">
 
             <div className="w-full h-full flex flex-col items-center justify-start px-4 md:px-8 pb-8 pt-[124px] overflow-y-auto z-10 relative">
                 {/* Header Actions */}

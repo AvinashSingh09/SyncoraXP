@@ -66,6 +66,11 @@ class Qna {
   static async deleteMany() {
     await query('DELETE FROM ve_qnas');
   }
+
+  static async findByIdAndDelete(id) {
+    const { rows } = await query('DELETE FROM ve_qnas WHERE _id = $1 RETURNING *', [id]);
+    return rows.length ? new Qna(rows[0]) : null;
+  }
 }
 
 module.exports = Qna;

@@ -217,42 +217,14 @@ const ArrowEscapeSVG = ({ className }) => (
         <path d="M 20 80 C 20 50, 50 50, 50 20" stroke="white" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.35" />
         <path d="M 20 80 C 20 50, 50 50, 50 20" stroke="#a855f7" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round" />
         <polygon points="50,12 43,24 57,24" fill="#a855f7" />
-        
+
         <path d="M 80 80 C 80 50, 50 50, 50 20" stroke="white" strokeWidth="6.5" strokeLinecap="round" strokeLinejoin="round" opacity="0.1" />
         <path d="M 30 50 L 70 50" stroke="#f43f5e" strokeWidth="6.5" strokeLinecap="round" />
         <polygon points="76,50 68,44 68,56" fill="#f43f5e" />
     </svg>
 );
 
-// Styled Engage Hub page background component
-const EngageBackground = () => (
-    <div className="absolute inset-0 w-full h-full z-0 overflow-hidden pointer-events-none">
-        {/* Main background gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#ebf4ff] via-[#e0e7ff] to-[#f3e8ff]"></div>
 
-        {/* Grid pattern overlay */}
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-
-        {/* Blur Circles */}
-        <div className="absolute top-20 right-[-10%] w-[45%] h-[45%] bg-[#F472B6]/15 rounded-full blur-[120px]"></div>
-        <div className="absolute top-10 left-[-10%] w-[40%] h-[40%] bg-[#3B82F6]/10 rounded-full blur-[100px]"></div>
-        <div className="absolute bottom-10 right-[-5%] w-[35%] h-[35%] bg-[#F43F5E]/10 rounded-full blur-[90px]"></div>
-
-
-        {/* Floating Sparkles and Stars */}
-        <svg className="absolute inset-0 w-full h-full opacity-60" xmlns="http://www.w3.org/2000/svg">
-            {/* Blue Sparkle */}
-            <path d="M180 160 L182 165 L187 167 L182 169 L180 174 L178 169 L173 167 L178 165 Z" fill="#60A5FA" />
-            {/* Orange Sparkle */}
-            <path d="M340 230 L341 234 L345 235 L341 236 L340 240 L339 236 L335 235 L339 234 Z" fill="#FDBA74" />
-            {/* Pink Sparkle */}
-            <path d="M680 180 L681 184 L685 185 L681 186 L680 190 L679 186 L675 185 L679 184 Z" fill="#F9A8D4" />
-            {/* Small dots */}
-            <circle cx="220" cy="280" r="2" fill="#93C5FD" />
-            <circle cx="620" cy="140" r="2.5" fill="#FCA5A5" />
-        </svg>
-    </div>
-);
 
 const Games = () => {
     const [activeSection, setActiveSection] = useState(() => {
@@ -359,10 +331,7 @@ const Games = () => {
         const gridClass = enabledCount >= 3 ? 'md:grid-cols-3' : enabledCount === 2 ? 'md:grid-cols-2 max-w-3xl' : 'md:grid-cols-1 max-w-md';
 
         return (
-            <div className="absolute inset-0 w-full h-full text-slate-800 overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                    <EngageBackground />
-                </div>
+            <div className="absolute inset-0 w-full h-full text-slate-800 overflow-hidden bg-white">
 
                 <div
                     className="w-full h-full flex flex-col items-center justify-start px-8 pb-8 pt-[124px] overflow-y-auto font-sans transition-all duration-[850ms] ease-in-out z-10"
@@ -388,7 +357,7 @@ const Games = () => {
 
                     {/* Hub Header */}
                     <div className="text-center mt-2 mb-12 z-10">
-                        <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-650 bg-clip-text text-transparent">
+                        <h1 className="text-4xl font-extrabold tracking-tight text-indigo-700">
                             Game Arena
                         </h1>
                         <p className="text-sm text-slate-500 mt-2 font-medium">Challenge yourself or play with friends in the lobby</p>
@@ -652,10 +621,7 @@ const Games = () => {
     }
 
     return (
-        <div className="absolute inset-0 w-full h-full text-slate-800 overflow-hidden">
-            <div className="absolute inset-0 z-0">
-                <EngageBackground />
-            </div>
+        <div className="absolute inset-0 w-full h-full text-slate-800 overflow-hidden bg-white">
 
             <div
                 className="w-full h-full flex flex-col items-center justify-start px-8 pb-8 pt-[124px] overflow-y-auto font-sans transition-all duration-[850ms] ease-in-out z-10"
@@ -671,7 +637,7 @@ const Games = () => {
             >
                 {/* Hub Header */}
                 <div className="text-center mt-6 mb-12 z-10">
-                    <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-650 bg-clip-text text-transparent">
+                    <h1 className="text-4xl font-extrabold tracking-tight text-indigo-700">
                         Engage Hub
                     </h1>
                     <p className="text-sm text-slate-500 mt-2 font-medium">Interact, play games, and capture memories</p>

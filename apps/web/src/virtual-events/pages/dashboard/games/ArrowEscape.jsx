@@ -649,13 +649,13 @@ const ArrowEscape = ({ onBack }) => {
                 <div className="w-full max-w-md flex items-center justify-between mb-4 px-4 gap-4">
                     <button 
                         onClick={onBack}
-                        className="flex items-center gap-1.5 px-4 py-1.5 bg-white hover:bg-slate-50 text-blue-600 border border-slate-200 rounded-full text-xs font-bold shadow-sm transition-all active:scale-[0.96]"
+                        className="flex items-center gap-1.5 px-4 py-2 bg-white text-slate-700 hover:text-slate-900 border border-slate-200/80 rounded-2xl text-xs font-bold shadow-md hover:shadow-lg transition-all active:scale-[0.96] cursor-pointer"
                     >
                         <FiArrowLeft className="w-3.5 h-3.5" /> Exit Game
                     </button>
 
                     {/* Level & Lives (Hearts) Pill */}
-                    <div className="bg-white/80 border border-slate-200/65 px-3 py-1 rounded-full flex items-center gap-2 text-xs font-bold text-slate-700 shadow-sm">
+                    <div className="bg-white border border-slate-200/80 px-4 py-2 rounded-2xl flex items-center gap-2 text-xs font-bold text-slate-700 shadow-md">
                         <span>Level {level}</span>
                         {level === 1 && <span title="Brain Circuit">🧠</span>}
                         {level === 2 && <span title="Heart Circuit">❤️</span>}
@@ -668,8 +668,8 @@ const ArrowEscape = ({ onBack }) => {
                         </div>
                     </div>
 
-                    <div className="bg-[#fef3c7] text-[#b45309] font-bold text-sm px-4 py-1 rounded-full border border-amber-200/50 shadow-sm flex items-center gap-1.5 select-none">
-                        <span className="text-base leading-none">🕒</span>
+                    <div className="bg-white text-amber-700 font-bold text-xs px-4 py-2 rounded-2xl border border-slate-200/80 shadow-md flex items-center gap-1.5 select-none">
+                        <span className="text-sm leading-none">🕒</span>
                         <span>{formatTime(timeLeft)}</span>
                     </div>
                 </div>

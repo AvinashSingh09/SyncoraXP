@@ -112,6 +112,7 @@ export const configService = {
         sessionStorage.removeItem(`config_${key}`);
         return api.post('/config', { key, value });
     },
+    saveConfig: (key, value) => configService.setConfig(key, value),
     uploadImage: (base64Data) => api.post('/config/upload', { image: base64Data }),
 };
 
@@ -130,6 +131,7 @@ export const chatService = {
     sendMessage: (room, text, replyTo) => api.post('/chat/messages', { room, text, replyTo }),
     reactToMessage: (messageId, emoji) => api.post('/chat/messages/reaction', { messageId, emoji }),
     editMessage: (messageId, text) => api.patch(`/chat/messages/${messageId}`, { messageId, text }),
+    deleteMessage: (messageId) => api.delete(`/chat/messages/${messageId}`),
     forwardMessage: (room, text) => api.post('/chat/messages', { room, text, forwarded: true }),
     clearChat: (room) => api.delete(room ? `/chat/clear?room=${encodeURIComponent(room)}` : '/chat/clear'),
 };
@@ -138,6 +140,7 @@ export const qnaService = {
     getQuestions: () => api.get('/qna'),
     askQuestion: (text) => api.post('/qna', { text }),
     upvoteQuestion: (id) => api.post(`/qna/${id}/upvote`),
+    deleteQuestion: (id) => api.delete(`/qna/${id}`),
     clearQuestions: () => api.delete('/qna/clear'),
 };
 
