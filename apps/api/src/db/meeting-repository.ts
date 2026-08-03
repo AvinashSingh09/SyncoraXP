@@ -10,6 +10,7 @@ export interface StoredMeeting {
   organizerEmail: string;
   createdBy: string | null;
   scheduledFor: Date | null;
+  timeZone: string;
   status: "scheduled" | "active" | "ended";
   isLocked: boolean;
   waitingRoomEnabled: boolean;

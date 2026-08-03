@@ -7,7 +7,7 @@ import {
   VideoCameraSlash,
   WarningCircle,
 } from "@phosphor-icons/react";
-import type { MeetingTranslationSettings } from "@voice/shared";
+import type { MeetingTranslationSettings, TranslationPreference } from "@voice/shared";
 import type {
   MessageFormatter,
   MessageEncoder,
@@ -54,6 +54,8 @@ export interface CustomVideoConferenceProps extends React.HTMLAttributes<HTMLDiv
   meetingId: string;
   participantRole: "host" | "guest";
   translationSettings: MeetingTranslationSettings;
+  initialTranslationPreference: TranslationPreference;
+  onTranslationSettingsChange(settings: MeetingTranslationSettings): void;
 }
 
 function isEqualTrackRef(a?: TrackReferenceOrPlaceholder, b?: TrackReferenceOrPlaceholder): boolean {
@@ -110,6 +112,8 @@ export function CustomVideoConference({
   meetingId,
   participantRole,
   translationSettings,
+  initialTranslationPreference,
+  onTranslationSettingsChange,
   ...props
 }: CustomVideoConferenceProps) {
   const [widgetState, setWidgetState] = React.useState<WidgetState>({
@@ -120,6 +124,7 @@ export function CustomVideoConference({
 
   const [showParticipants, setShowParticipants] = React.useState(false);
   const [captionsOpen, setCaptionsOpen] = React.useState(false);
+  const [roomsOpen, setRoomsOpen] = React.useState(false);
   const [panelHost, setPanelHost] = React.useState<HTMLDivElement | null>(null);
   const [participantPermissionBusy, setParticipantPermissionBusy] = React.useState<string | null>(null);
   const [participantPermissionError, setParticipantPermissionError] = React.useState("");
@@ -184,6 +189,7 @@ export function CustomVideoConference({
     if (state.showChat) {
       setShowParticipants(false);
       setCaptionsOpen(false);
+      setRoomsOpen(false);
       onCloseHostPanel?.();
     }
   }, [onCloseHostPanel]);
@@ -204,6 +210,7 @@ export function CustomVideoConference({
     if (isHostPanelOpen) {
       setShowParticipants(false);
       setCaptionsOpen(false);
+      setRoomsOpen(false);
       layoutContext.widget.dispatch?.({ msg: "hide_chat" });
     }
   }, [isHostPanelOpen]);
@@ -253,6 +260,7 @@ export function CustomVideoConference({
       const next = !prev;
       if (next) {
         setCaptionsOpen(false);
+        setRoomsOpen(false);
         layoutContext.widget.dispatch?.({ msg: "hide_chat" });
         onCloseHostPanel?.();
       }
@@ -264,6 +272,16 @@ export function CustomVideoConference({
     setCaptionsOpen(open);
     if (!open) return;
     setShowParticipants(false);
+    setRoomsOpen(false);
+    layoutContext.widget.dispatch?.({ msg: "hide_chat" });
+    onCloseHostPanel?.();
+  }, [layoutContext.widget, onCloseHostPanel]);
+
+  const setRoomsPanel = React.useCallback((open: boolean) => {
+    setRoomsOpen(open);
+    if (!open) return;
+    setShowParticipants(false);
+    setCaptionsOpen(false);
     layoutContext.widget.dispatch?.({ msg: "hide_chat" });
     onCloseHostPanel?.();
   }, [layoutContext.widget, onCloseHostPanel]);
@@ -355,10 +373,14 @@ export function CustomVideoConference({
               <InterpretationControl
                 meetingId={meetingId}
                 settings={translationSettings}
-                showControl={participantRole === "guest"}
+                participantRole={participantRole}
+                initialPreference={initialTranslationPreference}
                 captionsOpen={captionsOpen}
+                roomsOpen={roomsOpen}
                 panelHost={panelHost}
                 onCaptionsOpenChange={setCaptionPanel}
+                onRoomsOpenChange={setRoomsPanel}
+                onSettingsChange={onTranslationSettingsChange}
               />
               <button
                 type="button"

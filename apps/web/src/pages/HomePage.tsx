@@ -17,11 +17,17 @@ import { Link, useNavigate } from "react-router-dom";
 import { Brand } from "../components/Brand";
 import { createMeeting, deleteMeeting, getMeetingTranscript, getMyMeetings } from "../api";
 import { useAuth } from "../auth/AuthContext";
+import { CreateMeetingPage } from "./CreateMeetingPage";
 
 // get meeting time for today's meetings
 function meetingTime(meeting: MeetingSummary) {
   if (!meeting.scheduledFor) return "Available now";
-  return new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" })
+  return new Intl.DateTimeFormat(undefined, {
+    hour: "numeric",
+    minute: "2-digit",
+    timeZone: meeting.timeZone,
+    timeZoneName: "short",
+  })
     .format(new Date(meeting.scheduledFor));
 }
 
@@ -32,8 +38,21 @@ function meetingDate(meeting: MeetingSummary) {
     hour: "numeric",
     minute: "2-digit",
     month: "short",
+    timeZone: meeting.timeZone,
+    timeZoneName: "short",
     weekday: "short",
   }).format(new Date(meeting.scheduledFor));
+}
+
+function isToday(meeting: MeetingSummary, now: Date) {
+  if (!meeting.scheduledFor) return false;
+  const formatter = new Intl.DateTimeFormat("en-CA", {
+    day: "2-digit",
+    month: "2-digit",
+    timeZone: meeting.timeZone,
+    year: "numeric",
+  });
+  return formatter.format(new Date(meeting.scheduledFor)) === formatter.format(now);
 }
 
 function parseJoinCode(value: string) {
@@ -49,6 +68,7 @@ export function HomePage() {
   const [meetingError, setMeetingError] = useState("");
   const [deletingMeetingId, setDeletingMeetingId] = useState<string | null>(null);
   const [joinOpen, setJoinOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
   const [joinValue, setJoinValue] = useState("");
   const [joinError, setJoinError] = useState("");
   const [creatingInstant, setCreatingInstant] = useState(false);
@@ -70,8 +90,7 @@ export function HomePage() {
 
   const todayMeetings = useMemo(
     () => meetings
-      .filter((meeting) => !!meeting.scheduledFor
-        && new Date(meeting.scheduledFor).toDateString() === now.toDateString())
+      .filter((meeting) => isToday(meeting, now))
       .sort((left, right) => new Date(left.scheduledFor ?? 0).getTime() - new Date(right.scheduledFor ?? 0).getTime()),
     [meetings, now],
   );
@@ -176,10 +195,10 @@ export function HomePage() {
             <span className="dashboard-action-icon"><LinkSimple size={27} weight="bold" /></span>
             <span><strong>Join</strong><small>Use a meeting link</small></span>
           </button>
-          <Link className="dashboard-action" to="/meetings/new?schedule=1">
+          <button className="dashboard-action" type="button" onClick={() => setScheduleOpen(true)}>
             <span className="dashboard-action-icon"><CalendarDots size={27} weight="fill" /></span>
             <span><strong>Schedule</strong><small>Plan for later</small></span>
-          </Link>
+          </button>
           <button className="dashboard-action" type="button" onClick={() => document.querySelector("#all-meetings")?.scrollIntoView({ behavior: "smooth" })}>
             <span className="dashboard-action-icon"><ListDashes size={27} weight="bold" /></span>
             <span><strong>My meetings</strong><small>Open or manage</small></span>
@@ -231,7 +250,7 @@ export function HomePage() {
                 <span><CalendarBlank size={42} weight="duotone" /></span>
                 <strong>No meetings scheduled for today</strong>
                 <small>Create a room now or schedule one for later.</small>
-                <Link className="text-button" to="/meetings/new?schedule=1">Schedule a meeting <ArrowRight size={15} weight="bold" /></Link>
+                <button className="text-button" type="button" onClick={() => setScheduleOpen(true)}>Schedule a meeting <ArrowRight size={15} weight="bold" /></button>
               </div>
             )}
           </div>
@@ -294,6 +313,14 @@ export function HomePage() {
           </div>
         )}
       </section>
+      {scheduleOpen && (
+        <CreateMeetingPage
+          modal
+          scheduling
+          onClose={() => setScheduleOpen(false)}
+          onCreated={(response) => setMeetings((current) => [response.meeting, ...current])}
+        />
+      )}
       {(transcript || transcriptLoading || transcriptError) && (
         <div
           className="transcript-modal-backdrop"

@@ -100,6 +100,18 @@ const validMeeting: CreateMeetingInput = {
   title: "Weekly product seminar",
   description: "Roadmap and questions",
   scheduledFor: "2026-07-20T10:00:00.000Z",
+  timeZone: "UTC",
+  settings: {
+    waitingRoomEnabled: true,
+    allowGuestCamera: true,
+    allowGuestMicrophone: true,
+    allowGuestScreenShare: false,
+    transcriptionEnabled: false,
+    subtitlesEnabled: false,
+    interpretationEnabled: false,
+    interpretationProvider: "openai",
+    interpretationLanguages: ["hi", "bn", "mr", "ta", "te"],
+  },
   invitees: [{ email: "sam@example.com", name: "Sam" }],
 };
 
@@ -159,22 +171,38 @@ test("requires a host account to create a meeting", async (t) => {
   assert.equal(response.statusCode, 401);
 });
 
-test("creates an owned meeting, sends invitations, and keeps the guest link public", async (t) => {
-  const { app, mailer } = await setup();
+test("creates an owned meeting with its controls, sends invitations, and keeps the guest link public", async (t) => {
+  const { app, mailer, translations } = await setup();
   t.after(() => app.close());
   const cookie = await registerHost(app);
+  const configuredMeeting: CreateMeetingInput = {
+    ...validMeeting,
+    timeZone: "Asia/Kolkata",
+    settings: {
+      waitingRoomEnabled: false,
+      allowGuestCamera: false,
+      allowGuestMicrophone: true,
+      allowGuestScreenShare: true,
+      transcriptionEnabled: true,
+      subtitlesEnabled: false,
+      interpretationEnabled: true,
+      interpretationProvider: "gemini",
+      interpretationLanguages: ["hi", "ta"],
+    },
+  };
 
   const created = await app.inject({
     method: "POST",
     url: "/api/meetings",
     headers: { cookie },
-    payload: validMeeting,
+    payload: configuredMeeting,
   });
   assert.equal(created.statusCode, 201);
   const payload = created.json();
   assert.match(payload.meeting.joinUrl, /^https:\/\/meet\.example\.com\/join\//);
   assert.match(payload.meeting.hostUrl, /^https:\/\/meet\.example\.com\/meetings\/.+\/host$/);
   assert.equal(payload.meeting.organizerName, "Asha Rao");
+  assert.equal(payload.meeting.timeZone, "Asia/Kolkata");
   assert.equal(payload.invitations[0].status, "sent");
   assert.equal(mailer.messages.length, 1);
 
@@ -183,6 +211,13 @@ test("creates an owned meeting, sends invitations, and keeps the guest link publ
   assert.equal(joined.statusCode, 200);
   assert.equal(joined.json().meeting.title, validMeeting.title);
   assert.equal(joined.json().meeting.organizerEmail, undefined);
+  assert.deepEqual(joined.json().interpretation, {
+    enabled: true,
+    allowedTargetLanguages: ["hi", "ta"],
+  });
+  assert.equal(joined.json().interpretation.provider, undefined);
+  assert.equal(joined.json().interpretation.model, undefined);
+  assert.equal(joined.json().interpretation.designatedSpeakerIdentity, undefined);
 
   const host = await app.inject({
     method: "GET",
@@ -191,6 +226,19 @@ test("creates an owned meeting, sends invitations, and keeps the guest link publ
   });
   assert.equal(host.statusCode, 200);
   assert.equal(host.json().role, "host");
+  assert.deepEqual(host.json().settings, {
+    isLocked: false,
+    waitingRoomEnabled: false,
+    allowGuestCamera: false,
+    allowGuestMicrophone: true,
+    allowGuestScreenShare: true,
+  });
+  const languageSettings = await translations.getSettings(payload.meeting.id);
+  assert.equal(languageSettings.transcriptionEnabled, true);
+  assert.equal(languageSettings.subtitlesEnabled, false);
+  assert.equal(languageSettings.enabled, true);
+  assert.equal(languageSettings.provider, "gemini");
+  assert.deepEqual(languageSettings.allowedTargetLanguages, ["hi", "ta"]);
 });
 
 test("rejects malformed meeting input", async (t) => {
@@ -913,7 +961,7 @@ test("rejects malformed demo request", async (t) => {
   assert.equal(response.statusCode, 400);
 });
 
-test("lets only the host configure and queue meeting interpretation", async (t) => {
+test("lets only the host independently configure transcription, subtitles, and interpretation", async (t) => {
   const { app, roomTokens } = await setup();
   t.after(() => app.close());
   const ownerCookie = await registerHost(app);
@@ -1018,8 +1066,50 @@ test("lets only the host configure and queue meeting interpretation", async (t) 
   });
   assert.equal(disabled.statusCode, 200);
   assert.equal(disabled.json().settings.enabled, false);
-  assert.equal(disabled.json().runtime.status, "queued");
+  assert.equal(disabled.json().runtime.status, "stopping");
   assert.equal(roomTokens.translationSettingsUpdates.at(-1)?.settings.enabled, false);
+
+  const subtitlesEnabled = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { subtitlesEnabled: true },
+  });
+  assert.equal(subtitlesEnabled.statusCode, 200);
+  assert.equal(subtitlesEnabled.json().settings.subtitlesEnabled, true);
+  assert.equal(subtitlesEnabled.json().settings.transcriptionEnabled, false);
+  assert.equal(subtitlesEnabled.json().runtime.status, "queued");
+
+  const transcriptionEnabled = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { transcriptionEnabled: true },
+  });
+  assert.equal(transcriptionEnabled.statusCode, 200);
+  assert.equal(transcriptionEnabled.json().settings.transcriptionEnabled, true);
+  assert.equal(transcriptionEnabled.json().settings.subtitlesEnabled, true);
+
+  const subtitlesDisabled = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { subtitlesEnabled: false },
+  });
+  assert.equal(subtitlesDisabled.statusCode, 200);
+  assert.equal(subtitlesDisabled.json().settings.subtitlesEnabled, false);
+  assert.equal(subtitlesDisabled.json().settings.transcriptionEnabled, true);
+  assert.equal(subtitlesDisabled.json().runtime.status, "queued");
+
+  const transcriptionDisabled = await app.inject({
+    method: "PATCH",
+    url: `/api/meetings/${meetingId}/translation`,
+    headers: { cookie: ownerCookie },
+    payload: { transcriptionEnabled: false },
+  });
+  assert.equal(transcriptionDisabled.statusCode, 200);
+  assert.equal(transcriptionDisabled.json().settings.transcriptionEnabled, false);
+  assert.equal(transcriptionDisabled.json().runtime.status, "stopping");
 
   const openAISelected = await app.inject({
     method: "PATCH",

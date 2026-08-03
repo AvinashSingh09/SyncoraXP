@@ -27,7 +27,7 @@ services:
           tcp_port: 7881
           udp_port: 7882
           use_external_ip: false
-          node_ip: ${LIVEKIT_NODE_IP:-192.168.0.195}
+          node_ip: ${LIVEKIT_NODE_IP:-192.168.0.196}
         keys:
           "${LIVEKIT_API_KEY}": "${LIVEKIT_API_SECRET}"
     ports:

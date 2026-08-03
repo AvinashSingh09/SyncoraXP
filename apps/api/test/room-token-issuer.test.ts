@@ -177,6 +177,8 @@ test("publishes translation settings in room metadata without discarding existin
   const issuer = new LiveKitRoomTokenIssuer(config, () => roomService as never);
 
   await issuer.updateTranslationSettings("meeting-1", {
+    transcriptionEnabled: false,
+    subtitlesEnabled: true,
     enabled: true,
     sourceLanguage: "en",
     allowedTargetLanguages: ["hi", "bn"],
@@ -190,7 +192,29 @@ test("publishes translation settings in room metadata without discarding existin
   assert.equal(metadata.anotherIntegration, true);
   assert.equal(metadata.syncoraxp.translation.version, 1);
   assert.equal(metadata.syncoraxp.translation.settings.enabled, true);
+  assert.equal(metadata.syncoraxp.translation.settings.subtitlesEnabled, true);
   assert.deepEqual(metadata.syncoraxp.translation.settings.allowedTargetLanguages, ["hi", "bn"]);
+});
+
+test("does not block meeting entry when optional translation metadata cannot sync", async () => {
+  const issuer = new LiveKitRoomTokenIssuer(config, () => ({
+    async listRooms() {
+      throw new DOMException("The operation was aborted due to timeout", "TimeoutError");
+    },
+  }) as never);
+
+  await assert.doesNotReject(() =>
+    issuer.updateTranslationSettings("meeting-1", {
+      transcriptionEnabled: true,
+      subtitlesEnabled: false,
+      enabled: false,
+      sourceLanguage: "en",
+      allowedTargetLanguages: ["hi"],
+      provider: "openai",
+      model: "gpt-realtime-translate",
+      designatedSpeakerIdentity: "host-1",
+    }),
+  );
 });
 
 test("updates one guest's media permission without changing unrelated grants", async () => {

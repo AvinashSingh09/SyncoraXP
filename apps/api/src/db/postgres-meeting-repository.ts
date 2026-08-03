@@ -18,6 +18,7 @@ interface MeetingRow {
   organizer_email: string;
   created_by: string | null;
   scheduled_for: Date | null;
+  scheduled_timezone: string;
   status: StoredMeeting["status"];
   is_locked: boolean;
   waiting_room_enabled: boolean;
@@ -58,6 +59,7 @@ function mapMeeting(row: MeetingRow): StoredMeeting {
     organizerEmail: row.organizer_email,
     createdBy: row.created_by,
     scheduledFor: row.scheduled_for,
+    timeZone: row.scheduled_timezone,
     status: row.status,
     isLocked: row.is_locked,
     waitingRoomEnabled: row.waiting_room_enabled,
@@ -134,8 +136,10 @@ export class PostgresMeetingRepository implements MeetingRepository {
     const result = await client.query<MeetingRow>(
       `INSERT INTO meetings
         (id, join_code, livekit_room_name, title, description, organizer_name,
-         organizer_email, scheduled_for, created_by)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         organizer_email, scheduled_for, scheduled_timezone, created_by,
+         waiting_room_enabled, allow_guest_camera, allow_guest_microphone,
+         allow_guest_screen_share)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
        RETURNING *`,
       [
         record.id,
@@ -146,7 +150,12 @@ export class PostgresMeetingRepository implements MeetingRepository {
         record.creator.name,
         record.creator.email,
         record.input.scheduledFor ? new Date(record.input.scheduledFor) : null,
+        record.input.timeZone,
         record.creator.id,
+        record.input.settings.waitingRoomEnabled,
+        record.input.settings.allowGuestCamera,
+        record.input.settings.allowGuestMicrophone,
+        record.input.settings.allowGuestScreenShare,
       ],
     );
     const row = result.rows[0];

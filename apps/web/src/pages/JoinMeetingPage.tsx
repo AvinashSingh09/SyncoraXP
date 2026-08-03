@@ -1,5 +1,10 @@
 import { useEffect, useState } from "react";
-import type { GuestAdmissionResponse, PublicMeetingResponse, RoomSessionResponse } from "@voice/shared";
+import type {
+  GuestAdmissionResponse,
+  PublicMeetingResponse,
+  RoomSessionResponse,
+  TranslationPreference,
+} from "@voice/shared";
 import type { LocalUserChoices } from "@livekit/components-react";
 import { DisconnectReason } from "livekit-client";
 import { useParams } from "react-router-dom";
@@ -17,8 +22,12 @@ import { RoomPreJoin } from "../components/RoomPreJoin";
 export function JoinMeetingPage() {
   const { joinCode = "" } = useParams();
   const [meeting, setMeeting] = useState<PublicMeetingResponse["meeting"] | null>(null);
+  const [interpretation, setInterpretation] =
+    useState<PublicMeetingResponse["interpretation"] | null>(null);
   const [session, setSession] = useState<RoomSessionResponse | null>(null);
   const [choices, setChoices] = useState<LocalUserChoices | null>(null);
+  const [preferredLanguage, setPreferredLanguage] =
+    useState<TranslationPreference>("original");
   const [admission, setAdmission] = useState<GuestAdmissionResponse | null>(null);
   const [error, setError] = useState("");
   const [joining, setJoining] = useState(false);
@@ -26,16 +35,24 @@ export function JoinMeetingPage() {
   useEffect(() => {
     let active = true;
     getPublicMeeting(joinCode)
-      .then((response) => active && setMeeting(response.meeting))
+      .then((response) => {
+        if (!active) return;
+        setMeeting(response.meeting);
+        setInterpretation(response.interpretation);
+      })
       .catch((caught) => active && setError(caught instanceof Error ? caught.message : "Meeting not found"));
     return () => { active = false; };
   }, [joinCode]);
 
-  const requestAccess = async (selectedChoices: LocalUserChoices) => {
+  const requestAccess = async (
+    selectedChoices: LocalUserChoices,
+    selectedLanguage: TranslationPreference,
+  ) => {
     setError("");
     setJoining(true);
     try {
       setChoices(selectedChoices);
+      setPreferredLanguage(selectedLanguage);
       setAdmission(await requestGuestAdmission(joinCode, selectedChoices.username));
     } catch (caught) {
       setChoices(null);
@@ -91,6 +108,7 @@ export function JoinMeetingPage() {
     setSession(null);
     setAdmission(null);
     setChoices(null);
+    setPreferredLanguage("original");
     setJoining(false);
     setError("");
   };
@@ -108,6 +126,7 @@ export function JoinMeetingPage() {
         meetingTitle={meeting.title}
         session={session}
         choices={choices}
+        initialTranslationPreference={preferredLanguage}
         onLeave={leaveMeeting}
       />
     );
@@ -134,7 +153,10 @@ export function JoinMeetingPage() {
         joining={joining}
         error={error}
         role="guest"
-        onSubmit={(selectedChoices) => void requestAccess(selectedChoices)}
+        interpretation={interpretation ?? undefined}
+        onSubmit={(selectedChoices, selectedLanguage) =>
+          void requestAccess(selectedChoices, selectedLanguage)
+        }
       />
     );
   }

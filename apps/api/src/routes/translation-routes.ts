@@ -61,6 +61,10 @@ export async function registerTranslationRoutes(
 
       const current = await dependencies.translations.getSettings(meeting.id);
       const nextEnabled = parsed.data.enabled ?? current.enabled;
+      const nextTranscriptionEnabled =
+        parsed.data.transcriptionEnabled ?? current.transcriptionEnabled;
+      const nextSubtitlesEnabled =
+        parsed.data.subtitlesEnabled ?? current.subtitlesEnabled;
       if (
         current.enabled &&
         parsed.data.provider !== undefined &&
@@ -74,15 +78,24 @@ export async function registerTranslationRoutes(
         parsed.data.designatedSpeakerIdentity === undefined
           ? current.designatedSpeakerIdentity
           : parsed.data.designatedSpeakerIdentity;
-      if (nextEnabled && !nextSpeaker) {
+      if ((nextEnabled || nextTranscriptionEnabled || nextSubtitlesEnabled) && !nextSpeaker) {
         return reply.status(400).send({
-          error: "Choose a connected speaker before enabling interpretation",
+          error: "Choose a connected speaker before enabling transcription, subtitles, or interpretation",
         });
       }
 
       const settings = await dependencies.translations.updateSettings(meeting.id, parsed.data);
       await dependencies.roomTokens.updateTranslationSettings(meeting.livekitRoomName, settings);
-      if (settings.designatedSpeakerIdentity) {
+      if (!settings.enabled && !settings.transcriptionEnabled && !settings.subtitlesEnabled) {
+        await dependencies.translations.requestStop(meeting.id);
+      } else if (settings.designatedSpeakerIdentity) {
+        if (
+          settings.enabled !== current.enabled ||
+          settings.transcriptionEnabled !== current.transcriptionEnabled ||
+          settings.subtitlesEnabled !== current.subtitlesEnabled
+        ) {
+          await dependencies.translations.requestStop(meeting.id);
+        }
         await dependencies.translations.queueRun({
           id: randomUUID(),
           meetingId: meeting.id,

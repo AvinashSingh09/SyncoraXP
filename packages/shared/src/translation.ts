@@ -60,6 +60,8 @@ export const TranslationLanguageStatusSchema = z.enum([
 export type TranslationLanguageStatus = z.infer<typeof TranslationLanguageStatusSchema>;
 
 export const MeetingTranslationSettingsSchema = z.object({
+  transcriptionEnabled: z.boolean(),
+  subtitlesEnabled: z.boolean(),
   enabled: z.boolean(),
   sourceLanguage: z.literal("en"),
   allowedTargetLanguages: z.array(TranslationLanguageCodeSchema),
@@ -108,6 +110,8 @@ export interface MeetingTranslationResponse {
 
 export const UpdateMeetingTranslationInputSchema = z
   .object({
+    transcriptionEnabled: z.boolean().optional(),
+    subtitlesEnabled: z.boolean().optional(),
     enabled: z.boolean().optional(),
     allowedTargetLanguages: z
       .array(TranslationLanguageCodeSchema)
@@ -120,6 +124,8 @@ export const UpdateMeetingTranslationInputSchema = z
   })
   .refine(
     (settings) =>
+      settings.transcriptionEnabled !== undefined ||
+      settings.subtitlesEnabled !== undefined ||
       settings.enabled !== undefined ||
       settings.allowedTargetLanguages !== undefined ||
       settings.provider !== undefined ||
@@ -215,6 +221,8 @@ export const TranslationDataMessageSchema = z.discriminatedUnion("type", [
 export type TranslationDataMessage = z.infer<typeof TranslationDataMessageSchema>;
 
 export const DEFAULT_TRANSLATION_SETTINGS: MeetingTranslationSettings = {
+  transcriptionEnabled: false,
+  subtitlesEnabled: false,
   enabled: false,
   sourceLanguage: "en",
   allowedTargetLanguages: TRANSLATION_LANGUAGES.map((language) => language.code),

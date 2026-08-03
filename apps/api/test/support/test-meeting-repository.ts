@@ -24,12 +24,13 @@ export class TestMeetingRepository implements MeetingRepository {
       organizerEmail: record.creator.email,
       createdBy: record.creator.id,
       scheduledFor: record.input.scheduledFor ? new Date(record.input.scheduledFor) : null,
+      timeZone: record.input.timeZone,
       status: "scheduled",
       isLocked: false,
-      waitingRoomEnabled: true,
-      allowGuestCamera: true,
-      allowGuestMicrophone: true,
-      allowGuestScreenShare: false,
+      waitingRoomEnabled: record.input.settings.waitingRoomEnabled,
+      allowGuestCamera: record.input.settings.allowGuestCamera,
+      allowGuestMicrophone: record.input.settings.allowGuestMicrophone,
+      allowGuestScreenShare: record.input.settings.allowGuestScreenShare,
       createdAt: new Date(),
     };
     this.meetings.set(meeting.joinCode, meeting);

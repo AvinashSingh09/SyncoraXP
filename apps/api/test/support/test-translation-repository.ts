@@ -47,6 +47,12 @@ export class TestTranslationRepository implements TranslationRepository {
     const current = await this.getSettings(meetingId);
     const next: MeetingTranslationSettings = {
       ...current,
+      ...(update.transcriptionEnabled !== undefined
+        ? { transcriptionEnabled: update.transcriptionEnabled }
+        : {}),
+      ...(update.subtitlesEnabled !== undefined
+        ? { subtitlesEnabled: update.subtitlesEnabled }
+        : {}),
       ...(update.enabled !== undefined ? { enabled: update.enabled } : {}),
       ...(update.allowedTargetLanguages
         ? { allowedTargetLanguages: [...update.allowedTargetLanguages] }

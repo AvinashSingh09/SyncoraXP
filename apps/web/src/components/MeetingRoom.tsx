@@ -8,6 +8,7 @@ import type {
   MeetingSummary,
   MeetingTranslationSettings,
   RoomSessionResponse,
+  TranslationPreference,
 } from "@voice/shared";
 import { Info, Users } from "@phosphor-icons/react";
 import { VideoPresets, type DisconnectReason, type RoomOptions } from "livekit-client";
@@ -43,6 +44,7 @@ export interface MeetingRoomProps {
   meetingTitle: string;
   session: RoomSessionResponse;
   choices: LocalUserChoices;
+  initialTranslationPreference?: TranslationPreference;
   meetingId?: string;
   meeting?: MeetingSummary;
   initialHostSettings?: MeetingSettings;
@@ -50,7 +52,7 @@ export interface MeetingRoomProps {
   onEndMeeting?(): Promise<void>;
 }
 
-export function MeetingRoom({ meetingTitle, session, choices, meetingId, meeting, initialHostSettings, onLeave, onEndMeeting }: MeetingRoomProps) {
+export function MeetingRoom({ meetingTitle, session, choices, initialTranslationPreference = "original", meetingId, meeting, initialHostSettings, onLeave, onEndMeeting }: MeetingRoomProps) {
   const [activeHostPanel, setActiveHostPanel] = useState<"info" | "waiting" | "tools" | null>(
     session.role === "host" && meeting ? "info" : null,
   );
@@ -133,6 +135,8 @@ export function MeetingRoom({ meetingTitle, session, choices, meetingId, meeting
             meetingId={session.meetingId}
             participantRole={session.role}
             translationSettings={translationSettings}
+            initialTranslationPreference={initialTranslationPreference}
+            onTranslationSettingsChange={setTranslationSettings}
             showHostTools={session.role === "host" && Boolean(meetingId)}
             isHostToolsOpen={activeHostPanel === "tools"}
             isHostPanelOpen={activeHostPanel !== null}
