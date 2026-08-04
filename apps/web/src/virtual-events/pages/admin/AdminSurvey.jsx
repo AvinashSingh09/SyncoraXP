@@ -29,6 +29,7 @@ const AdminSurvey = () => {
     const [expandedSubmissions, setExpandedSubmissions] = useState({});
     const [showExportDropdown, setShowExportDropdown] = useState(false);
     const [isSurveyActive, setIsSurveyActive] = useState(true);
+    const [showCertificate, setShowCertificate] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     
     const getInitials = (first, last) => {
@@ -56,6 +57,7 @@ const AdminSurvey = () => {
             const qRes = await surveyService.getQuestions();
             const sRes = await surveyService.getSurveys();
             const configRes = await configService.getConfig('survey_active');
+            const certConfigRes = await configService.getConfig('survey_certificate_active');
             
             if (qRes.data && qRes.data.success) {
                 setQuestions(qRes.data.data);
@@ -65,6 +67,9 @@ const AdminSurvey = () => {
             }
             if (configRes.data) {
                 setIsSurveyActive(configRes.data.value !== 'false');
+            }
+            if (certConfigRes.data) {
+                setShowCertificate(certConfigRes.data.value !== 'false');
             }
         } catch (err) {
             console.error('Failed to load admin survey data', err);
@@ -85,6 +90,17 @@ const AdminSurvey = () => {
         } catch (error) {
             console.error('Failed to update survey status', error);
             alert('Failed to update survey status.');
+        }
+    };
+
+    const toggleCertificateStatus = async () => {
+        const nextStatus = !showCertificate;
+        try {
+            await configService.setConfig('survey_certificate_active', nextStatus ? 'true' : 'false');
+            setShowCertificate(nextStatus);
+        } catch (error) {
+            console.error('Failed to update certificate status', error);
+            alert('Failed to update certificate status.');
         }
     };
 
@@ -351,6 +367,20 @@ const AdminSurvey = () => {
                     >
                         <span className={`w-2 h-2 rounded-full ${isSurveyActive ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500'}`}></span>
                         {isSurveyActive ? 'Survey: ON' : 'Survey: OFF'}
+                    </button>
+
+                    {/* Certificate Toggle Switch */}
+                    <button
+                        onClick={toggleCertificateStatus}
+                        className={`px-4 py-2 text-[10px] uppercase tracking-wider font-extrabold rounded-xl border transition-all cursor-pointer flex items-center gap-2 shadow-sm ${
+                            showCertificate 
+                                ? 'bg-blue-50 border-blue-250 text-blue-700 hover:bg-blue-100/80 shadow-blue-50' 
+                                : 'bg-gray-100 border-gray-300 text-gray-600 hover:bg-gray-200'
+                        }`}
+                        title={showCertificate ? "Click to Disable Certificate" : "Click to Enable Certificate"}
+                    >
+                        <span className={`w-2 h-2 rounded-full ${showCertificate ? 'bg-blue-600 animate-pulse' : 'bg-gray-400'}`}></span>
+                        {showCertificate ? 'Certificate: ENABLED' : 'Certificate: DISABLED'}
                     </button>
 
                     {/* Tab Switches */}

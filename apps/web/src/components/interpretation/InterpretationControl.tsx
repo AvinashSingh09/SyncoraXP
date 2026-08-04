@@ -13,6 +13,7 @@ import {
   DotsThreeCircle,
   FileText,
   GlobeHemisphereWest,
+  Users,
   X,
 } from "@phosphor-icons/react";
 import { useParticipants, useRoomContext } from "@livekit/components-react";
@@ -23,16 +24,21 @@ import {
 } from "livekit-client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { updateMeetingTranslation } from "../../api";
 
 const DATA_TOPIC = "syncoraxp.translation";
 
 interface InterpretationControlProps {
   meetingId: string;
   settings: MeetingTranslationSettings;
-  showControl: boolean;
+  participantRole: "host" | "guest";
+  initialPreference: TranslationPreference;
   captionsOpen: boolean;
+  roomsOpen: boolean;
   panelHost: HTMLElement | null;
   onCaptionsOpenChange(open: boolean): void;
+  onRoomsOpenChange(open: boolean): void;
+  onSettingsChange(settings: MeetingTranslationSettings): void;
 }
 
 interface TranslatorDetails {
@@ -46,6 +52,19 @@ interface TranslatorDetails {
 interface CaptionEntry {
   text: string;
   spokenAt: string;
+}
+
+function roomStatusLabel(
+  status: TranslationLanguageStatus | undefined,
+  workerConnected: boolean,
+): string {
+  if (!status) return workerConnected ? "Ready" : "Starting";
+  if (status === "idle") return "Ready";
+  if (status === "live") return "Live";
+  if (status === "starting") return "Starting";
+  if (status === "delayed" || status === "reconnecting") return "Reconnecting";
+  if (status === "draining") return "Stopping";
+  return "Unavailable";
 }
 
 function translatorDetails(participant: ReturnType<typeof useParticipants>[number]): TranslatorDetails | null {
@@ -70,23 +89,39 @@ function translatorDetails(participant: ReturnType<typeof useParticipants>[numbe
 export function InterpretationControl({
   meetingId,
   settings,
-  showControl,
+  participantRole,
+  initialPreference,
   captionsOpen,
+  roomsOpen,
   panelHost,
   onCaptionsOpenChange,
+  onRoomsOpenChange,
+  onSettingsChange,
 }: InterpretationControlProps) {
   const room = useRoomContext();
   const participants = useParticipants();
+  const startingPreference =
+    settings.enabled &&
+    initialPreference !== "original" &&
+    settings.allowedTargetLanguages.includes(initialPreference)
+      ? initialPreference
+      : "original";
   const [liveSettings, setLiveSettings] = useState(settings);
-  const [preference, setPreferenceState] = useState<TranslationPreference>("original");
+  const [preference, setPreferenceState] =
+    useState<TranslationPreference>(startingPreference);
   const [captionPreference, setCaptionPreferenceState] =
-    useState<TranslationPreference>("original");
-  const [menuOpen, setMenuOpen] = useState(false);
+    useState<TranslationPreference>(startingPreference);
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const [panelMode, setPanelMode] = useState<"captions" | "transcript">("captions");
   const [statuses, setStatuses] = useState<
     Partial<Record<TranslationLanguageCode, TranslationLanguageStatus>>
   >({});
+  const [listenerCounts, setListenerCounts] = useState<
+    Partial<Record<TranslationLanguageCode, number>>
+  >({});
+  const [roomsBusy, setRoomsBusy] = useState(false);
+  const [roomsError, setRoomsError] = useState("");
+  const [roomsNotice, setRoomsNotice] = useState("");
   const [caption, setCaption] = useState("");
   const [captionHistory, setCaptionHistory] = useState<
     Partial<Record<TranslationLanguageCode | "source", CaptionEntry[]>>
@@ -110,6 +145,13 @@ export function InterpretationControl({
     ? translator.allowedLanguages
     : liveSettings.allowedTargetLanguages;
   const interpretationAvailable = liveSettings.enabled;
+  const isHost = participantRole === "host";
+  const guestCount = participants.filter((participant) => participant.attributes.role === "guest").length;
+  const translatedGuestCount = allowedLanguages.reduce(
+    (total, language) => total + (listenerCounts[language] ?? 0),
+    0,
+  );
+  const originalGuestCount = Math.max(0, guestCount - translatedGuestCount);
 
   useEffect(() => {
     setLiveSettings(settings);
@@ -138,15 +180,26 @@ export function InterpretationControl({
   useEffect(() => {
     if (liveSettings.enabled) return;
     setPreferenceState("original");
+    setCaptionPreferenceState("original");
     setCaption("");
-    setMenuOpen(false);
     setStatuses({});
-  }, [liveSettings.enabled]);
+    setListenerCounts({});
+    if (!isHost) onRoomsOpenChange(false);
+    if (!liveSettings.subtitlesEnabled && captionsOpen) onCaptionsOpenChange(false);
+  }, [
+    captionsOpen,
+    isHost,
+    liveSettings.enabled,
+    liveSettings.subtitlesEnabled,
+    onCaptionsOpenChange,
+    onRoomsOpenChange,
+  ]);
 
   useEffect(() => {
     // Status from an earlier worker run must not affect routing for its
     // replacement after interpretation is toggled off and back on.
     setStatuses({});
+    setListenerCounts({});
     lastWorkerSequence.current = translator
       ? { runId: translator.runId, sequence: -1 }
       : null;
@@ -203,20 +256,72 @@ export function InterpretationControl({
   const selectPreference = useCallback(
     (language: TranslationPreference) => {
       setPreferenceState(language);
+      setCaptionPreferenceState(language);
       setCaption("");
-      setMenuOpen(false);
-      if (language !== "original") {
-        setCaptionPreferenceState(language);
-        void sendCaptionPreference(language).catch(() => undefined);
+      setRoomsError("");
+      setRoomsNotice("");
+      if (language === "original" && captionsOpen && !liveSettings.subtitlesEnabled) {
+        onCaptionsOpenChange(false);
       }
+      void sendCaptionPreference(language).catch(() => undefined);
       void sendPreference(language).catch(() => {
         if (language !== "original") {
           setStatuses((current) => ({ ...current, [language]: "unavailable" }));
         }
       });
     },
-    [sendCaptionPreference, sendPreference],
+    [
+      captionsOpen,
+      liveSettings.subtitlesEnabled,
+      onCaptionsOpenChange,
+      sendCaptionPreference,
+      sendPreference,
+    ],
   );
+
+  const returnToOriginal = useCallback(
+    (message: string) => {
+      selectPreference("original");
+      setRoomsNotice(message);
+    },
+    [selectPreference],
+  );
+
+  useEffect(() => {
+    if (
+      !liveSettings.enabled ||
+      preference === "original" ||
+      liveSettings.allowedTargetLanguages.includes(preference)
+    ) return;
+    returnToOriginal("Your selected language is no longer available. You are hearing Original audio.");
+  }, [liveSettings.allowedTargetLanguages, liveSettings.enabled, preference, returnToOriginal]);
+
+  const toggleRooms = useCallback(async () => {
+    if (!isHost || roomsBusy) return;
+    setRoomsBusy(true);
+    setRoomsError("");
+    try {
+      const response = await updateMeetingTranslation(meetingId, {
+        enabled: !liveSettings.enabled,
+        designatedSpeakerIdentity: room.localParticipant.identity,
+        ...(!liveSettings.enabled ? { provider: "gemini" as const } : {}),
+      });
+      setLiveSettings(response.settings);
+      onSettingsChange(response.settings);
+      setRoomsNotice(response.settings.enabled ? "Language rooms are now available." : "");
+    } catch (caught) {
+      setRoomsError(caught instanceof Error ? caught.message : "Could not update language rooms");
+    } finally {
+      setRoomsBusy(false);
+    }
+  }, [
+    isHost,
+    liveSettings.enabled,
+    meetingId,
+    onSettingsChange,
+    room.localParticipant.identity,
+    roomsBusy,
+  ]);
 
   const selectCaptionPreference = useCallback(
     (language: TranslationPreference) => {
@@ -226,6 +331,33 @@ export function InterpretationControl({
     },
     [sendCaptionPreference],
   );
+
+  useEffect(() => {
+    if (!captionsOpen) return;
+    if (panelMode === "transcript") {
+      if (!liveSettings.transcriptionEnabled) onCaptionsOpenChange(false);
+      return;
+    }
+    if (captionPreference !== "original" || liveSettings.subtitlesEnabled) return;
+    const firstTargetLanguage = liveSettings.enabled
+      ? liveSettings.allowedTargetLanguages[0]
+      : undefined;
+    if (firstTargetLanguage) {
+      selectCaptionPreference(firstTargetLanguage);
+    } else {
+      onCaptionsOpenChange(false);
+    }
+  }, [
+    captionPreference,
+    captionsOpen,
+    liveSettings.allowedTargetLanguages,
+    liveSettings.enabled,
+    liveSettings.subtitlesEnabled,
+    liveSettings.transcriptionEnabled,
+    onCaptionsOpenChange,
+    panelMode,
+    selectCaptionPreference,
+  ]);
 
   useEffect(() => {
     if (!translator) return;
@@ -316,20 +448,27 @@ export function InterpretationControl({
           ) {
             setPreferenceState("original");
             setCaption("");
-            setMenuOpen(false);
           }
           if (message.status === "failed" && preference !== "original") {
-            setStatuses((current) => ({ ...current, [preference]: "unavailable" }));
-            setSubscriptionRevision((revision) => revision + 1);
+            returnToOriginal("Your language room became unavailable. You are hearing Original audio.");
           }
           return;
         }
         if (message.type === "translation.language.status") {
-          const { language, status } = message;
+          const { language, status, listenerCount } = message;
           setStatuses((current) => ({
             ...current,
             [language]: status,
           }));
+          setListenerCounts((current) => ({
+            ...current,
+            [language]: listenerCount,
+          }));
+          if (status === "unavailable" && preference === language) {
+            returnToOriginal(
+              `${TRANSLATION_LANGUAGES.find((item) => item.code === language)?.label ?? language} is unavailable. You are hearing Original audio.`,
+            );
+          }
           setSubscriptionRevision((revision) => revision + 1);
           return;
         }
@@ -359,8 +498,10 @@ export function InterpretationControl({
           if (!historyKey) return;
           const visible =
             sourceTranscript
-              ? panelMode === "transcript" ||
-                (panelMode === "captions" && captionPreference === "original")
+              ? (panelMode === "transcript" && liveSettings.transcriptionEnabled) ||
+                (panelMode === "captions" &&
+                  liveSettings.subtitlesEnabled &&
+                  captionPreference === "original")
               : panelMode === "captions";
           if (type.endsWith(".final")) {
             if (visible) setCaption("");
@@ -386,11 +527,14 @@ export function InterpretationControl({
     };
   }, [
     liveSettings.enabled,
+    liveSettings.subtitlesEnabled,
+    liveSettings.transcriptionEnabled,
     captionPreference,
     meetingId,
     panelMode,
     preference,
     room,
+    returnToOriginal,
     translator?.identity,
     translator?.runId,
   ]);
@@ -398,6 +542,12 @@ export function InterpretationControl({
   useEffect(() => {
     if (captionsOpen) captionEnd.current?.scrollIntoView({ block: "end" });
   }, [caption, captionHistory, captionsOpen]);
+
+  useEffect(() => {
+    if (!roomsNotice) return;
+    const timer = window.setTimeout(() => setRoomsNotice(""), 5_000);
+    return () => window.clearTimeout(timer);
+  }, [roomsNotice]);
 
   useEffect(() => {
     const remoteParticipants = room.remoteParticipants;
@@ -451,13 +601,6 @@ export function InterpretationControl({
     preference === "original"
       ? null
       : TRANSLATION_LANGUAGES.find((language) => language.code === preference);
-  const selectedStatus = preference === "original" ? "idle" : statuses[preference] ?? "starting";
-  const statusLabel =
-    preference === "original"
-      ? "Original"
-      : selectedStatus === "live"
-        ? selectedLanguage?.nativeLabel ?? preference
-        : `${selectedLanguage?.label ?? preference} · ${selectedStatus}`;
   const selectedCaptionLanguage =
     captionPreference === "original"
       ? null
@@ -507,7 +650,9 @@ export function InterpretationControl({
                   selectCaptionPreference(event.target.value as TranslationPreference)
                 }
               >
-                <option value="original">Original · Auto-detect</option>
+                {liveSettings.subtitlesEnabled && (
+                  <option value="original">Original · Auto-detect</option>
+                )}
                 {TRANSLATION_LANGUAGES.filter((language) =>
                   allowedLanguages.includes(language.code),
                 ).map((language) => (
@@ -574,55 +719,204 @@ export function InterpretationControl({
     panelHost,
   );
 
+  const availableRooms = TRANSLATION_LANGUAGES.filter((language) =>
+    allowedLanguages.includes(language.code),
+  );
+  const selectedRoomStatus = selectedLanguage
+    ? roomStatusLabel(statuses[selectedLanguage.code], Boolean(translator))
+    : "Original audio";
+  const roomsPanel = roomsOpen && panelHost && createPortal(
+    <aside className="language-rooms-panel" aria-label="Language rooms">
+      <header>
+        <span>
+          <GlobeHemisphereWest size={21} weight="bold" />
+          <span>
+            <strong>Rooms</strong>
+            <small>
+              {isHost
+                ? "Manage language listening rooms"
+                : `Listening to ${selectedLanguage?.label ?? "Original"}`}
+            </small>
+          </span>
+        </span>
+        <button
+          type="button"
+          onClick={() => onRoomsOpenChange(false)}
+          aria-label="Close language rooms"
+        >
+          <X size={18} weight="bold" />
+        </button>
+      </header>
+
+      <div className="language-rooms-body">
+        {isHost && (
+          <section className="language-rooms-master" aria-labelledby="language-rooms-master-title">
+            <span>
+              <strong id="language-rooms-master-title">Language rooms</strong>
+              <small>Let guests listen to your audio in their preferred language.</small>
+            </span>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={liveSettings.enabled}
+              aria-label="Enable language rooms"
+              className={`language-rooms-switch ${liveSettings.enabled ? "on" : "off"}`}
+              disabled={roomsBusy}
+              onClick={() => void toggleRooms()}
+            >
+              <span />
+            </button>
+          </section>
+        )}
+
+        {roomsError && <p className="language-rooms-error" role="alert">{roomsError}</p>}
+
+        <section className="language-rooms-list-section" aria-labelledby="language-rooms-list-title">
+          <div className="language-rooms-list-heading">
+            <span>
+              <strong id="language-rooms-list-title">
+                {isHost ? "Available rooms" : "Listening language"}
+              </strong>
+              <small>
+                {isHost
+                  ? liveSettings.enabled
+                    ? "Guests can switch rooms at any time."
+                    : "Turn on Rooms when you are ready."
+                  : "Video, chat, and participants stay shared when you switch."}
+              </small>
+            </span>
+            {isHost && <Users size={18} weight="bold" />}
+          </div>
+
+          {isHost ? (
+            <div className="language-rooms-list">
+              <div className="language-room-row original">
+                <span className="language-room-icon" aria-hidden="true">O</span>
+                <span className="language-room-copy">
+                  <strong>Original</strong>
+                  <small>Host audio · Always available</small>
+                </span>
+                <span className="language-room-count">
+                  {originalGuestCount} {originalGuestCount === 1 ? "listener" : "listeners"}
+                </span>
+              </div>
+              {availableRooms.map((language) => {
+                const status = statuses[language.code];
+                const statusLabel = liveSettings.enabled
+                  ? roomStatusLabel(status, Boolean(translator))
+                  : "Off";
+                const unavailable = status === "unavailable" || status === "draining";
+                const count = listenerCounts[language.code] ?? 0;
+                return (
+                <div
+                  className={`language-room-row ${unavailable ? "unavailable" : ""}`}
+                  key={language.code}
+                >
+                  <span className="language-room-icon" aria-hidden="true">
+                    {language.label.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="language-room-copy">
+                    <strong>{language.label}</strong>
+                    <small><span className={`language-room-status-dot ${statusLabel.toLowerCase()}`} />{statusLabel}</small>
+                  </span>
+                  <span className="language-room-count">
+                    {count} {count === 1 ? "listener" : "listeners"}
+                  </span>
+                </div>
+                );
+              })}
+            </div>
+          ) : (
+            <>
+              <div className={`language-room-current ${preference === "original" ? "original" : ""}`} aria-live="polite">
+                <span className="language-room-icon" aria-hidden="true">
+                  {selectedLanguage ? selectedLanguage.label.slice(0, 2).toUpperCase() : "O"}
+                </span>
+                <span className="language-room-copy">
+                  <small>Currently listening</small>
+                  <strong>{selectedLanguage?.label ?? "Original"}</strong>
+                </span>
+                <span className="language-room-current-status">{selectedRoomStatus}</span>
+              </div>
+              <details className="language-room-picker">
+                <summary>Change language</summary>
+                <div className="language-rooms-list">
+                  {preference !== "original" && (
+                    <button
+                      type="button"
+                      className="language-room-row original"
+                      onClick={() => selectPreference("original")}
+                    >
+                      <span className="language-room-icon" aria-hidden="true">O</span>
+                      <span className="language-room-copy">
+                        <strong>Original</strong>
+                        <small>Hear the host without translation</small>
+                      </span>
+                      <span className="language-room-action">Choose</span>
+                    </button>
+                  )}
+                  {availableRooms.filter((language) => language.code !== preference).map((language) => {
+                    const status = statuses[language.code];
+                    const statusLabel = roomStatusLabel(status, Boolean(translator));
+                    const unavailable = status === "unavailable" || status === "draining";
+                    return (
+                      <button
+                        type="button"
+                        key={language.code}
+                        className="language-room-row"
+                        disabled={unavailable}
+                        onClick={() => selectPreference(language.code)}
+                      >
+                        <span className="language-room-icon" aria-hidden="true">
+                          {language.label.slice(0, 2).toUpperCase()}
+                        </span>
+                        <span className="language-room-copy">
+                          <strong>{language.label}</strong>
+                          <small><span className={`language-room-status-dot ${statusLabel.toLowerCase()}`} />{statusLabel}</small>
+                        </span>
+                        <span className="language-room-action">
+                          {unavailable ? "Unavailable" : "Choose"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </details>
+            </>
+          )}
+        </section>
+      </div>
+    </aside>,
+    panelHost,
+  );
+
   return (
     <>
       <div className="interpretation-controls">
-          {showControl && interpretationAvailable && <div className="interpretation-control">
+          {(isHost || interpretationAvailable) && <div className="interpretation-control">
             <button
               type="button"
-              className={`lk-button interpretation-toggle ${menuOpen ? "is-active" : ""}`}
+              className={`lk-button interpretation-toggle ${roomsOpen ? "is-active" : ""}`}
               onClick={() => {
-                setMenuOpen((open) => !open);
                 setMoreMenuOpen(false);
+                onRoomsOpenChange(!roomsOpen);
               }}
-              aria-expanded={menuOpen}
+              aria-expanded={roomsOpen}
+              aria-label="Language rooms"
             >
               <GlobeHemisphereWest size={18} weight="bold" />
-              <span>{statusLabel}</span>
+              <span>Rooms</span>
             </button>
-            {menuOpen && (
-              <div className="interpretation-menu" role="menu" aria-label="Interpretation language">
-                <button
-                  type="button"
-                  className={preference === "original" ? "selected" : ""}
-                  onClick={() => selectPreference("original")}
-                >
-                  <strong>Original audio</strong>
-                  <small>Hear the speaker without translation</small>
-                </button>
-                {TRANSLATION_LANGUAGES.filter((language) =>
-                  allowedLanguages.includes(language.code),
-                ).map((language) => (
-                  <button
-                    type="button"
-                    key={language.code}
-                    className={preference === language.code ? "selected" : ""}
-                    onClick={() => selectPreference(language.code)}
-                  >
-                    <strong>{language.nativeLabel}</strong>
-                    <small>{language.label}</small>
-                  </button>
-                ))}
-              </div>
-            )}
           </div>}
-          <div className="meeting-more-control">
+          {(liveSettings.subtitlesEnabled ||
+            liveSettings.transcriptionEnabled ||
+            liveSettings.enabled) && <div className="meeting-more-control">
             <button
               type="button"
               className={`lk-button meeting-more-toggle ${moreMenuOpen ? "is-active" : ""}`}
               onClick={() => {
                 setMoreMenuOpen((open) => !open);
-                setMenuOpen(false);
+                onRoomsOpenChange(false);
               }}
               aria-expanded={moreMenuOpen}
             >
@@ -631,7 +925,7 @@ export function InterpretationControl({
             </button>
             {moreMenuOpen && (
               <div className="meeting-more-menu" role="menu">
-                <button
+                {(liveSettings.subtitlesEnabled || liveSettings.enabled) && <button
                   type="button"
                   role="menuitemcheckbox"
                   aria-checked={captionsOpen && panelMode === "captions"}
@@ -646,8 +940,8 @@ export function InterpretationControl({
                   <ClosedCaptioning size={20} weight="bold" />
                   <span><strong>Show captions</strong><small>Choose original or translated captions</small></span>
                   <span className={`meeting-more-check ${captionsOpen && panelMode === "captions" ? "checked" : ""}`} aria-hidden="true" />
-                </button>
-                <button
+                </button>}
+                {liveSettings.transcriptionEnabled && <button
                   type="button"
                   onClick={() => {
                     setPanelMode("transcript");
@@ -658,12 +952,14 @@ export function InterpretationControl({
                 >
                   <FileText size={20} weight="bold" />
                   <span><strong>Transcript</strong><small>View and download the meeting record</small></span>
-                </button>
+                </button>}
               </div>
             )}
-          </div>
+          </div>}
         </div>
       {captionPanel}
+      {roomsPanel}
+      {roomsNotice && <div className="language-room-notice" role="status">{roomsNotice}</div>}
     </>
   );
 }

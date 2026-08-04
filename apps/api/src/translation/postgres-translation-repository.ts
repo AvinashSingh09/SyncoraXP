@@ -17,6 +17,8 @@ import type {
 } from "./translation-repository";
 
 interface TranslationSettingsRow {
+  transcription_enabled: boolean;
+  subtitles_enabled: boolean;
   enabled: boolean;
   source_language: "en";
   allowed_target_languages: TranslationLanguageCode[];
@@ -55,6 +57,8 @@ function mapSettings(row?: TranslationSettingsRow): MeetingTranslationSettings {
     };
   }
   return {
+    transcriptionEnabled: row.transcription_enabled,
+    subtitlesEnabled: row.subtitles_enabled,
     enabled: row.enabled,
     sourceLanguage: row.source_language,
     allowedTargetLanguages: [...row.allowed_target_languages],
@@ -128,31 +132,41 @@ export class PostgresTranslationRepository implements TranslationRepository {
   ): Promise<MeetingTranslationSettings> {
     const result = await this.pool.query<TranslationSettingsRow>(
       `INSERT INTO meeting_translation_settings (
-         meeting_id, enabled, allowed_target_languages, designated_speaker_identity,
-         provider, model
+         meeting_id, transcription_enabled, subtitles_enabled, enabled, allowed_target_languages,
+         designated_speaker_identity, provider, model
        ) VALUES (
          $1,
          COALESCE($2, false),
-         COALESCE($3::text[], ARRAY['hi', 'bn', 'mr', 'ta', 'te']::text[]),
-         $4,
-         COALESCE($6, 'openai'),
-         COALESCE($7, 'gpt-realtime-translate')
+         COALESCE($3, false),
+         COALESCE($4, false),
+         COALESCE($5::text[], ARRAY['hi', 'bn', 'mr', 'ta', 'te']::text[]),
+         $6,
+         COALESCE($8, 'openai'),
+         COALESCE($9, 'gpt-realtime-translate')
        )
        ON CONFLICT (meeting_id) DO UPDATE SET
-         enabled = COALESCE($2, meeting_translation_settings.enabled),
+         transcription_enabled = COALESCE(
+           $2, meeting_translation_settings.transcription_enabled
+         ),
+         subtitles_enabled = COALESCE(
+           $3, meeting_translation_settings.subtitles_enabled
+         ),
+         enabled = COALESCE($4, meeting_translation_settings.enabled),
          allowed_target_languages = COALESCE(
-           $3::text[], meeting_translation_settings.allowed_target_languages
+           $5::text[], meeting_translation_settings.allowed_target_languages
          ),
          designated_speaker_identity = CASE
-           WHEN $5::boolean THEN $4
+           WHEN $7::boolean THEN $6
            ELSE meeting_translation_settings.designated_speaker_identity
          END,
-         provider = COALESCE($6, meeting_translation_settings.provider),
-         model = COALESCE($7, meeting_translation_settings.model),
+         provider = COALESCE($8, meeting_translation_settings.provider),
+         model = COALESCE($9, meeting_translation_settings.model),
          updated_at = now()
        RETURNING *`,
       [
         meetingId,
+        update.transcriptionEnabled ?? null,
+        update.subtitlesEnabled ?? null,
         update.enabled ?? null,
         update.allowedTargetLanguages ?? null,
         update.designatedSpeakerIdentity ?? null,

@@ -128,11 +128,13 @@ async function registerVirtualEvents(app) {
   register(app, 'POST', '/chat/messages', chat.sendMessage, { auth: true });
   register(app, 'POST', '/chat/messages/reaction', chat.addReaction, { auth: true });
   register(app, 'PATCH', '/chat/messages/:id', chat.editMessage, { auth: true });
+  register(app, 'DELETE', '/chat/messages/:id', chat.deleteMessage, { auth: true });
   register(app, 'DELETE', '/chat/clear', chat.clearChat, { auth: true });
   register(app, 'GET', '/qna', qna.getQuestions, { auth: true });
   register(app, 'POST', '/qna', qna.askQuestion, { auth: true });
   register(app, 'POST', '/qna/:id/upvote', qna.upvoteQuestion, { auth: true });
   register(app, 'DELETE', '/qna/clear', qna.clearQuestions, { auth: true });
+  register(app, 'DELETE', '/qna/:id', qna.deleteQuestion, { auth: true });
   register(app, 'GET', '/polls', poll.getPolls, { auth: true });
   register(app, 'POST', '/polls', poll.createPoll, { auth: true });
   register(app, 'POST', '/polls/:id/vote', poll.votePoll, { auth: true });
@@ -181,17 +183,13 @@ async function registerVirtualEvents(app) {
     const base64Data = req.body.image;
     if (!base64Data) return res.status(400).json({ success: false, message: 'Image data is required' });
 
-    const isPdf = base64Data.startsWith('data:application/pdf');
-
-    if (!isPdf) {
-      try {
-        const cloudinaryUrl = await photobooth.uploadToCloudinary(base64Data);
-        if (cloudinaryUrl) {
-          return res.json({ success: true, url: cloudinaryUrl });
-        }
-      } catch (e) {
-        console.warn('Cloudinary upload fallback to local disk:', e.message);
+    try {
+      const cloudinaryUrl = await photobooth.uploadToCloudinary(base64Data);
+      if (cloudinaryUrl) {
+        return res.json({ success: true, url: cloudinaryUrl });
       }
+    } catch (e) {
+      console.error('Cloudinary upload error in /config/upload:', e);
     }
 
     const matches = base64Data.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);

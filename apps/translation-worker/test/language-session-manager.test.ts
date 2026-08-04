@@ -81,6 +81,32 @@ test("translated captions can keep a language session active without enabling tr
   await manager.close();
 });
 
+test("switching language rooms moves one listener between room counts", async () => {
+  const manager = new LanguageSessionManager(
+    ["hi", "ta"],
+    (language) => ({
+      language,
+      async open() {},
+      appendAudio() {},
+      async close() {},
+    }),
+    { onStatus() {}, onAudio() {}, onTranscript() {}, onClosed() {} },
+    0,
+  );
+
+  await manager.setPreference("guest", "hi");
+  assert.equal(manager.getStatus("hi").listenerCount, 1);
+  assert.equal(manager.getStatus("ta").listenerCount, 0);
+
+  await manager.setPreference("guest", "ta");
+  assert.equal(manager.getStatus("hi").listenerCount, 0);
+  assert.equal(manager.getStatus("ta").listenerCount, 1);
+
+  await manager.setPreference("guest", "original");
+  assert.equal(manager.getStatus("ta").listenerCount, 0);
+  await manager.close();
+});
+
 test("isolates active languages and removes disconnected participants", async () => {
   const appended = new Map<TranslationLanguageCode, number>();
   const factory: TranslationSessionFactory = (language, handlers) => ({

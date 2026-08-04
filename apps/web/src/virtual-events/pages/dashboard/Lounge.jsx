@@ -66,14 +66,14 @@ const Lounge = () => {
     }, []);
 
     return (
-        <div className="absolute inset-0 w-full h-full overflow-auto hide-scrollbar bg-neutral-900">
-            {/* Background Canvas automatically scales to image aspect ratio */}
-            <div className="relative w-full min-w-[1200px] h-auto mx-auto z-0">
+        <div className="absolute inset-0 w-full h-full overflow-auto hide-scrollbar bg-neutral-900 flex md:block">
+            {/* Background Canvas: Portrait mobile has full-height panoramic scroll, desktop has standard full-width */}
+            <div className="relative h-full w-auto md:w-full md:min-w-[1200px] md:h-auto shrink-0 mx-auto z-0">
                 {bustedBgImage && (
                     <img 
                         src={bustedBgImage} 
                         alt="Lounge"
-                        className="w-full h-auto pointer-events-none block"
+                        className="h-full w-auto md:w-full md:h-auto max-w-none pointer-events-none block"
                     />
                 )}
 

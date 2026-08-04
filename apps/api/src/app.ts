@@ -10,6 +10,7 @@ import type { RoomTokenIssuer } from "./livekit/room-token-issuer";
 import { registerMeetingRoutes } from "./routes/meeting-routes";
 import { registerDemoRoutes } from "./routes/demo-routes";
 import { registerTranslationRoutes } from "./routes/translation-routes";
+import { registerChatRoutes } from "./routes/chat-routes";
 import type { TranslationRepository } from "./translation/translation-repository";
 
 const require = createRequire(import.meta.url);
@@ -47,6 +48,15 @@ export async function buildApp(dependencies: BuildAppDependencies) {
   }
   await registerDemoRoutes(app, dependencies);
   await registerTranslationRoutes(app, dependencies);
+  if (dependencies.config.OPENAI_API_KEY) {
+    await registerChatRoutes(app, {
+      openaiApiKey: dependencies.config.OPENAI_API_KEY,
+      chatModel: dependencies.config.CHAT_MODEL,
+      chatSystemPrompt: dependencies.config.CHAT_SYSTEM_PROMPT,
+    });
+  } else {
+    app.log.warn("OPENAI_API_KEY not set — /api/chat route is disabled");
+  }
 
   app.setErrorHandler((error, _request, reply) => {
     app.log.error(error);

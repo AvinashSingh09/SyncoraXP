@@ -207,28 +207,33 @@ export class LiveKitRoomTokenIssuer implements RoomTokenIssuer {
     settings: MeetingTranslationSettings,
   ): Promise<void> {
     if (!this.config.serverUrl || !this.config.apiKey || !this.config.apiSecret) return;
-    const serviceUrl = this.config.serverUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
-    const rooms = this.roomServiceFactory(serviceUrl, this.config.apiKey, this.config.apiSecret);
-    const room = (await rooms.listRooms([roomName]))[0];
-    if (!room) return;
+    try {
+      const serviceUrl = this.config.serverUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:");
+      const rooms = this.roomServiceFactory(serviceUrl, this.config.apiKey, this.config.apiSecret);
+      const room = (await rooms.listRooms([roomName]))[0];
+      if (!room) return;
 
-    let metadata: Record<string, unknown> = {};
-    if (room.metadata) {
-      try {
-        const parsed = JSON.parse(room.metadata);
-        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) metadata = parsed;
-      } catch {
-        // Replace malformed room metadata with a valid SyncoraXP envelope.
+      let metadata: Record<string, unknown> = {};
+      if (room.metadata) {
+        try {
+          const parsed = JSON.parse(room.metadata);
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) metadata = parsed;
+        } catch {
+          // Replace malformed room metadata with a valid SyncoraXP envelope.
+        }
       }
+      const existingSyncora = metadata.syncoraxp;
+      metadata.syncoraxp = {
+        ...(existingSyncora && typeof existingSyncora === "object" && !Array.isArray(existingSyncora)
+          ? existingSyncora
+          : {}),
+        translation: { version: 1, settings },
+      };
+      await rooms.updateRoomMetadata(roomName, JSON.stringify(metadata));
+    } catch (error) {
+      // Room metadata is a convenience mirror; DB settings and issued tokens remain authoritative.
+      console.warn("Could not sync optional LiveKit translation metadata", error);
     }
-    const existingSyncora = metadata.syncoraxp;
-    metadata.syncoraxp = {
-      ...(existingSyncora && typeof existingSyncora === "object" && !Array.isArray(existingSyncora)
-        ? existingSyncora
-        : {}),
-      translation: { version: 1, settings },
-    };
-    await rooms.updateRoomMetadata(roomName, JSON.stringify(metadata));
   }
 
   async endRoom(roomName: string): Promise<void> {

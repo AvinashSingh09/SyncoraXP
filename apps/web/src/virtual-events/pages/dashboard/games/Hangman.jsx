@@ -179,12 +179,7 @@ const Hangman = ({ onBack }) => {
     const hasNextWord = playedWords.length < wordsList.length;
 
     return (
-        <div className="absolute inset-0 w-full h-full text-slate-800 overflow-hidden font-sans">
-            {/* Background design */}
-            <div className="absolute inset-0 bg-gradient-to-br from-[#eef2ff] via-[#e0e7ff] to-[#fae8ff] z-0 pointer-events-none"></div>
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808007_1px,transparent_1px),linear-gradient(to_bottom,#80808007_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none"></div>
-            <div className="absolute top-20 right-[-10%] w-[45%] h-[45%] bg-[#F472B6]/10 rounded-full blur-[120px] pointer-events-none"></div>
-            <div className="absolute bottom-10 left-[-5%] w-[40%] h-[40%] bg-[#3B82F6]/10 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute inset-0 w-full h-full text-slate-800 overflow-hidden font-sans bg-white">
 
             <div className="w-full h-full flex flex-col items-center justify-start px-4 md:px-8 pb-8 pt-[124px] overflow-y-auto z-10 relative">
                 {/* Header Actions */}

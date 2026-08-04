@@ -47,8 +47,11 @@ export class TranslationJobRunner {
   ) {}
 
   async run(): Promise<void> {
-    const transcription = this.createTranscriptionSession();
-    await transcription.open();
+    const transcription =
+      this.job.settings.transcriptionEnabled || this.job.settings.subtitlesEnabled
+      ? this.createTranscriptionSession()
+      : null;
+    await transcription?.open();
     const sessionManager = new LanguageSessionManager(
       this.job.settings.allowedTargetLanguages,
       this.createSessionFactory(),
@@ -164,7 +167,7 @@ export class TranslationJobRunner {
         }).catch(() => undefined);
       }
       await this.sourceReader?.cancel().catch(() => undefined);
-      await transcription.close();
+      await transcription?.close();
       await sessionManager.close();
       await this.drainBackgroundTasks();
       await publisher.close();
@@ -220,7 +223,7 @@ export class TranslationJobRunner {
     return new OpenAITranscriptionSession(
       {
         onTranscript: (text, final) => {
-          if (final) {
+          if (final && this.job.settings.transcriptionEnabled) {
             this.runInBackground(
               this.store.appendTranscript(
                 this.job.meetingId,
@@ -231,16 +234,21 @@ export class TranslationJobRunner {
               "save meeting transcript",
             );
           }
-          this.runInBackground(
-            this.publishMessage({
-              ...this.messageBase(),
-              type: final
-                ? "translation.transcript.source.final"
-                : "translation.transcript.source.delta",
-              text,
-            }),
-            "publish meeting transcript",
-          );
+          if (
+            this.job.settings.subtitlesEnabled ||
+            (final && this.job.settings.transcriptionEnabled)
+          ) {
+            this.runInBackground(
+              this.publishMessage({
+                ...this.messageBase(),
+                type: final
+                  ? "translation.transcript.source.final"
+                  : "translation.transcript.source.delta",
+                text,
+              }),
+              "publish meeting subtitles",
+            );
+          }
         },
         onError: (error) => {
           if (!this.stopped) console.error(`Meeting transcription failed for run ${this.job.id}`, error);
@@ -303,7 +311,7 @@ export class TranslationJobRunner {
   private async consumeSourceAudio(
     track: RemoteTrack,
     manager: LanguageSessionManager,
-    transcription: OpenAITranscriptionSession,
+    transcription: OpenAITranscriptionSession | null,
   ): Promise<void> {
     if (this.sourceReader) return;
     const inputSampleRate =
@@ -314,7 +322,9 @@ export class TranslationJobRunner {
     this.sourceReader = this.sourceStream.getReader();
     const pump = new RealtimePcmPump(inputSampleRate);
     const transcriptionResampler =
-      inputSampleRate === 24_000 ? null : new AudioResampler(inputSampleRate, 24_000);
+      transcription && inputSampleRate !== 24_000
+        ? new AudioResampler(inputSampleRate, 24_000)
+        : null;
     let inputEnded = false;
     const readInput = (async () => {
       try {
@@ -323,9 +333,9 @@ export class TranslationJobRunner {
           if (frame.done) break;
           if (transcriptionResampler) {
             for (const output of transcriptionResampler.push(frame.value)) {
-              transcription.appendAudio(output.data);
+              transcription?.appendAudio(output.data);
             }
-          } else {
+          } else if (transcription) {
             transcription.appendAudio(frame.value.data);
           }
           pump.push(frame.value.data);
@@ -333,7 +343,7 @@ export class TranslationJobRunner {
       } finally {
         if (transcriptionResampler) {
           for (const output of transcriptionResampler.flush()) {
-            transcription.appendAudio(output.data);
+            transcription?.appendAudio(output.data);
           }
           transcriptionResampler.close();
         }

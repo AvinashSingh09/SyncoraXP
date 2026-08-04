@@ -32,6 +32,8 @@ interface JobRow {
 }
 
 interface SettingsRow {
+  transcription_enabled: boolean;
+  subtitles_enabled: boolean;
   enabled: boolean;
   source_language: "en";
   allowed_target_languages: TranslationLanguageCode[];
@@ -68,7 +70,14 @@ export class TranslationJobStore {
              ON settings.meeting_id = run.meeting_id
            WHERE run.worker_scope = $3
              AND (
-               run.status = 'queued_scoped'
+               (
+                 run.status = 'queued_scoped'
+                 AND (
+                   settings.enabled = true
+                   OR settings.transcription_enabled = true
+                   OR settings.subtitles_enabled = true
+                 )
+               )
               OR (
                 run.status IN ('starting_scoped', 'active_scoped', 'reconnecting_scoped')
                 AND run.lease_expires_at IS NOT NULL
@@ -76,7 +85,11 @@ export class TranslationJobStore {
               )
               OR (
                 run.status = 'stopping_scoped'
-                AND settings.enabled = true
+                AND (
+                  settings.enabled = true
+                  OR settings.transcription_enabled = true
+                  OR settings.subtitles_enabled = true
+                )
                 AND (
                   run.worker_instance_id IS NULL
                   OR run.lease_expires_at IS NULL
@@ -113,7 +126,9 @@ export class TranslationJobStore {
       await client.query("COMMIT");
       const settingsRow = settingsResult.rows[0];
       const settings: MeetingTranslationSettings = settingsRow
-        ? {
+          ? {
+            transcriptionEnabled: settingsRow.transcription_enabled,
+            subtitlesEnabled: settingsRow.subtitles_enabled,
             enabled: settingsRow.enabled,
             sourceLanguage: settingsRow.source_language,
             allowedTargetLanguages: [...settingsRow.allowed_target_languages],
@@ -146,8 +161,18 @@ export class TranslationJobStore {
     workerInstanceId: string,
     status: "active" | "reconnecting",
     leaseMs: number,
-  ): Promise<{ status: WorkerRunStatus; enabled: boolean } | null> {
-    const result = await this.pool.query<{ status: WorkerRunStatus; enabled: boolean }>(
+  ): Promise<{
+    status: WorkerRunStatus;
+    enabled: boolean;
+    transcriptionEnabled: boolean;
+    subtitlesEnabled: boolean;
+  } | null> {
+    const result = await this.pool.query<{
+      status: WorkerRunStatus;
+      enabled: boolean;
+      transcriptionEnabled: boolean;
+      subtitlesEnabled: boolean;
+    }>(
       `UPDATE meeting_translation_runs run
        SET status = CASE WHEN run.status = 'stopping_scoped' THEN run.status ELSE $3 END,
            lease_expires_at = now() + ($4::text || ' milliseconds')::interval,
@@ -160,7 +185,9 @@ export class TranslationJobStore {
            'starting_scoped', 'active_scoped', 'reconnecting_scoped', 'stopping_scoped'
          )
          AND settings.meeting_id = run.meeting_id
-       RETURNING run.status, settings.enabled`,
+       RETURNING run.status, settings.enabled,
+                 settings.transcription_enabled AS "transcriptionEnabled",
+                 settings.subtitles_enabled AS "subtitlesEnabled"`,
       [runId, workerInstanceId, `${status}_scoped`, leaseMs],
     );
     return result.rows[0] ?? null;

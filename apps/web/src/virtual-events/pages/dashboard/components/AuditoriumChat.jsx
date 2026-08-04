@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FiSend, FiMessageCircle, FiSmile } from 'react-icons/fi';
+import { FiSend, FiMessageCircle, FiSmile, FiTrash2, FiVolumeX, FiVolume2 } from 'react-icons/fi';
 import { chatService } from '../../../services/api';
 import socket from '../../../services/socket';
 import { useAuth } from '../../../hooks/useAuth';
 import EmojiPicker from 'emoji-picker-react';
 
-const AuditoriumChat = () => {
+const AuditoriumChat = ({ isAdmin = false }) => {
     const { user } = useAuth();
     const [messages, setMessages] = useState([]);
     const [newMessageText, setNewMessageText] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [mutedUsers, setMutedUsers] = useState(new Set());
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
     const roomName = 'Auditorium';
@@ -45,11 +46,17 @@ const AuditoriumChat = () => {
             }
         };
 
+        const handleMessageDeleted = ({ messageId }) => {
+            setMessages((prev) => prev.filter((m) => m._id !== messageId));
+        };
+
         socket.on('new-message', handleReceiveMessage);
+        socket.on('message-deleted', handleMessageDeleted);
 
         return () => {
             socket.emit('leave-room', roomName);
             socket.off('new-message', handleReceiveMessage);
+            socket.off('message-deleted', handleMessageDeleted);
         };
     }, []);
 
@@ -95,6 +102,23 @@ const AuditoriumChat = () => {
         }
     };
 
+    const handleDeleteMessage = async (messageId) => {
+        try {
+            await chatService.deleteMessage(messageId);
+            setMessages((prev) => prev.filter((m) => m._id !== messageId));
+        } catch (err) {
+            console.error('Failed to delete message:', err);
+        }
+    };
+
+    const toggleMuteUser = (senderId) => {
+        setMutedUsers((prev) => {
+            const next = new Set(prev);
+            next.has(senderId) ? next.delete(senderId) : next.add(senderId);
+            return next;
+        });
+    };
+
     const getInitials = (firstName, lastName) => {
         return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase() || 'U';
     };
@@ -104,6 +128,10 @@ const AuditoriumChat = () => {
         const cleanStr = text.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}\p{Emoji_Modifier}\uFE0F\u200D\s]/gu, '');
         return cleanStr.length === 0;
     };
+
+    const visibleMessages = mutedUsers.size > 0
+        ? messages.filter((m) => !mutedUsers.has(m.senderId))
+        : messages;
 
     return (
         <div className="w-full max-h-full bg-white/90 backdrop-blur-xl rounded-xl shadow-xl border border-white/40 flex flex-col overflow-hidden mb-2 animate-fade-in">
@@ -118,7 +146,7 @@ const AuditoriumChat = () => {
 
             {/* Chat Messages Feed */}
             <div className="overflow-y-auto p-4 flex flex-col gap-3 min-h-[100px]">
-                {messages.length === 0 ? (
+                {visibleMessages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center text-center gap-3 opacity-80 py-6">
                         <div className="w-16 h-16 rounded-full bg-blue-50/50 flex items-center justify-center mb-1">
                             <FiMessageCircle className="w-8 h-8 text-blue-300" />
@@ -129,17 +157,38 @@ const AuditoriumChat = () => {
                         </div>
                     </div>
                 ) : (
-                    messages.map((msg, idx) => {
+                    visibleMessages.map((msg, idx) => {
                         const isMine = msg.senderId === user?._id || msg.senderId === user?.id;
                         const emojiOnly = isOnlyEmojis(msg.text);
-                        
+                        const isMuted = mutedUsers.has(msg.senderId);
+
                         return (
-                            <div key={msg._id || idx} className={`flex gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
+                            <div key={msg._id || idx} className={`group flex gap-2 ${isMine ? 'flex-row-reverse' : 'flex-row'}`}>
                                 {!emojiOnly && (
                                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[9px] font-bold text-white shrink-0 mt-0.5 shadow-sm ${isMine ? 'bg-[#3b60f6]' : 'bg-gray-400'}`}>
                                         {getInitials(msg.senderName?.split(' ')[0], msg.senderName?.split(' ')[1])}
                                     </div>
                                 )}
+                                {isAdmin && (
+                                        <div className={`flex flex-col gap-1 justify-start opacity-0 group-hover:opacity-100 transition-opacity shrink-0 ${isMine ? 'order-last' : 'order-first'}`}>
+                                            <button
+                                                onClick={() => handleDeleteMessage(msg._id)}
+                                                title="Delete message"
+                                                className="p-1 rounded-full text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                                            >
+                                                <FiTrash2 className="w-3 h-3" />
+                                            </button>
+                                            {!isMine && (
+                                                <button
+                                                    onClick={() => toggleMuteUser(msg.senderId)}
+                                                    title={isMuted ? 'Unmute user' : 'Mute user'}
+                                                    className={`p-1 rounded-full transition-colors cursor-pointer ${isMuted ? 'text-amber-500 hover:text-amber-700 hover:bg-amber-50' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                                                >
+                                                    {isMuted ? <FiVolume2 className="w-3 h-3" /> : <FiVolumeX className="w-3 h-3" />}
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
                                 <div className={`flex flex-col max-w-[80%] ${isMine ? 'items-end' : 'items-start'}`}>
                                     {!isMine && (
                                         <span className="text-[9px] text-gray-500 font-bold mb-0.5 px-1">{msg.senderName}</span>

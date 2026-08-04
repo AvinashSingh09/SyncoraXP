@@ -2,10 +2,12 @@ import type {
   MeetingSettings,
   MeetingTranslationSettings,
   UpdateMeetingSettingsInput,
+  UpdateMeetingTranslationInput,
 } from "@voice/shared";
 import {
   CaretDown,
-  GlobeHemisphereWest,
+  ClosedCaptioning,
+  FileText,
   LockKey,
   Microphone,
   Monitor,
@@ -55,19 +57,20 @@ export function HostToolsPanel({
     }
   };
 
-  const toggleInterpretation = async () => {
-    const enabled = !translationSettings.enabled;
+  const updateLanguageTool = async (
+    change: UpdateMeetingTranslationInput,
+    fallbackMessage: string,
+  ) => {
     setTranslationBusy(true);
     setError("");
     try {
       const response = await updateMeetingTranslation(meetingId, {
-        enabled,
+        ...change,
         designatedSpeakerIdentity: participantIdentity,
-        ...(enabled ? { provider: "gemini" as const } : {}),
       });
       onTranslationSettingsChange(response.settings);
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not update interpretation");
+      setError(caught instanceof Error ? caught.message : fallbackMessage);
     } finally {
       setTranslationBusy(false);
     }
@@ -80,7 +83,7 @@ export function HostToolsPanel({
           <div className="host-tools-heading">
             <div>
               <strong>Host tools</strong>
-              <small>Manage guest access and live interpretation.</small>
+              <small>Manage guest access and language tools.</small>
             </div>
             <button type="button" aria-label="Close host tools" onClick={() => onOpenChange(false)}>
               <X size={19} weight="bold" />
@@ -132,7 +135,7 @@ export function HostToolsPanel({
               <summary>
                 <span>
                   <strong>Advanced settings</strong>
-                  <small>Guest media permissions and interpretation.</small>
+                  <small>Guest media, transcription, and subtitles.</small>
                 </span>
                 <CaretDown className="host-tools-advanced-caret" size={17} weight="bold" />
               </summary>
@@ -198,19 +201,44 @@ export function HostToolsPanel({
                 </div>
 
                 <div className="host-tool-row">
-                  <span className="host-tool-icon"><GlobeHemisphereWest size={18} weight="bold" /></span>
+                  <span className="host-tool-icon"><FileText size={18} weight="bold" /></span>
                   <span className="host-tool-copy">
-                    <strong>Enable interpretation</strong>
-                    <small>Translate your English audio into five Indian languages.</small>
+                    <strong>Enable transcription</strong>
+                    <small>Save finalized speech to the meeting transcript.</small>
                   </span>
                   <button
                     type="button"
                     role="switch"
-                    aria-label="Enable interpretation"
-                    aria-checked={translationSettings.enabled}
-                    className={`host-tool-switch ${translationSettings.enabled ? "on" : "off"}`}
+                    aria-label="Enable transcription"
+                    aria-checked={translationSettings.transcriptionEnabled}
+                    className={`host-tool-switch ${translationSettings.transcriptionEnabled ? "on" : "off"}`}
                     disabled={busySetting !== null || translationBusy}
-                    onClick={() => void toggleInterpretation()}
+                    onClick={() => void updateLanguageTool(
+                      { transcriptionEnabled: !translationSettings.transcriptionEnabled },
+                      "Could not update transcription",
+                    )}
+                  >
+                    <span />
+                  </button>
+                </div>
+
+                <div className="host-tool-row">
+                  <span className="host-tool-icon"><ClosedCaptioning size={18} weight="bold" /></span>
+                  <span className="host-tool-copy">
+                    <strong>Enable subtitles</strong>
+                    <small>Show live source-language captions without saving them.</small>
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-label="Enable subtitles"
+                    aria-checked={translationSettings.subtitlesEnabled}
+                    className={`host-tool-switch ${translationSettings.subtitlesEnabled ? "on" : "off"}`}
+                    disabled={busySetting !== null || translationBusy}
+                    onClick={() => void updateLanguageTool(
+                      { subtitlesEnabled: !translationSettings.subtitlesEnabled },
+                      "Could not update subtitles",
+                    )}
                   >
                     <span />
                   </button>

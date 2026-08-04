@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { qnaService } from '../../../services/api';
 import socket from '../../../services/socket';
-import { FiThumbsUp } from 'react-icons/fi';
+import { FiThumbsUp, FiTrash2 } from 'react-icons/fi';
 
 const QnAManager = () => {
     const [questions, setQuestions] = useState([]);
@@ -38,11 +38,15 @@ const QnAManager = () => {
         socket.on('new-question', handleNewQuestion);
         socket.on('question-updated', handleQuestionUpdated);
         socket.on('all-questions-cleared', handleAllQuestionsCleared);
+        socket.on('question-deleted', ({ questionId }) => {
+            setQuestions(prev => prev.filter(q => q._id !== questionId));
+        });
 
         return () => {
             socket.off('new-question', handleNewQuestion);
             socket.off('question-updated', handleQuestionUpdated);
             socket.off('all-questions-cleared', handleAllQuestionsCleared);
+            socket.off('question-deleted');
         };
     }, []);
 
@@ -55,6 +59,15 @@ const QnAManager = () => {
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
+    const handleDelete = async (id) => {
+        try {
+            await qnaService.deleteQuestion(id);
+            setQuestions(prev => prev.filter(q => q._id !== id));
+        } catch (err) {
+            console.error('Failed to delete question', err);
+        }
+    };
+
     return (
         <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-3">
@@ -64,7 +77,7 @@ const QnAManager = () => {
                 ) : (
                     <div className="flex flex-col gap-3 max-h-96 overflow-y-auto pr-1">
                         {sortedQuestions.map(q => (
-                            <div key={q._id} className="bg-white p-4 rounded-xl border border-gray-200 flex flex-col gap-1 shadow-sm">
+                            <div key={q._id} className="bg-white p-4 rounded-xl border border-gray-200 flex flex-col gap-1 shadow-sm group">
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-2">
                                         <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">{q.senderName}</span>
@@ -73,7 +86,16 @@ const QnAManager = () => {
                                             <span>{q.upvotes ? q.upvotes.length : 0} upvotes</span>
                                         </span>
                                     </div>
-                                    <span className="text-[9px] text-gray-400 font-semibold">{new Date(q.createdAt).toLocaleString()}</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[9px] text-gray-400 font-semibold">{new Date(q.createdAt).toLocaleString()}</span>
+                                        <button
+                                            onClick={() => handleDelete(q._id)}
+                                            title="Delete question"
+                                            className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-all cursor-pointer"
+                                        >
+                                            <FiTrash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 </div>
                                 <p className="text-sm font-semibold text-gray-800 mt-2 leading-relaxed">{q.text}</p>
                             </div>

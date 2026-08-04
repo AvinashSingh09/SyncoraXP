@@ -60,6 +60,7 @@ function meetingSummary(meeting: StoredMeeting, baseUrl: string) {
     description: meeting.description,
     organizerName: meeting.organizerName,
     scheduledFor: meeting.scheduledFor?.toISOString() ?? null,
+    timeZone: meeting.timeZone,
     joinUrl: joinUrl(baseUrl, meeting.joinCode),
     hostUrl: hostUrl(baseUrl, meeting.id),
     status: meeting.status,
@@ -77,7 +78,10 @@ async function requireUser(
   return user;
 }
 
-function publicMeeting(meeting: StoredMeeting): PublicMeetingResponse {
+function publicMeeting(
+  meeting: StoredMeeting,
+  interpretation: PublicMeetingResponse["interpretation"],
+): PublicMeetingResponse {
   return {
     meeting: {
       id: meeting.id,
@@ -87,6 +91,7 @@ function publicMeeting(meeting: StoredMeeting): PublicMeetingResponse {
       scheduledFor: meeting.scheduledFor?.toISOString() ?? null,
       status: meeting.status,
     },
+    interpretation,
   };
 }
 
@@ -118,6 +123,18 @@ export async function registerMeetingRoutes(
       input: { ...parsed.data, invitees: uniqueInvitees },
       invitations: uniqueInvitees.map((invitee) => ({ id: randomUUID(), ...invitee })),
     });
+    try {
+      await dependencies.translations.updateSettings(id, {
+        transcriptionEnabled: parsed.data.settings.transcriptionEnabled,
+        subtitlesEnabled: parsed.data.settings.subtitlesEnabled,
+        enabled: parsed.data.settings.interpretationEnabled,
+        provider: parsed.data.settings.interpretationProvider,
+        allowedTargetLanguages: parsed.data.settings.interpretationLanguages,
+      });
+    } catch (error) {
+      await dependencies.repository.deleteByOwner(id, user.id);
+      throw error;
+    }
     const url = joinUrl(dependencies.config.APP_BASE_URL, code);
 
     for (const invitation of created.invitations) {
@@ -452,7 +469,8 @@ export async function registerMeetingRoutes(
     if (!meeting || meeting.status === "ended") {
       return reply.status(404).send({ error: "Meeting not found or no longer available" });
     }
-    return publicMeeting(meeting);
+    const { enabled, allowedTargetLanguages } = await dependencies.translations.getSettings(meeting.id);
+    return publicMeeting(meeting, { enabled, allowedTargetLanguages });
   });
 
   app.post<{ Params: { joinCode: string } }>(

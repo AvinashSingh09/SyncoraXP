@@ -1,6 +1,6 @@
 import type {
   AuthResponse,
-  CreateMeetingInput,
+  CreateMeetingRequest,
   CreateMeetingResponse,
   GuestAdmissionResponse,
   GuestAdmissionStatusResponse,
@@ -32,7 +32,7 @@ async function readJson<T>(response: Response): Promise<T> {
   return body;
 }
 
-export async function createMeeting(input: CreateMeetingInput): Promise<CreateMeetingResponse> {
+export async function createMeeting(input: CreateMeetingRequest): Promise<CreateMeetingResponse> {
   const response = await apiFetch("/api/meetings", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

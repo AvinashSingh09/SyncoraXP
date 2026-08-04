@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FiArrowLeft, FiArrowRight, FiX } from 'react-icons/fi';
+import { FiArrowLeft, FiArrowRight, FiX, FiDownload } from 'react-icons/fi';
 import { FaInstagram, FaFacebook, FaYoutube, FaTwitter, FaLinkedin, FaTiktok, FaWhatsapp, FaTelegram, FaDiscord, FaPinterest, FaSnapchat, FaReddit, FaGlobe } from 'react-icons/fa';
-import { configService, authService } from '../../services/api';
+import { configService, authService, leadService, chatService } from '../../services/api';
 import { useAuth } from '../../hooks/useAuth';
 import ResourceCenterModal from '../../components/ResourceCenterModal';
 import ProductGalleryModal from '../../components/ProductGalleryModal';
@@ -148,13 +148,54 @@ const Booth = () => {
                     <span style={{ fontSize: '11px', fontWeight: 700 }}>Back to Hall {hallId ? hallId.toUpperCase() : 'A'}</span>
                 </button>
 
-                <div 
-                    className="bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 shadow-md flex items-center gap-2 pointer-events-auto select-none"
-                    style={{ fontSize: '11px' }}
-                >
-                    <span style={{ color: '#60a5fa', fontWeight: 800, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Exhibitor</span>
-                    <span style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '10px' }}>|</span>
-                    <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>BOOTH {boothId}</span>
+                <div className="flex items-center gap-3 pointer-events-auto">
+                    {user && (user.role === 'admin' || user.email?.toLowerCase().includes('booth')) && (
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const res = await leadService.getLeads(boothId);
+                                    const leads = (res.data && res.data.data) ? res.data.data : [];
+                                    if (leads.length === 0) {
+                                        alert(`No inquiry data found for Booth ${boothId}.`);
+                                        return;
+                                    }
+
+                                    let csv = 'Date,Attendee Name,Attendee Email,Product Name,Query / Message\n';
+                                    leads.forEach(l => {
+                                        const time = l.createdAt ? new Date(l.createdAt).toLocaleString() : '';
+                                        const name = `"${(l.userName || '').replace(/"/g, '""')}"`;
+                                        const email = `"${(l.userEmail || '').replace(/"/g, '""')}"`;
+                                        const product = `"${(l.productName || '').replace(/"/g, '""')}"`;
+                                        const query = `"${(l.queryText || '').replace(/"/g, '""')}"`;
+                                        csv += `${time},${name},${email},${product},${query}\n`;
+                                    });
+
+                                    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+                                    const url = URL.createObjectURL(blob);
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.setAttribute('download', `Booth_${boothId}_Enquiry_Data_${Date.now()}.csv`);
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                } catch (err) {
+                                    console.error('Failed to export enquiry data', err);
+                                    alert('Failed to export enquiry data.');
+                                }
+                            }}
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-1.5 px-3 rounded-lg shadow-md flex items-center gap-1.5 transition-all text-xs cursor-pointer border border-emerald-500"
+                        >
+                            <FiDownload className="w-3.5 h-3.5" /> Download Enquiry CSV
+                        </button>
+                    )}
+                    <div 
+                        className="bg-black/75 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 shadow-md flex items-center gap-2 select-none"
+                        style={{ fontSize: '11px' }}
+                    >
+                        <span style={{ color: '#60a5fa', fontWeight: 800, fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Exhibitor</span>
+                        <span style={{ color: 'rgba(255, 255, 255, 0.3)', fontSize: '10px' }}>|</span>
+                        <span style={{ color: '#ffffff', fontWeight: 900, fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>BOOTH {boothId}</span>
+                    </div>
                 </div>
             </div>
 

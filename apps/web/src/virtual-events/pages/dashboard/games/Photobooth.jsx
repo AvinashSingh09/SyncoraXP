@@ -14,7 +14,7 @@ import {
     MdQrCode,
     MdFlip
 } from 'react-icons/md';
-import { photoboothService } from '../../../services/api';
+import { photoboothService, configService } from '../../../services/api';
 import { renderPersonaCard, PERSONA_QUOTES, PERSONA_BADGES } from '../../../utils/personaCanvasRenderer';
 
 const STYLES = [
@@ -271,6 +271,7 @@ const Photobooth = ({ onBack }) => {
     const [showQrModal, setShowQrModal] = useState(false);
     const [guestName, setGuestName] = useState('');
     const [currentStep, setCurrentStep] = useState('selection');
+    const [disabledStyles, setDisabledStyles] = useState([]);
 
     const videoRef = useRef(null);
     const fileInputRef = useRef(null);
@@ -336,9 +337,23 @@ const Photobooth = ({ onBack }) => {
         }, 500);
     };
 
-    // Fetch history
+    // Fetch history and config
     useEffect(() => {
         fetchHistory();
+        const fetchConfig = async () => {
+            try {
+                const res = await configService.getConfig('photobooth_disabled_styles');
+                if (res.data && res.data.value) {
+                    const parsed = JSON.parse(res.data.value);
+                    if (Array.isArray(parsed)) {
+                        setDisabledStyles(parsed);
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to load photobooth disabled styles', err);
+            }
+        };
+        fetchConfig();
     }, []);
 
     const fetchHistory = async () => {
@@ -577,7 +592,7 @@ const Photobooth = ({ onBack }) => {
                             Caricature Avatars
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                            {STYLES.filter(s => !s.isPersona && !s.categories.includes('style-transfer')).map(tpl => (
+                            {STYLES.filter(s => !s.isPersona && !s.categories.includes('style-transfer') && !disabledStyles.includes(s.id)).map(tpl => (
                                 <button
                                     key={tpl.id}
                                     onClick={() => {
@@ -610,7 +625,7 @@ const Photobooth = ({ onBack }) => {
                             Folk Art Posters
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                            {STYLES.filter(s => s.isPersona).map(tpl => (
+                            {STYLES.filter(s => s.isPersona && !disabledStyles.includes(s.id)).map(tpl => (
                                 <button
                                     key={tpl.id}
                                     onClick={() => {
@@ -638,7 +653,7 @@ const Photobooth = ({ onBack }) => {
                             ✨ Style Transfer
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-                            {STYLES.filter(s => s.categories.includes('style-transfer')).map(tpl => (
+                            {STYLES.filter(s => s.categories.includes('style-transfer') && !disabledStyles.includes(s.id)).map(tpl => (
                                 <button
                                     key={tpl.id}
                                     onClick={() => {

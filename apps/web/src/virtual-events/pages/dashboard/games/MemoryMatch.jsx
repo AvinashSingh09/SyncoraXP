@@ -352,7 +352,7 @@ const MemoryMatch = ({ onBack }) => {
     };
 
     return (
-        <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-start bg-gradient-to-br from-[#ebf4ff] via-[#e0e7ff] to-[#f3e8ff] text-slate-800 px-6 pb-6 pt-[120px] overflow-y-auto font-sans animate-fade-in">
+        <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-start bg-white text-slate-800 px-6 pb-6 pt-[120px] overflow-y-auto font-sans animate-fade-in">
             {/* Top Bar */}
             <div className="w-full max-w-2xl flex items-center justify-between mb-4">
                 <button
@@ -372,7 +372,7 @@ const MemoryMatch = ({ onBack }) => {
 
             {/* Header */}
             <div className="text-center mt-2 mb-6">
-                <h1 className="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 to-indigo-650 bg-clip-text text-transparent">
+                <h1 className="text-3xl font-extrabold tracking-tight text-indigo-700">
                     Memory Match
                 </h1>
                 <p className="text-xs text-slate-500 mt-1">Flip cards to match the event sponsors and claim points!</p>

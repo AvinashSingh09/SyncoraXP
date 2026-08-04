@@ -1,6 +1,12 @@
 import { z } from "zod";
+import {
+  TRANSLATION_LANGUAGES,
+  TranslationLanguageCodeSchema,
+  TranslationProviderSchema,
+} from "./translation";
 
 export * from "./translation";
+export * from "./date-time";
 
 const trimmedEmail = z
   .string()
@@ -40,14 +46,57 @@ export const InviteeSchema = z.object({
   name: z.string().trim().max(120).optional().default(""),
 });
 
+export const MeetingTimeZoneSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(64)
+  .refine((timeZone) => {
+    try {
+      new Intl.DateTimeFormat("en", { timeZone }).format();
+      return true;
+    } catch {
+      return false;
+    }
+  }, "Choose a valid time zone");
+
+export const CreateMeetingSettingsSchema = z.object({
+  waitingRoomEnabled: z.boolean().default(true),
+  allowGuestCamera: z.boolean().default(true),
+  allowGuestMicrophone: z.boolean().default(true),
+  allowGuestScreenShare: z.boolean().default(false),
+  transcriptionEnabled: z.boolean().default(false),
+  subtitlesEnabled: z.boolean().default(false),
+  interpretationEnabled: z.boolean().default(false),
+  interpretationProvider: TranslationProviderSchema.default("gemini"),
+  interpretationLanguages: z
+    .array(TranslationLanguageCodeSchema)
+    .min(1, "Choose at least one interpretation language")
+    .transform((languages) => Array.from(new Set(languages)))
+    .default(TRANSLATION_LANGUAGES.map((language) => language.code)),
+});
+
 export const CreateMeetingInputSchema = z.object({
   title: z.string().trim().min(3, "Meeting title must be at least 3 characters").max(160),
   description: z.string().trim().max(1_000).optional().default(""),
   scheduledFor: z.iso.datetime({ offset: true }).nullable().optional(),
+  timeZone: MeetingTimeZoneSchema.default("UTC"),
+  settings: CreateMeetingSettingsSchema.default({
+    waitingRoomEnabled: true,
+    allowGuestCamera: true,
+    allowGuestMicrophone: true,
+    allowGuestScreenShare: false,
+    transcriptionEnabled: false,
+    subtitlesEnabled: false,
+    interpretationEnabled: false,
+    interpretationProvider: "gemini",
+    interpretationLanguages: TRANSLATION_LANGUAGES.map((language) => language.code),
+  }),
   invitees: z.array(InviteeSchema).max(50, "A meeting can initially invite up to 50 people").default([]),
 });
 
-export type CreateMeetingInput = z.infer<typeof CreateMeetingInputSchema>;
+export type CreateMeetingRequest = z.input<typeof CreateMeetingInputSchema>;
+export type CreateMeetingInput = z.output<typeof CreateMeetingInputSchema>;
 
 export type InvitationStatus = "pending" | "sent" | "simulated" | "failed";
 
@@ -57,6 +106,7 @@ export interface MeetingSummary {
   description: string;
   organizerName: string;
   scheduledFor: string | null;
+  timeZone: string;
   joinUrl: string;
   hostUrl: string;
   status: "scheduled" | "active" | "ended";
@@ -80,6 +130,10 @@ export interface PublicMeetingResponse {
   meeting: Pick<
     MeetingSummary,
     "id" | "title" | "description" | "organizerName" | "scheduledFor" | "status"
+  >;
+  interpretation: Pick<
+    import("./translation").MeetingTranslationSettings,
+    "enabled" | "allowedTargetLanguages"
   >;
 }
 

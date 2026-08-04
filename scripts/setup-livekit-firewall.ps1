@@ -1,6 +1,6 @@
 $ErrorActionPreference = "Stop"
 
-$localAddress = "192.168.0.195"
+$localAddress = "192.168.0.196"
 $remoteSubnet = "192.168.0.0/24"
 $tcpRuleName = "VoiceMeet LiveKit LAN TCP"
 $udpRuleName = "VoiceMeet LiveKit LAN UDP"

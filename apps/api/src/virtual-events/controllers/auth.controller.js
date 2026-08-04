@@ -74,11 +74,11 @@ class AuthController {
                     ) {
                         isBoothAdminConfigured = true;
                         if (boothPatternMatch) {
-                            boothAdminName = `Booth ${boothPatternMatch[1]} Representative`;
+                            boothAdminName = `Booth ${boothPatternMatch[1]}`;
                         } else if (emailKey.includes('booth1')) {
-                            boothAdminName = 'Booth 1 Representative';
+                            boothAdminName = 'Booth 1';
                         } else if (emailKey === 'mb10@gmail.com') {
-                            boothAdminName = 'MuscleBlaze Representative';
+                            boothAdminName = 'MuscleBlaze';
                         }
                     }
                 }
@@ -93,23 +93,28 @@ class AuthController {
 
                     const UserRepo = require('../repositories/user.repository');
                     let existingUser = await UserRepo.findByEmail(emailKey);
+                    const cleanName = boothAdminName.replace(/\s+Representative$/i, '').trim();
+                    const nameParts = cleanName.split(' ');
+                    const firstName = nameParts[0] || cleanName;
+                    const lastName = nameParts.slice(1).join(' ') || '';
+
                     if (!existingUser) {
-                        const nameParts = boothAdminName.split(' ');
-                        const firstName = nameParts[0] || 'Booth';
-                        const lastName = nameParts.slice(1).join(' ') || 'Admin';
                         existingUser = await UserRepo.create({
                             email: emailKey,
                             password: await require('bcrypt').hash(password, 10),
                             firstName,
                             lastName,
-                            company: boothAdminName,
+                            company: cleanName,
                             designation: 'Exhibitor / Stall Owner'
                         });
                     } else {
-                        existingUser.password = await require('bcrypt').hash(password, 10);
-                        existingUser.company = boothAdminName;
-                        existingUser.designation = 'Exhibitor / Stall Owner';
-                        await existingUser.save();
+                        await UserRepo.update(existingUser._id, {
+                            password: await require('bcrypt').hash(password, 10),
+                            firstName,
+                            lastName,
+                            company: cleanName,
+                            designation: 'Exhibitor / Stall Owner'
+                        });
                     }
                     result = await this.authService.login(emailKey, password);
                 } else {

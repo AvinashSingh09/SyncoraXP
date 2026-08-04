@@ -1,8 +1,9 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { lazy, Suspense, type ReactNode } from "react";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import { RequestCallbackModal } from "./components/RequestCallbackModal";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { ChatBot } from "./components/ChatBot";
 
 const CreateMeetingPage = lazy(() => import("./pages/CreateMeetingPage").then((module) => ({ default: module.CreateMeetingPage })));
 const HomePage = lazy(() => import("./pages/HomePage").then((module) => ({ default: module.HomePage })));
@@ -23,12 +24,25 @@ function ProtectedRoute({ children }: { children: ReactNode }) {
   return user ? children : <Navigate to="/login" replace />;
 }
 
+// Show chatbot only on public marketing pages
+function MarketingChatBot() {
+  const location = useLocation();
+  const hidden =
+    location.pathname.includes("/meetings/") ||
+    location.pathname.includes("/join/") ||
+    location.pathname.includes("/virtual-events-platform/app") ||
+    location.pathname === "/login" ||
+    location.pathname === "/register";
+  return hidden ? null : <ChatBot />;
+}
+
 export function App() {
   return (
     <BrowserRouter>
       <ScrollToTop />
       <AuthProvider>
         <RequestCallbackModal />
+        <MarketingChatBot />
         <Suspense fallback={<main className="site-shell"><div className="loading-card">Loading SyncoraXP...</div></main>}>
           <Routes>
             <Route path="/" element={<LandingPage />} />

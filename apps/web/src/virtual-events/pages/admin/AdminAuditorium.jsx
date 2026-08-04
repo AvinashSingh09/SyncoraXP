@@ -6,6 +6,7 @@ import LayoutManager from './components/LayoutManager';
 import PollsManager from './components/PollsManager';
 import QuizzesManager from './components/QuizzesManager';
 import QnAManager from './components/QnAManager';
+import ChatModerationManager from './components/ChatModerationManager';
 
 const AdminAuditorium = () => {
     const [auditoriumSubTab, setAuditoriumSubTab] = useState('live');
@@ -64,6 +65,12 @@ const AdminAuditorium = () => {
                     >
                         Manage Q&A
                     </button>
+                    <button 
+                        onClick={() => setAuditoriumSubTab('chat')}
+                        className={`flex-1 min-w-[120px] py-2 text-sm font-bold rounded-lg transition-all cursor-pointer ${auditoriumSubTab === 'chat' ? 'bg-[#295ce8] text-white shadow-md' : 'text-gray-500 hover:text-gray-700'}`}
+                    >
+                        Chat Moderation
+                    </button>
                 </div>
 
                 {auditoriumSubTab === 'live' && <LiveStreamManager />}
@@ -72,6 +79,7 @@ const AdminAuditorium = () => {
                 {auditoriumSubTab === 'polls' && <PollsManager />}
                 {auditoriumSubTab === 'quizzes' && <QuizzesManager />}
                 {auditoriumSubTab === 'qna' && <QnAManager />}
+                {auditoriumSubTab === 'chat' && <ChatModerationManager />}
             </div>
         </div>
     );
