@@ -44,6 +44,7 @@ const initDb = async () => {
     if (sqlPath) {
       const sql = fs.readFileSync(sqlPath, 'utf8');
       await pool.query(sql);
+      await pool.query("ALTER TABLE ve_polls ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'auditorium'");
       console.log('PostgreSQL tables for Virtual Events initialized/verified.');
     } else {
       console.warn('Migration SQL file not found in any candidate path.');

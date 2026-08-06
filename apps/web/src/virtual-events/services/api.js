@@ -145,7 +145,7 @@ export const qnaService = {
 };
 
 export const pollService = {
-    getPolls: () => api.get('/polls'),
+    getPolls: (type) => api.get(`/polls${type ? `?type=${type}` : ''}`),
     createPoll: (data) => api.post('/polls', data),
     votePoll: (pollId, optionId) => api.post(`/polls/${pollId}/vote`, { optionId }),
     togglePoll: (pollId, isActive) => api.patch(`/polls/${pollId}/toggle`, { isActive }),

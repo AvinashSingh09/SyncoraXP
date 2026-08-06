@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { FiArrowLeft, FiLock } from 'react-icons/fi';
-import { MdHome, MdStorefront, MdEventSeat, MdMeetingRoom, MdGroup, MdPeople, MdVideogameAsset, MdAssignment, MdPerson, MdSettings, MdGames, MdCameraAlt, MdMenu } from 'react-icons/md';
+import { MdHome, MdStorefront, MdEventSeat, MdMeetingRoom, MdGroup, MdPeople, MdVideogameAsset, MdAssignment, MdPerson, MdSettings, MdGames, MdCameraAlt, MdMenu, MdPoll } from 'react-icons/md';
 import { chatService } from '../../services/api';
 
 const AdminLayout = () => {
@@ -42,6 +42,7 @@ const AdminLayout = () => {
         { name: 'Meeting Room', path: 'meeting-room', icon: MdPeople },
         { name: 'Points Settings', path: 'games', icon: MdVideogameAsset },
         { name: 'Survey', path: 'survey', icon: MdAssignment },
+        { name: 'Polls', path: 'polls', icon: MdPoll },
         { name: 'Users', path: 'users', icon: MdPerson },
         { name: 'Reg Settings', path: 'reg-settings', icon: MdSettings },
         { name: 'Game Settings', path: 'game-settings', icon: MdGames },

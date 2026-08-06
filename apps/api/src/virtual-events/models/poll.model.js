@@ -10,6 +10,7 @@ class Poll {
       if (!opt._id && !opt.id) opt._id = crypto.randomBytes(12).toString('hex');
     });
     this.isActive = data.isActive !== undefined ? Boolean(data.isActive) : (data.is_active !== undefined ? Boolean(data.is_active) : true);
+    this.type = data.type || 'auditorium';
     this.createdAt = data.createdAt || data.created_at || new Date();
     this.updatedAt = data.updatedAt || data.updated_at || new Date();
   }
@@ -19,20 +20,29 @@ class Poll {
     const { rows } = await query('SELECT 1 FROM ve_polls WHERE _id = $1', [this._id]);
     if (rows.length > 0) {
       await query(
-        'UPDATE ve_polls SET question = $1, options = $2, is_active = $3, updated_at = $4 WHERE _id = $5',
-        [this.question, JSON.stringify(this.options), this.isActive, this.updatedAt, this._id]
+        'UPDATE ve_polls SET question = $1, options = $2, is_active = $3, type = $4, updated_at = $5 WHERE _id = $6',
+        [this.question, JSON.stringify(this.options), this.isActive, this.type, this.updatedAt, this._id]
       );
     } else {
       await query(
-        'INSERT INTO ve_polls (_id, question, options, is_active, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)',
-        [this._id, this.question, JSON.stringify(this.options), this.isActive, this.createdAt, this.updatedAt]
+        'INSERT INTO ve_polls (_id, question, options, is_active, type, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [this._id, this.question, JSON.stringify(this.options), this.isActive, this.type, this.createdAt, this.updatedAt]
       );
     }
     return this;
   }
 
-  static find() {
+  static find(conditions = {}) {
     let sql = 'SELECT * FROM ve_polls';
+    const keys = Object.keys(conditions);
+    const params = [];
+    if (keys.length > 0) {
+      sql += ' WHERE ';
+      sql += keys.map((key, i) => {
+        params.push(conditions[key]);
+        return `${key} = $${i + 1}`;
+      }).join(' AND ');
+    }
     let isPopulate = false;
     
     const queryObj = {
@@ -50,7 +60,7 @@ class Poll {
       },
       then: async function(resolve, reject) {
         try {
-          const { rows } = await query(sql);
+          const { rows } = await query(sql, params);
           const polls = rows.map(r => new Poll(r));
           
           if (isPopulate) {

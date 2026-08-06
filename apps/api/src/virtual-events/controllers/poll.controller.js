@@ -4,7 +4,8 @@ const Config = require('../models/config.model');
 
 exports.getPolls = async (req, res) => {
     try {
-        const polls = await Poll.find()
+        const type = req.query.type || 'auditorium';
+        const polls = await Poll.find({ type })
             .populate('options.votes', 'firstName lastName email designation')
             .sort({ createdAt: -1 });
         res.json(polls);
@@ -15,7 +16,7 @@ exports.getPolls = async (req, res) => {
 
 exports.createPoll = async (req, res) => {
     try {
-        const { question, options } = req.body;
+        const { question, options, type } = req.body;
         if (!question || !options || !Array.isArray(options) || options.length < 2) {
             return res.status(400).json({ message: 'Question and at least 2 options are required' });
         }
@@ -24,7 +25,8 @@ exports.createPoll = async (req, res) => {
         const poll = new Poll({
             question,
             options: pollOptions,
-            isActive: true
+            isActive: true,
+            type: type || 'auditorium'
         });
 
         const savedPoll = await poll.save();
