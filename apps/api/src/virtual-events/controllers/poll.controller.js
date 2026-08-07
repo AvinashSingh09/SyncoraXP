@@ -8,6 +8,16 @@ exports.getPolls = async (req, res) => {
         const polls = await Poll.find({ type })
             .populate('options.votes', 'firstName lastName email designation')
             .sort({ createdAt: -1 });
+
+        // Auto-close expired polls
+        const now = new Date();
+        for (const poll of polls) {
+            if (poll.isActive && poll.expiresAt && now > new Date(poll.expiresAt)) {
+                poll.isActive = false;
+                await poll.save();
+            }
+        }
+
         res.json(polls);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching polls', error: error.message });
@@ -16,17 +26,24 @@ exports.getPolls = async (req, res) => {
 
 exports.createPoll = async (req, res) => {
     try {
-        const { question, options, type } = req.body;
+        const { question, options, type, chartType, hideResultsUntilClosed, duration } = req.body;
         if (!question || !options || !Array.isArray(options) || options.length < 2) {
             return res.status(400).json({ message: 'Question and at least 2 options are required' });
         }
 
         const pollOptions = options.map(opt => ({ text: opt, votes: [] }));
+        const pollDuration = parseInt(duration) || 0;
+        const expiresAt = pollDuration > 0 ? new Date(Date.now() + pollDuration * 1000) : null;
+
         const poll = new Poll({
             question,
             options: pollOptions,
             isActive: true,
-            type: type || 'auditorium'
+            type: type || 'auditorium',
+            chartType: chartType || 'bar',
+            hideResultsUntilClosed: Boolean(hideResultsUntilClosed),
+            duration: pollDuration,
+            expiresAt
         });
 
         const savedPoll = await poll.save();
@@ -118,17 +135,62 @@ exports.votePoll = async (req, res) => {
     }
 };
 
-exports.togglePollActive = async (req, res) => {
+exports.updatePoll = async (req, res) => {
     try {
         const { id } = req.params;
-        const { isActive } = req.body;
+        const { question, options, chartType, hideResultsUntilClosed, duration, isActive } = req.body;
 
         const poll = await Poll.findById(id);
         if (!poll) {
             return res.status(404).json({ message: 'Poll not found' });
         }
 
-        poll.isActive = isActive;
+        if (question !== undefined) poll.question = question.trim();
+        if (Array.isArray(options)) {
+            poll.options = options.map((opt, idx) => {
+                const existing = poll.options[idx] || {};
+                const textVal = typeof opt === 'string' ? opt.trim() : (opt.text || '').trim();
+                return {
+                    _id: existing._id,
+                    text: textVal,
+                    votes: existing.votes || []
+                };
+            });
+        }
+        if (chartType !== undefined) poll.chartType = chartType;
+        if (hideResultsUntilClosed !== undefined) poll.hideResultsUntilClosed = Boolean(hideResultsUntilClosed);
+        if (duration !== undefined) {
+            const newDuration = parseInt(duration) || 0;
+            poll.duration = newDuration;
+            poll.expiresAt = newDuration > 0 ? new Date(Date.now() + newDuration * 1000) : null;
+        }
+        if (isActive !== undefined) poll.isActive = Boolean(isActive);
+
+        const savedPoll = await poll.save();
+
+        const io = req.app.get('io');
+        if (io) {
+            io.emit('poll-update', savedPoll);
+        }
+
+        res.json(savedPoll);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating poll', error: error.message });
+    }
+};
+
+exports.togglePollActive = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isActive, chartType } = req.body;
+
+        const poll = await Poll.findById(id);
+        if (!poll) {
+            return res.status(404).json({ message: 'Poll not found' });
+        }
+
+        if (isActive !== undefined) poll.isActive = isActive;
+        if (chartType !== undefined) poll.chartType = chartType;
         const savedPoll = await poll.save();
 
         const io = req.app.get('io');

@@ -137,12 +137,14 @@ async function registerVirtualEvents(app) {
   register(app, 'DELETE', '/qna/:id', qna.deleteQuestion, { auth: true });
   register(app, 'GET', '/polls', poll.getPolls, { auth: true });
   register(app, 'POST', '/polls', poll.createPoll, { auth: true });
+  register(app, 'PATCH', '/polls/:id', poll.updatePoll, { auth: true });
   register(app, 'POST', '/polls/:id/vote', poll.votePoll, { auth: true });
   register(app, 'PATCH', '/polls/:id/toggle', poll.togglePollActive, { auth: true });
   register(app, 'DELETE', '/polls/clear', poll.clearPolls, { auth: true });
   register(app, 'DELETE', '/polls/:id', poll.deletePoll, { auth: true });
   register(app, 'GET', '/quizzes', quiz.getQuizzes, { auth: true });
   register(app, 'POST', '/quizzes', quiz.createQuiz, { auth: true });
+  register(app, 'PATCH', '/quizzes/:id', quiz.updateQuiz, { auth: true });
   register(app, 'POST', '/quizzes/:id/submit', quiz.submitAnswer, { auth: true });
   register(app, 'PATCH', '/quizzes/:id/toggle', quiz.toggleQuizActive, { auth: true });
   register(app, 'DELETE', '/quizzes/clear', quiz.clearQuizzes, { auth: true });

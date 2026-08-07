@@ -45,6 +45,16 @@ const initDb = async () => {
       const sql = fs.readFileSync(sqlPath, 'utf8');
       await pool.query(sql);
       await pool.query("ALTER TABLE ve_polls ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'auditorium'");
+      await pool.query("ALTER TABLE ve_polls ADD COLUMN IF NOT EXISTS chart_type VARCHAR(50) DEFAULT 'bar'");
+      await pool.query("ALTER TABLE ve_polls ADD COLUMN IF NOT EXISTS hide_results_until_closed BOOLEAN DEFAULT FALSE");
+      await pool.query("ALTER TABLE ve_polls ADD COLUMN IF NOT EXISTS duration INTEGER DEFAULT 0");
+      await pool.query("ALTER TABLE ve_polls ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE NULL");
+
+      await pool.query("ALTER TABLE ve_quizzes ADD COLUMN IF NOT EXISTS type VARCHAR(50) DEFAULT 'auditorium'");
+      await pool.query("ALTER TABLE ve_quizzes ADD COLUMN IF NOT EXISTS chart_type VARCHAR(50) DEFAULT 'bar'");
+      await pool.query("ALTER TABLE ve_quizzes ADD COLUMN IF NOT EXISTS hide_results_until_closed BOOLEAN DEFAULT FALSE");
+      await pool.query("ALTER TABLE ve_quizzes ADD COLUMN IF NOT EXISTS duration INTEGER DEFAULT 0");
+      await pool.query("ALTER TABLE ve_quizzes ADD COLUMN IF NOT EXISTS expires_at TIMESTAMP WITH TIME ZONE NULL");
       console.log('PostgreSQL tables for Virtual Events initialized/verified.');
     } else {
       console.warn('Migration SQL file not found in any candidate path.');

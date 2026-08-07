@@ -9,6 +9,7 @@ import MemoryMatrix from './games/MemoryMatrix';
 import ArrowEscape from './games/ArrowEscape';
 import { configService } from '../../services/api';
 import Polls from './Polls';
+import Quizzes from './Quizzes';
 
 // Styled Game Controller SVG component
 const GameControllerSVG = ({ className }) => (
@@ -337,6 +338,10 @@ const Games = () => {
 
     if (activeSection === 'polls') {
         return <Polls onBack={() => setActiveSection('engage')} />;
+    }
+
+    if (activeSection === 'quizzes') {
+        return <Quizzes onBack={() => setActiveSection('engage')} />;
     }
 
     if (activeSection === 'photobooth') {
@@ -689,7 +694,7 @@ const Games = () => {
                 </div>
 
                 {/* Engage Hub Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-6xl px-4 z-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl px-4 z-10">
                     {/* Games Hub Box */}
                     <div
                         onClick={(e) => {
@@ -703,17 +708,17 @@ const Games = () => {
                                 setIsZooming(null);
                             }, 850);
                         }}
-                        className="relative overflow-hidden bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] rounded-[2.5rem] p-8 text-white transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] group flex flex-col justify-between min-h-[260px]"
+                        className="relative overflow-hidden bg-gradient-to-br from-[#7C3AED] via-[#8B5CF6] to-[#A78BFA] rounded-[2.5rem] p-7 text-white transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] group flex flex-col justify-between min-h-[260px]"
                     >
                         {/* Content Section */}
-                        <div className="max-w-[60%] z-10 flex flex-col items-start justify-center h-full">
-                            <h3 className="text-3xl font-extrabold tracking-tight mb-2">
+                        <div className="max-w-[65%] z-10 flex flex-col items-start justify-center h-full">
+                            <h3 className="text-2xl font-extrabold tracking-tight mb-2">
                                 Games
                             </h3>
                             <p className="text-xs text-purple-100 leading-relaxed font-medium mb-6">
-                                Play fun games and earn points
+                                Play fun games & earn points
                             </p>
-                            <span className="flex items-center gap-1.5 px-5 py-2.5 bg-white text-[#7C3AED] rounded-full font-bold text-xs shadow hover:shadow-md transition-all group-hover:scale-105">
+                            <span className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#7C3AED] rounded-full font-bold text-xs shadow hover:shadow-md transition-all group-hover:scale-105">
                                 Explore Games →
                             </span>
                         </div>
@@ -737,17 +742,17 @@ const Games = () => {
                                 setIsZooming(null);
                             }, 850);
                         }}
-                        className="relative overflow-hidden bg-gradient-to-br from-[#2563EB] via-[#3B82F6] to-[#60A5FA] rounded-[2.5rem] p-8 text-white transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] group flex flex-col justify-between min-h-[260px]"
+                        className="relative overflow-hidden bg-gradient-to-br from-[#2563EB] via-[#3B82F6] to-[#60A5FA] rounded-[2.5rem] p-7 text-white transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] group flex flex-col justify-between min-h-[260px]"
                     >
                         {/* Content Section */}
-                        <div className="max-w-[60%] z-10 flex flex-col items-start justify-center h-full">
-                            <h3 className="text-3xl font-extrabold tracking-tight mb-2">
+                        <div className="max-w-[65%] z-10 flex flex-col items-start justify-center h-full">
+                            <h3 className="text-2xl font-extrabold tracking-tight mb-2">
                                 Polls
                             </h3>
                             <p className="text-xs text-blue-100 leading-relaxed font-medium mb-6">
                                 Share opinions & earn points
                             </p>
-                            <span className="flex items-center gap-1.5 px-5 py-2.5 bg-white text-[#2563EB] rounded-full font-bold text-xs shadow hover:shadow-md transition-all group-hover:scale-105">
+                            <span className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#2563EB] rounded-full font-bold text-xs shadow hover:shadow-md transition-all group-hover:scale-105">
                                 Open Polls →
                             </span>
                         </div>
@@ -755,6 +760,42 @@ const Games = () => {
                         {/* 3D Polls Chart Asset */}
                         <div className="absolute right-[-10px] bottom-[-15px] w-[45%] h-[75%] z-0 transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-6">
                             <PollsSVG className="w-full h-full object-contain filter drop-shadow-[0_10px_15px_rgba(0,0,0,0.25)]" />
+                        </div>
+                    </div>
+
+                    {/* Live Quizzes Hub Box */}
+                    <div
+                        onClick={(e) => {
+                            const rect = e.currentTarget.getBoundingClientRect();
+                            const parentRect = e.currentTarget.parentElement.getBoundingClientRect();
+                            const left = ((rect.left + rect.width / 2 - parentRect.left) / parentRect.width) * 100;
+                            const top = ((rect.top + rect.height / 2 - parentRect.top) / parentRect.height) * 100;
+                            setIsZooming({ left, top });
+                            setTimeout(() => {
+                                setActiveSection('quizzes');
+                                setIsZooming(null);
+                            }, 850);
+                        }}
+                        className="relative overflow-hidden bg-gradient-to-br from-[#10B981] via-[#059669] to-[#34D399] rounded-[2.5rem] p-7 text-white transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl hover:scale-[1.02] active:scale-[0.98] group flex flex-col justify-between min-h-[260px]"
+                    >
+                        {/* Content Section */}
+                        <div className="max-w-[65%] z-10 flex flex-col items-start justify-center h-full">
+                            <h3 className="text-2xl font-extrabold tracking-tight mb-2">
+                                Quizzes
+                            </h3>
+                            <p className="text-xs text-emerald-100 leading-relaxed font-medium mb-6">
+                                Test knowledge & win points
+                            </p>
+                            <span className="flex items-center gap-1.5 px-4 py-2 bg-white text-[#059669] rounded-full font-bold text-xs shadow hover:shadow-md transition-all group-hover:scale-105">
+                                Open Quizzes →
+                            </span>
+                        </div>
+
+                        {/* Quiz Icon Asset */}
+                        <div className="absolute right-[-5px] bottom-[-10px] w-[45%] h-[75%] z-0 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 flex items-center justify-center">
+                            <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center text-white shadow-inner">
+                                <span className="text-5xl font-black">?</span>
+                            </div>
                         </div>
                     </div>
 

@@ -39,6 +39,7 @@ import AdminGameSettings from './pages/admin/AdminGameSettings';
 import AdminPhotoboothSettings from './pages/admin/AdminPhotoboothSettings';
 import AdminNavbarSettings from './pages/admin/AdminNavbarSettings';
 import AdminPolls from './pages/admin/AdminPolls';
+import AdminQuizzes from './pages/admin/AdminQuizzes';
 
 // Base path for all VE routes
 const BASE = '/virtual-events-platform/app';
@@ -114,6 +115,7 @@ function VERoutes() {
         <Route path="games" element={<AdminPoints />} />
         <Route path="survey" element={<AdminSurvey />} />
         <Route path="polls" element={<AdminPolls />} />
+        <Route path="quizzes" element={<AdminQuizzes />} />
         <Route path="users" element={<AdminUsers />} />
         <Route path="reg-settings" element={<AdminRegSettings />} />
         <Route path="game-settings" element={<AdminGameSettings />} />

@@ -11,6 +11,13 @@ class Quiz {
     });
     this.correctOptionIndex = data.correctOptionIndex !== undefined ? Number(data.correctOptionIndex) : (data.correct_option_index !== undefined ? Number(data.correct_option_index) : 0);
     this.isActive = data.isActive !== undefined ? Boolean(data.isActive) : (data.is_active !== undefined ? Boolean(data.is_active) : true);
+    this.type = data.type || 'auditorium';
+    this.chartType = data.chartType || data.chart_type || 'bar';
+    this.hideResultsUntilClosed = data.hideResultsUntilClosed !== undefined 
+      ? (data.hideResultsUntilClosed === true || String(data.hideResultsUntilClosed) === 'true') 
+      : (data.hide_results_until_closed === true || String(data.hide_results_until_closed) === 'true');
+    this.duration = data.duration !== undefined ? (parseInt(data.duration) || 0) : 0;
+    this.expiresAt = data.expiresAt || data.expires_at || null;
     this.createdAt = data.createdAt || data.created_at || new Date();
     this.updatedAt = data.updatedAt || data.updated_at || new Date();
   }
@@ -20,20 +27,25 @@ class Quiz {
     const { rows } = await query('SELECT 1 FROM ve_quizzes WHERE _id = $1', [this._id]);
     if (rows.length > 0) {
       await query(
-        'UPDATE ve_quizzes SET question = $1, options = $2, correct_option_index = $3, is_active = $4, updated_at = $5 WHERE _id = $6',
-        [this.question, JSON.stringify(this.options), this.correctOptionIndex, this.isActive, this.updatedAt, this._id]
+        'UPDATE ve_quizzes SET question = $1, options = $2, correct_option_index = $3, is_active = $4, type = $5, chart_type = $6, hide_results_until_closed = $7, duration = $8, expires_at = $9, updated_at = $10 WHERE _id = $11',
+        [this.question, JSON.stringify(this.options), this.correctOptionIndex, this.isActive, this.type, this.chartType, this.hideResultsUntilClosed, this.duration, this.expiresAt, this.updatedAt, this._id]
       );
     } else {
       await query(
-        'INSERT INTO ve_quizzes (_id, question, options, correct_option_index, is_active, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [this._id, this.question, JSON.stringify(this.options), this.correctOptionIndex, this.isActive, this.createdAt, this.updatedAt]
+        'INSERT INTO ve_quizzes (_id, question, options, correct_option_index, is_active, type, chart_type, hide_results_until_closed, duration, expires_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)',
+        [this._id, this.question, JSON.stringify(this.options), this.correctOptionIndex, this.isActive, this.type, this.chartType, this.hideResultsUntilClosed, this.duration, this.expiresAt, this.createdAt, this.updatedAt]
       );
     }
     return this;
   }
 
-  static find() {
+  static find(filter = {}) {
     let sql = 'SELECT * FROM ve_quizzes';
+    let params = [];
+    if (filter.type) {
+      sql += ' WHERE type = $1';
+      params.push(filter.type);
+    }
     let isPopulate = false;
     
     const queryObj = {
@@ -51,7 +63,7 @@ class Quiz {
       },
       then: async function(resolve, reject) {
         try {
-          const { rows } = await query(sql);
+          const { rows } = await query(sql, params);
           const quizzes = rows.map(r => new Quiz(r));
           
           if (isPopulate) {
@@ -102,6 +114,12 @@ class Quiz {
 
   static async findById(id) {
     const { rows } = await query('SELECT * FROM ve_quizzes WHERE _id = $1', [id]);
+    if (rows.length === 0) return null;
+    return new Quiz(rows[0]);
+  }
+
+  static async findByIdAndDelete(id) {
+    const { rows } = await query('DELETE FROM ve_quizzes WHERE _id = $1 RETURNING *', [id]);
     if (rows.length === 0) return null;
     return new Quiz(rows[0]);
   }

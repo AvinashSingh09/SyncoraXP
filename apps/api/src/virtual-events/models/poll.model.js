@@ -11,6 +11,12 @@ class Poll {
     });
     this.isActive = data.isActive !== undefined ? Boolean(data.isActive) : (data.is_active !== undefined ? Boolean(data.is_active) : true);
     this.type = data.type || 'auditorium';
+    this.chartType = data.chartType || data.chart_type || 'bar';
+    this.hideResultsUntilClosed = data.hideResultsUntilClosed !== undefined 
+      ? (data.hideResultsUntilClosed === true || String(data.hideResultsUntilClosed) === 'true') 
+      : (data.hide_results_until_closed === true || String(data.hide_results_until_closed) === 'true');
+    this.duration = data.duration !== undefined ? (parseInt(data.duration) || 0) : 0;
+    this.expiresAt = data.expiresAt || data.expires_at || null;
     this.createdAt = data.createdAt || data.created_at || new Date();
     this.updatedAt = data.updatedAt || data.updated_at || new Date();
   }
@@ -20,13 +26,13 @@ class Poll {
     const { rows } = await query('SELECT 1 FROM ve_polls WHERE _id = $1', [this._id]);
     if (rows.length > 0) {
       await query(
-        'UPDATE ve_polls SET question = $1, options = $2, is_active = $3, type = $4, updated_at = $5 WHERE _id = $6',
-        [this.question, JSON.stringify(this.options), this.isActive, this.type, this.updatedAt, this._id]
+        'UPDATE ve_polls SET question = $1, options = $2, is_active = $3, type = $4, chart_type = $5, hide_results_until_closed = $6, duration = $7, expires_at = $8, updated_at = $9 WHERE _id = $10',
+        [this.question, JSON.stringify(this.options), this.isActive, this.type, this.chartType, this.hideResultsUntilClosed, this.duration, this.expiresAt, this.updatedAt, this._id]
       );
     } else {
       await query(
-        'INSERT INTO ve_polls (_id, question, options, is_active, type, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-        [this._id, this.question, JSON.stringify(this.options), this.isActive, this.type, this.createdAt, this.updatedAt]
+        'INSERT INTO ve_polls (_id, question, options, is_active, type, chart_type, hide_results_until_closed, duration, expires_at, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)',
+        [this._id, this.question, JSON.stringify(this.options), this.isActive, this.type, this.chartType, this.hideResultsUntilClosed, this.duration, this.expiresAt, this.createdAt, this.updatedAt]
       );
     }
     return this;
@@ -111,6 +117,12 @@ class Poll {
 
   static async findById(id) {
     const { rows } = await query('SELECT * FROM ve_polls WHERE _id = $1', [id]);
+    if (rows.length === 0) return null;
+    return new Poll(rows[0]);
+  }
+
+  static async findByIdAndDelete(id) {
+    const { rows } = await query('DELETE FROM ve_polls WHERE _id = $1 RETURNING *', [id]);
     if (rows.length === 0) return null;
     return new Poll(rows[0]);
   }
