@@ -102,14 +102,14 @@ const testimonials = [
 ];
 
 export function LandingPage() {
-  const [activeSolution, setActiveSolution] = useState<SolutionKey>("webinar");
+  const [activeSolution, setActiveSolution] = useState<SolutionKey>("virtual");
   const [testimonialIndex, setTestimonialIndex] = useState(0);
   const solution = solutionContent[activeSolution];
 
   const getSolutionIcon = (key: SolutionKey, size = 18) => {
-    if (key === "webinar") return <MicrophoneStage size={size} weight="duotone" />;
     if (key === "virtual") return <Broadcast size={size} weight="duotone" />;
-    return <Ticket size={size} weight="duotone" />;
+    if (key === "registration") return <Ticket size={size} weight="duotone" />;
+    return <MicrophoneStage size={size} weight="duotone" />;
   };
 
   const handlePrevTestimonial = () => {
@@ -162,14 +162,14 @@ export function LandingPage() {
         <section className="landing-solutions" id="solutions" aria-labelledby="solutions-heading">
           <h2 id="solutions-heading">Designed for every live format</h2>
           <div className="solution-tabs" role="tablist" aria-label="SyncoraXP solutions">
-            <button type="button" role="tab" aria-selected={activeSolution === "webinar"} className={activeSolution === "webinar" ? "active" : ""} onClick={() => setActiveSolution("webinar")}>
-              <MicrophoneStage size={18} weight="duotone" /> Webinar service
-            </button>
             <button type="button" role="tab" aria-selected={activeSolution === "virtual"} className={activeSolution === "virtual" ? "active" : ""} onClick={() => setActiveSolution("virtual")}>
               <Broadcast size={18} weight="duotone" /> Virtual Events Platform
             </button>
             <button type="button" role="tab" aria-selected={activeSolution === "registration"} className={activeSolution === "registration" ? "active" : ""} onClick={() => setActiveSolution("registration")}>
               <Ticket size={18} weight="duotone" /> Event Registration
+            </button>
+            <button type="button" role="tab" aria-selected={activeSolution === "webinar"} className={activeSolution === "webinar" ? "active" : ""} onClick={() => setActiveSolution("webinar")}>
+              <MicrophoneStage size={18} weight="duotone" /> Webinar service
             </button>
           </div>
           <article className="solution-showcase" role="tabpanel">
