@@ -2,6 +2,7 @@ const authService = require('../services/auth.service');
 const validationResult = () => ({ isEmpty: () => true, array: () => [] });
 const User = require('../models/user.model');
 const Config = require('../models/config.model');
+const { query: dbQuery } = require('../utils/db');
 
 class AuthController {
     constructor(service) {
@@ -20,6 +21,23 @@ class AuthController {
                 success: true,
                 message: 'User registered successfully',
                 data: user
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    getProfile = async (req, res, next) => {
+        try {
+            const user = await User.findById(req.user.id || req.user._id);
+            if (!user) {
+                return res.status(404).json({ success: false, message: 'User not found' });
+            }
+            const userObj = user.toObject();
+            delete userObj.password;
+            res.json({
+                success: true,
+                user: userObj
             });
         } catch (error) {
             next(error);
@@ -217,17 +235,32 @@ class AuthController {
 
     getLeaderboard = async (req, res, next) => {
         try {
-            const topUsers = await User.find({ points: { $gt: 0 } }, 'firstName lastName points company')
-                .sort({ points: -1 })
-                .limit(25)
-                .lean();
+            // Raw SQL: fetch top 50 users who have any kind of points
+            const { rows } = await dbQuery(
+                `SELECT _id, first_name AS "firstName", last_name AS "lastName",
+                        company, points, booth_points AS "boothPoints", game_points AS "gamePoints"
+                 FROM ve_users
+                 WHERE (points > 0 OR booth_points > 0 OR game_points > 0)
+                 ORDER BY points DESC
+                 LIMIT 50`
+            );
 
-            let usersList = [...topUsers];
+            let usersList = rows;
 
+            // Ensure logged-in user appears even if outside top 50
             if (req.user) {
-                const currentUser = await User.findById(req.user.id || req.user._id, 'firstName lastName points company').lean();
-                if (currentUser && currentUser.points > 0 && !usersList.some(u => u._id.toString() === currentUser._id.toString())) {
-                    usersList.push(currentUser);
+                const currentUser = await User.findById(req.user.id || req.user._id);
+                const hasAnyPoints = currentUser && ((currentUser.points || 0) > 0 || (currentUser.boothPoints || 0) > 0 || (currentUser.gamePoints || 0) > 0);
+                if (hasAnyPoints && !usersList.some(u => (u._id || u.id)?.toString() === currentUser._id?.toString())) {
+                    usersList = [...usersList, {
+                        _id: currentUser._id,
+                        firstName: currentUser.firstName,
+                        lastName: currentUser.lastName,
+                        company: currentUser.company,
+                        points: currentUser.points || 0,
+                        boothPoints: currentUser.boothPoints || 0,
+                        gamePoints: currentUser.gamePoints || 0,
+                    }];
                 }
             }
 

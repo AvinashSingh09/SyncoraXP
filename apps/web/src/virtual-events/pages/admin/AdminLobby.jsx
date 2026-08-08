@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { configService } from '../../services/api';
+import { configService, authService } from '../../services/api';
 import { 
     FiCheckCircle, 
     FiSave, 
@@ -21,6 +21,29 @@ const AdminLobby = () => {
     const [selectedPosterId, setSelectedPosterId] = useState(null);
     const [lobbyLoading, setLobbyLoading] = useState(false);
     const [lobbyStatus, setLobbyStatus] = useState('');
+
+    // Push Announcement State
+    const [announcementText, setAnnouncementText] = useState('');
+    const [sendingAnnouncement, setSendingAnnouncement] = useState(false);
+    const [announcementStatus, setAnnouncementStatus] = useState('');
+
+    const handleBroadcastAnnouncement = async (e) => {
+        e.preventDefault();
+        if (!announcementText.trim()) return;
+        setSendingAnnouncement(true);
+        setAnnouncementStatus('');
+        try {
+            await authService.sendAnnouncement(announcementText.trim(), 'info');
+            setAnnouncementStatus('📢 Announcement pushed live to all attendees!');
+            setAnnouncementText('');
+            setTimeout(() => setAnnouncementStatus(''), 4000);
+        } catch (err) {
+            console.error('Failed to broadcast announcement', err);
+            setAnnouncementStatus('Failed to send announcement.');
+        } finally {
+            setSendingAnnouncement(false);
+        }
+    };
 
     useEffect(() => {
         const fetchLobbyLayout = async () => {
@@ -221,6 +244,44 @@ const AdminLobby = () => {
                 </button>
             </div>
 
+            {/* Broadcast Live Push Announcement Box */}
+            <div className="bg-slate-900 text-white rounded-2xl shadow-xl p-6 border border-slate-800">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="p-2.5 bg-blue-600/30 text-blue-400 rounded-xl border border-blue-500/40 text-lg">
+                        📢
+                    </div>
+                    <div>
+                        <h3 className="text-base font-black tracking-tight text-slate-100">Broadcast Live Push Announcement</h3>
+                        <p className="text-xs font-semibold text-slate-400">Instantly displays a live banner popup to all active attendees on the event platform.</p>
+                    </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row gap-3 items-stretch">
+                    <input 
+                        type="text"
+                        placeholder="Type announcement message (e.g. Keynote session starting in 5 minutes in Main Auditorium!)..."
+                        value={announcementText}
+                        onChange={(e) => setAnnouncementText(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleBroadcastAnnouncement(e); } }}
+                        className="flex-1 bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-slate-100 placeholder-slate-400 font-semibold focus:outline-none focus:border-blue-500"
+                    />
+                    <button
+                        type="button"
+                        onClick={handleBroadcastAnnouncement}
+                        disabled={sendingAnnouncement || !announcementText.trim()}
+                        className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-black px-6 py-2.5 rounded-xl transition-all shadow-md active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
+                    >
+                        {sendingAnnouncement ? 'Pushing...' : '🚀 Push Live'}
+                    </button>
+                </div>
+
+                {announcementStatus && (
+                    <p className={`text-xs font-bold mt-2.5 ${announcementStatus.includes('Failed') ? 'text-red-400' : 'text-emerald-400'}`}>
+                        {announcementStatus}
+                    </p>
+                )}
+            </div>
+
             <form onSubmit={handleLobbySave} className="flex flex-col gap-6">
                 {/* Bg image configuration */}
                 <div>
@@ -345,7 +406,6 @@ const AdminLobby = () => {
                                     left: `${point.left}%`
                                 }}
                             >
-                                {/* Hotspot Dot */}
                                 <div 
                                     className="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center cursor-pointer z-30"
                                     style={{

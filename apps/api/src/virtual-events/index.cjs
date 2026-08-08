@@ -114,6 +114,7 @@ async function registerVirtualEvents(app) {
     }
   });
   register(app, 'POST', '/auth/login', authController.login);
+  register(app, 'GET', '/auth/me', authController.getProfile, { auth: true });
 
   register(app, 'GET', '/auth/users', authController.getUsersStats, { auth: true });
   register(app, 'POST', '/auth/visit-booth/:boothId', authController.visitBooth, { auth: true });
@@ -215,6 +216,29 @@ async function registerVirtualEvents(app) {
   register(app, 'GET', '/photobooth/history', async (req, res) => res.json({ success: true, history: await PhotoboothSession.find({ userId: req.user.id }).sort({ createdAt: -1 }) }), { auth: true });
   register(app, 'POST', '/photobooth/upload-poster', async (req, res) => res.json({ success: true, session: await photobooth.uploadPoster(req.body.sessionId, req.body.posterImage) }), { auth: true });
   register(app, 'POST', '/translate', async (req, res) => res.json(await translate(req.body)));
+
+  // Admin: Reset all user points to zero
+  register(app, 'POST', '/auth/admin/reset-points', async (req, res) => {
+    try {
+      const { query: dbQuery } = require('./utils/db');
+      await dbQuery('UPDATE ve_users SET points = 0, booth_points = 0, game_points = 0, visited_booths = $1', [JSON.stringify([])]);
+      // Notify all connected clients so their UI updates
+      const io = req.app ? req.app.get('io') : null;
+      if (io) io.emit('points-reset');
+      res.json({ success: true, message: 'All user points have been reset.' });
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }, { auth: true });
+
+  // Admin: Push a live announcement to all attendees
+  register(app, 'POST', '/admin/announce', async (req, res) => {
+    const { message, type } = req.body;
+    if (!message?.trim()) return res.status(400).json({ success: false, message: 'Announcement message is required.' });
+    const io = req.app ? req.app.get('io') : null;
+    if (io) io.emit('announcement-pushed', { message: message.trim(), type: type || 'info' });
+    res.json({ success: true, message: 'Announcement sent.' });
+  }, { auth: true });
 }
 
 async function serveFile(request, reply, directory) {
@@ -235,6 +259,8 @@ async function serveFile(request, reply, directory) {
   };
   const type = mimeTypes[ext] || 'application/octet-stream';
   reply.header('Content-Disposition', 'inline');
+  reply.header('Access-Control-Allow-Origin', '*');
+  reply.header('Access-Control-Allow-Methods', 'GET, HEAD, OPTIONS');
   return reply.type(type).send(createReadStream(file));
 }
 

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { FiAward, FiCheckCircle, FiPrinter, FiRefreshCcw, FiDownload, FiInfo, FiAlertCircle, FiX } from 'react-icons/fi';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 import { surveyService, configService } from '../../services/api';
 
 const Survey = () => {
@@ -15,6 +14,29 @@ const Survey = () => {
     const [surveyActive, setSurveyActive] = useState(true);
     const [showCertificate, setShowCertificate] = useState(true);
     const [popupModal, setPopupModal] = useState(null); // { title?: string, message: string, type?: 'info' | 'error' | 'warning' }
+
+    // Custom certificate template configurations
+    const [certTemplate, setCertTemplate] = useState('');
+    const [certTextX, setCertTextX] = useState(50);
+    const [certTextY, setCertTextY] = useState(50);
+    const [certTextColor, setCertTextColor] = useState('#000000');
+    const [certTextSize, setCertTextSize] = useState(32);
+    const [certTextWeight, setCertTextWeight] = useState('bold');
+
+    // ResizeObserver for scaling attendee certificate font size
+    const certRef = React.useRef(null);
+    const [certWidth, setCertWidth] = useState(800);
+
+    useEffect(() => {
+        if (!certRef.current) return;
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                setCertWidth(entry.contentRect.width);
+            }
+        });
+        resizeObserver.observe(certRef.current);
+        return () => resizeObserver.disconnect();
+    }, [isSubmitted, certTemplate]);
 
     useEffect(() => {
         const loadSurveyData = async () => {
@@ -40,12 +62,27 @@ const Survey = () => {
                 // Fetch active status config
                 const configRes = await configService.getConfig('survey_active');
                 const certConfigRes = await configService.getConfig('survey_certificate_active');
+                
+                // Fetch certificate configurations
+                const templateRes = await configService.getConfig('survey_certificate_template');
+                const xRes = await configService.getConfig('survey_certificate_text_x');
+                const yRes = await configService.getConfig('survey_certificate_text_y');
+                const colorRes = await configService.getConfig('survey_certificate_text_color');
+                const sizeRes = await configService.getConfig('survey_certificate_text_size');
+                const weightRes = await configService.getConfig('survey_certificate_text_weight');
+
                 if (configRes.data) {
                     setSurveyActive(configRes.data.value !== 'false');
                 }
                 if (certConfigRes.data) {
                     setShowCertificate(certConfigRes.data.value !== 'false');
                 }
+                if (templateRes.data && templateRes.data.value) setCertTemplate(templateRes.data.value);
+                if (xRes.data && xRes.data.value) setCertTextX(Number(xRes.data.value) || 50);
+                if (yRes.data && yRes.data.value) setCertTextY(Number(yRes.data.value) || 50);
+                if (colorRes.data && colorRes.data.value) setCertTextColor(colorRes.data.value);
+                if (sizeRes.data && sizeRes.data.value) setCertTextSize(Number(sizeRes.data.value) || 32);
+                if (weightRes.data && weightRes.data.value) setCertTextWeight(weightRes.data.value);
             } catch (err) {
                 console.error('Failed to check survey status or questions', err);
             } finally {
@@ -87,47 +124,145 @@ const Survey = () => {
     const [isGenerating, setIsGenerating] = useState(false);
 
     const handleDownloadPDF = async () => {
-        const certElement = document.getElementById('certificate');
-        if (!certElement) return;
-
         setIsGenerating(true);
         try {
-            // Temporarily adjust styles for perfect capture
-            const originalTransform = certElement.style.transform;
-            certElement.style.transform = 'none';
+            // Native Canvas approach — avoids html2canvas oklch crash
+            const CANVAS_W = 2480; // ~A4 landscape @300dpi
+            const CANVAS_H = 1754;
 
-            const canvas = await html2canvas(certElement, {
-                scale: 3, // High resolution
-                useCORS: true,
-                backgroundColor: '#ffffff'
-            });
+            const canvas = document.createElement('canvas');
+            canvas.width = CANVAS_W;
+            canvas.height = CANVAS_H;
+            const ctx = canvas.getContext('2d');
 
-            certElement.style.transform = originalTransform;
+            if (certTemplate) {
+                // --- Custom template: draw image then overlay name ---
+                await new Promise((resolve, reject) => {
+                    const img = new Image();
+                    if (!certTemplate.startsWith('data:')) img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        // Fill white background first
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+                        // Draw template maintaining aspect ratio (object-contain logic)
+                        const imgAspect = img.naturalWidth / img.naturalHeight;
+                        const canvasAspect = CANVAS_W / CANVAS_H;
+                        let drawW = CANVAS_W, drawH = CANVAS_H, drawX = 0, drawY = 0;
+                        if (imgAspect > canvasAspect) {
+                            drawH = CANVAS_W / imgAspect;
+                            drawY = (CANVAS_H - drawH) / 2;
+                        } else {
+                            drawW = CANVAS_H * imgAspect;
+                            drawX = (CANVAS_W - drawW) / 2;
+                        }
+                        ctx.drawImage(img, drawX, drawY, drawW, drawH);
 
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('l', 'mm', 'a4'); // Landscape A4
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-
-            // Calculate scale to fit perfectly
-            const imgProps = pdf.getImageProperties(imgData);
-            const imgRatio = imgProps.width / imgProps.height;
-            const pdfRatio = pdfWidth / pdfHeight;
-
-            let finalWidth = pdfWidth;
-            let finalHeight = pdfHeight;
-
-            if (imgRatio > pdfRatio) {
-                finalHeight = pdfWidth / imgRatio;
+                        // Overlay attendee name
+                        const nameX = (certTextX / 100) * CANVAS_W;
+                        const nameY = (certTextY / 100) * CANVAS_H;
+                        ctx.font = `${certTextWeight} ${certTextSize * (CANVAS_W / 800)}px 'Helvetica Neue', Helvetica, Arial, sans-serif`;
+                        ctx.fillStyle = certTextColor;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(`${user?.firstName || ''} ${user?.lastName || ''}`.trim(), nameX, nameY);
+                        resolve();
+                    };
+                    img.onerror = reject;
+                    img.src = certTemplate;
+                });
             } else {
-                finalWidth = pdfHeight * imgRatio;
+                // --- Default HTML-style certificate drawn natively on canvas ---
+                const gold = '#bda662';
+                const dark = '#111827';
+                const blue = '#295ce8';
+                const gray = '#4b5563';
+
+                // Background
+                ctx.fillStyle = '#fffcf5';
+                ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+
+                // Double border
+                const bw = 40;
+                ctx.strokeStyle = gold;
+                ctx.lineWidth = bw;
+                ctx.strokeRect(bw / 2, bw / 2, CANVAS_W - bw, CANVAS_H - bw);
+                ctx.lineWidth = bw * 0.5;
+                ctx.strokeRect(bw * 1.5, bw * 1.5, CANVAS_W - bw * 3, CANVAS_H - bw * 3);
+
+                // Corner accents
+                const cs = 80;
+                const co = bw * 2;
+                ctx.lineWidth = 12;
+                [[co, co], [CANVAS_W - co - cs, co], [co, CANVAS_H - co - cs], [CANVAS_W - co - cs, CANVAS_H - co - cs]].forEach(([x, y]) => {
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + cs, y); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + cs); ctx.stroke();
+                });
+
+                const cx = CANVAS_W / 2;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                // CERTIFICATE title
+                ctx.font = `bold 180px serif`;
+                ctx.fillStyle = dark;
+                ctx.fillText('CERTIFICATE', cx, 440);
+
+                // OF COMPLETION
+                ctx.font = `300 90px Arial`;
+                ctx.fillStyle = gold;
+                ctx.letterSpacing = '20px';
+                ctx.fillText('OF  COMPLETION', cx, 570);
+
+                // certify that
+                ctx.font = `italic 70px Georgia`;
+                ctx.fillStyle = gray;
+                ctx.fillText('This is to proudly certify that', cx, 740);
+
+                // Attendee name
+                const fullName = (`${user?.firstName || ''} ${user?.lastName || ''}`).trim().toUpperCase();
+                ctx.font = `bold 130px 'Helvetica Neue', Arial`;
+                ctx.fillStyle = dark;
+                ctx.fillText(fullName, cx, 930);
+                ctx.lineWidth = 4;
+                ctx.strokeStyle = '#d1d5db';
+                const tw = ctx.measureText(fullName).width;
+                ctx.beginPath();
+                ctx.moveTo(cx - tw / 2, 975); ctx.lineTo(cx + tw / 2, 975);
+                ctx.stroke();
+
+                // description
+                ctx.font = `italic 60px Georgia`;
+                ctx.fillStyle = gray;
+                ctx.fillText('has successfully completed the survey and participated in', cx, 1075);
+                ctx.fillText('the interactive sessions at the', cx, 1155);
+
+                // Event name
+                ctx.font = `bold 90px Arial`;
+                ctx.fillStyle = blue;
+                ctx.fillText('Virtual Event 2026', cx, 1290);
+
+                // Date + Organizer line
+                const dateStr = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                ctx.font = `600 55px Arial`;
+                ctx.fillStyle = gray;
+                ctx.fillText(dateStr, cx - 600, 1600);
+                ctx.fillText('Organizer', cx + 600, 1600);
+
+                // Signature line
+                ctx.strokeStyle = dark;
+                ctx.lineWidth = 3;
+                [[cx - 850, cx - 350], [cx + 350, cx + 850]].forEach(([x1, x2]) => {
+                    ctx.beginPath(); ctx.moveTo(x1, 1560); ctx.lineTo(x2, 1560); ctx.stroke();
+                });
             }
 
-            const x = (pdfWidth - finalWidth) / 2;
-            const y = (pdfHeight - finalHeight) / 2;
-
-            pdf.addImage(imgData, 'PNG', x, y, finalWidth, finalHeight);
-            pdf.save(`${user?.firstName || 'User'}_Certificate.pdf`);
+            // Export canvas → PDF
+            const imgData = canvas.toDataURL('image/jpeg', 0.95);
+            const pdf = new jsPDF('l', 'mm', 'a4');
+            const pw = pdf.internal.pageSize.getWidth();
+            const ph = pdf.internal.pageSize.getHeight();
+            pdf.addImage(imgData, 'JPEG', 0, 0, pw, ph);
+            pdf.save(`${user?.firstName || 'Certificate'}_Certificate.pdf`);
         } catch (err) {
             console.error('Error generating PDF', err);
             setPopupModal({
@@ -317,63 +452,92 @@ const Survey = () => {
                         </div>
 
                         {/* Certificate Container */}
-                        <div id="certificate" className="bg-[#ffffff] p-2 w-full max-w-[800px] aspect-[1.414/1] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] rounded relative print:shadow-none print:w-[100vw] print:h-[100vh] print:max-w-none print:p-0">
-                            {/* Inner Border */}
-                            <div className="w-full h-full border-[12px] border-double border-[#bda662] p-8 flex flex-col items-center justify-center relative bg-[#fffcf5]">
-                                {/* Corner Decorations */}
-                                <div className="absolute top-4 left-4 w-12 h-12 border-t-4 border-l-4 border-[#bda662]"></div>
-                                <div className="absolute top-4 right-4 w-12 h-12 border-t-4 border-r-4 border-[#bda662]"></div>
-                                <div className="absolute bottom-4 left-4 w-12 h-12 border-b-4 border-l-4 border-[#bda662]"></div>
-                                <div className="absolute bottom-4 right-4 w-12 h-12 border-b-4 border-r-4 border-[#bda662]"></div>
-
-                                <FiAward className="w-20 h-20 text-[#bda662] mb-6" />
-
-                                <h1 className="text-5xl font-serif text-[#111827] tracking-wider mb-2 text-center">
-                                    CERTIFICATE
-                                </h1>
-                                <p className="text-xl text-[#bda662] tracking-[0.3em] font-medium mb-10">
-                                    OF COMPLETION
-                                </p>
-
-                                <p className="text-[#4b5563] italic mb-4 font-serif text-lg">
-                                    This is to proudly certify that
-                                </p>
-
-                                <h2 className="text-4xl font-bold text-[#111827] mb-4 border-b-2 border-[#d1d5db] pb-2 px-12 text-center uppercase tracking-wide">
-                                    {user?.firstName} {user?.lastName}
-                                </h2>
-
-                                <p className="text-[#4b5563] italic mb-6 font-serif text-lg text-center max-w-lg">
-                                    has successfully completed the survey and actively participated in the interactive sessions at the
-                                </p>
-
-                                <h3 className="text-2xl font-bold text-[#295ce8] mb-12 tracking-wide uppercase">
-                                    Virtual Event 2026
-                                </h3>
-
-                                <div className="w-full px-16 flex justify-between items-end mt-auto">
-                                    <div className="flex flex-col items-center">
-                                        <div className="w-32 border-b border-[#1f2937] mb-2"></div>
-                                        <p className="text-sm font-semibold text-[#4b5563] uppercase tracking-widest">Date</p>
-                                        <p className="text-sm text-[#6b7280] mt-1">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
-                                    </div>
-
-                                    {/* Event Logo Placeholder */}
-                                    <div className="flex items-center gap-2 text-[#295ce8] opacity-80">
-                                        <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
-                                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill="none" />
-                                        </svg>
-                                        <span className="text-xl font-bold text-[#1f2937] tracking-wide">Virtual<span className="text-[#295ce8]">Event</span></span>
-                                    </div>
-
-                                    <div className="flex flex-col items-center">
-                                        <div className="w-32 border-b border-[#1f2937] mb-2 relative h-10 flex items-end justify-center">
-                                            <span className="text-2xl text-[#1f2937] opacity-70 mb-1" style={{ fontFamily: "'Brush Script MT', 'Bradley Hand', cursive" }}>Organizer</span>
-                                        </div>
-                                        <p className="text-sm font-semibold text-[#4b5563] uppercase tracking-widest">Organizer</p>
+                        <div id="certificate" ref={certRef} className="bg-[#ffffff] w-full max-w-[800px] aspect-[1.414/1] shadow-[0_25px_50px_-12px_rgba(0,0,0,0.25)] rounded relative overflow-hidden print:shadow-none print:w-[100vw] print:h-[100vh] print:max-w-none print:p-0 select-none">
+                            {certTemplate ? (
+                                <div className="w-full h-full relative">
+                                    <img 
+                                        src={certTemplate} 
+                                        alt="Certificate Background" 
+                                        className="w-full h-full object-contain"
+                                        crossOrigin={certTemplate.startsWith('data:') ? undefined : 'anonymous'}
+                                    />
+                                    {/* Overlay Attendee Name */}
+                                    <div 
+                                        style={{
+                                            position: 'absolute',
+                                            left: `${certTextX}%`,
+                                            top: `${certTextY}%`,
+                                            transform: 'translate(-50%, -50%)',
+                                            color: certTextColor,
+                                            fontSize: `${certTextSize * (certWidth / 800)}px`,
+                                            fontWeight: certTextWeight,
+                                            textAlign: 'center',
+                                            whiteSpace: 'nowrap',
+                                            fontFamily: "'Outfit', 'Inter', 'Helvetica Neue', sans-serif",
+                                            textShadow: '0 0 2px rgba(255,255,255,0.4)'
+                                        }}
+                                    >
+                                        {user?.firstName} {user?.lastName}
                                     </div>
                                 </div>
-                            </div>
+                            ) : (
+                                /* Default HTML Certificate */
+                                <div className="w-full h-full border-[12px] border-double border-[#bda662] p-8 flex flex-col items-center justify-center relative bg-[#fffcf5] m-2" style={{ width: 'calc(100% - 16px)', height: 'calc(100% - 16px)' }}>
+                                    {/* Corner Decorations */}
+                                    <div className="absolute top-4 left-4 w-12 h-12 border-t-4 border-l-4 border-[#bda662]"></div>
+                                    <div className="absolute top-4 right-4 w-12 h-12 border-t-4 border-r-4 border-[#bda662]"></div>
+                                    <div className="absolute bottom-4 left-4 w-12 h-12 border-b-4 border-l-4 border-[#bda662]"></div>
+                                    <div className="absolute bottom-4 right-4 w-12 h-12 border-b-4 border-r-4 border-[#bda662]"></div>
+
+                                    <FiAward className="w-20 h-20 text-[#bda662] mb-6" />
+
+                                    <h1 className="text-5xl font-serif text-[#111827] tracking-wider mb-2 text-center">
+                                        CERTIFICATE
+                                    </h1>
+                                    <p className="text-xl text-[#bda662] tracking-[0.3em] font-medium mb-10">
+                                        OF COMPLETION
+                                    </p>
+
+                                    <p className="text-[#4b5563] italic mb-4 font-serif text-lg">
+                                        This is to proudly certify that
+                                    </p>
+
+                                    <h2 className="text-4xl font-bold text-[#111827] mb-4 border-b-2 border-[#d1d5db] pb-2 px-12 text-center uppercase tracking-wide">
+                                        {user?.firstName} {user?.lastName}
+                                    </h2>
+
+                                    <p className="text-[#4b5563] italic mb-6 font-serif text-lg text-center max-w-lg">
+                                        has successfully completed the survey and actively participated in the interactive sessions at the
+                                    </p>
+
+                                    <h3 className="text-2xl font-bold text-[#295ce8] mb-12 tracking-wide uppercase">
+                                        Virtual Event 2026
+                                    </h3>
+
+                                    <div className="w-full px-16 flex justify-between items-end mt-auto">
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-32 border-b border-[#1f2937] mb-2"></div>
+                                            <p className="text-sm font-semibold text-[#4b5563] uppercase tracking-widest">Date</p>
+                                            <p className="text-sm text-[#6b7280] mt-1">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+                                        </div>
+
+                                        {/* Event Logo Placeholder */}
+                                        <div className="flex items-center gap-2 text-[#295ce8] opacity-80">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" className="w-8 h-8">
+                                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" fill="none" />
+                                            </svg>
+                                            <span className="text-xl font-bold text-[#1f2937] tracking-wide">Virtual<span className="text-[#295ce8]">Event</span></span>
+                                        </div>
+
+                                        <div className="flex flex-col items-center">
+                                            <div className="w-32 border-b border-[#1f2937] mb-2 relative h-10 flex items-end justify-center">
+                                                <span className="text-2xl text-[#1f2937] opacity-70 mb-1" style={{ fontFamily: "'Brush Script MT', 'Bradley Hand', cursive" }}>Organizer</span>
+                                            </div>
+                                            <p className="text-sm font-semibold text-[#4b5563] uppercase tracking-widest">Organizer</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <style dangerouslySetInnerHTML={{ __html: `

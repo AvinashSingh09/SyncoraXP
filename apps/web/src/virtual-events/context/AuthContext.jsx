@@ -1,5 +1,6 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import socket from '../services/socket';
+import { authService } from '../services/api';
 
 const AuthContext = createContext(null);
 
@@ -8,13 +9,26 @@ export const AuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-        
-        if (token && storedUser) {
-            setUser(JSON.parse(storedUser));
-        }
-        setLoading(false);
+        const initAuth = async () => {
+            const token = localStorage.getItem('token');
+            const storedUser = localStorage.getItem('user');
+            
+            if (token && storedUser) {
+                const parsed = JSON.parse(storedUser);
+                setUser(parsed);
+                try {
+                    const res = await authService.getProfile();
+                    if (res.data && res.data.user) {
+                        setUser(res.data.user);
+                        localStorage.setItem('user', JSON.stringify(res.data.user));
+                    }
+                } catch (err) {
+                    console.error('Failed to sync profile on mount', err);
+                }
+            }
+            setLoading(false);
+        };
+        initAuth();
     }, []);
 
     useEffect(() => {

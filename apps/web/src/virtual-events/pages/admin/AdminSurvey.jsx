@@ -18,7 +18,8 @@ import {
     FiSearch,
     FiMail,
     FiBriefcase,
-    FiMapPin
+    FiMapPin,
+    FiAward
 } from 'react-icons/fi';
 
 const AdminSurvey = () => {
@@ -32,6 +33,30 @@ const AdminSurvey = () => {
     const [showCertificate, setShowCertificate] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
     
+    // Custom Certificate configuration states
+    const [certTemplate, setCertTemplate] = useState('');
+    const [certTextX, setCertTextX] = useState(50);
+    const [certTextY, setCertTextY] = useState(50);
+    const [certTextColor, setCertTextColor] = useState('#000000');
+    const [certTextSize, setCertTextSize] = useState(32);
+    const [certTextWeight, setCertTextWeight] = useState('bold');
+    const [savingCert, setSavingCert] = useState(false);
+
+    // ResizeObserver for scaling preview font size
+    const previewRef = React.useRef(null);
+    const [previewWidth, setPreviewWidth] = useState(800);
+
+    useEffect(() => {
+        if (!previewRef.current) return;
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (let entry of entries) {
+                setPreviewWidth(entry.contentRect.width);
+            }
+        });
+        resizeObserver.observe(previewRef.current);
+        return () => resizeObserver.disconnect();
+    }, [activeTab, certTemplate]);
+
     const getInitials = (first, last) => {
         const f = first ? first.charAt(0) : '';
         const l = last ? last.charAt(0) : '';
@@ -59,6 +84,14 @@ const AdminSurvey = () => {
             const configRes = await configService.getConfig('survey_active');
             const certConfigRes = await configService.getConfig('survey_certificate_active');
             
+            // Custom certificate configurations
+            const templateRes = await configService.getConfig('survey_certificate_template');
+            const xRes = await configService.getConfig('survey_certificate_text_x');
+            const yRes = await configService.getConfig('survey_certificate_text_y');
+            const colorRes = await configService.getConfig('survey_certificate_text_color');
+            const sizeRes = await configService.getConfig('survey_certificate_text_size');
+            const weightRes = await configService.getConfig('survey_certificate_text_weight');
+            
             if (qRes.data && qRes.data.success) {
                 setQuestions(qRes.data.data);
             }
@@ -71,6 +104,14 @@ const AdminSurvey = () => {
             if (certConfigRes.data) {
                 setShowCertificate(certConfigRes.data.value !== 'false');
             }
+            
+            // Set custom certificate configs
+            if (templateRes.data && templateRes.data.value) setCertTemplate(templateRes.data.value);
+            if (xRes.data && xRes.data.value) setCertTextX(Number(xRes.data.value) || 50);
+            if (yRes.data && yRes.data.value) setCertTextY(Number(yRes.data.value) || 50);
+            if (colorRes.data && colorRes.data.value) setCertTextColor(colorRes.data.value);
+            if (sizeRes.data && sizeRes.data.value) setCertTextSize(Number(sizeRes.data.value) || 32);
+            if (weightRes.data && weightRes.data.value) setCertTextWeight(weightRes.data.value);
         } catch (err) {
             console.error('Failed to load admin survey data', err);
         } finally {
@@ -101,6 +142,48 @@ const AdminSurvey = () => {
         } catch (error) {
             console.error('Failed to update certificate status', error);
             alert('Failed to update certificate status.');
+        }
+    };
+
+    const handleTemplateUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onloadend = async () => {
+            try {
+                const base64Data = reader.result;
+                const res = await configService.uploadImage(base64Data);
+                if (res.data && res.data.url) {
+                    setCertTemplate(res.data.url);
+                } else {
+                    setCertTemplate(base64Data);
+                }
+            } catch (err) {
+                console.error('Failed to upload certificate image', err);
+                setCertTemplate(reader.result);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleSaveCertificateSettings = async () => {
+        setSavingCert(true);
+        try {
+            await Promise.all([
+                configService.setConfig('survey_certificate_template', certTemplate),
+                configService.setConfig('survey_certificate_text_x', String(certTextX)),
+                configService.setConfig('survey_certificate_text_y', String(certTextY)),
+                configService.setConfig('survey_certificate_text_color', certTextColor),
+                configService.setConfig('survey_certificate_text_size', String(certTextSize)),
+                configService.setConfig('survey_certificate_text_weight', certTextWeight)
+            ]);
+            alert('Certificate settings saved successfully!');
+        } catch (err) {
+            console.error('Failed to save certificate configurations', err);
+            alert('Failed to save certificate settings.');
+        } finally {
+            setSavingCert(false);
         }
     };
 
@@ -407,11 +490,24 @@ const AdminSurvey = () => {
                             <FiSettings className="w-4 h-4" />
                             Manage Questions
                         </button>
+                        {showCertificate && (
+                            <button
+                                onClick={() => setActiveTab('certificate')}
+                                className={`flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                                    activeTab === 'certificate' 
+                                        ? 'bg-white text-gray-900 shadow-sm' 
+                                        : 'text-gray-500 hover:text-gray-800'
+                                }`}
+                            >
+                                <FiAward className="w-4 h-4" />
+                                Certificate Settings
+                            </button>
+                        )}
                     </div>
                 </div>
             </div>
 
-            {activeTab === 'analytics' ? (
+            {activeTab === 'analytics' && (
                 <>
                     {/* Stats Dashboard Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -686,7 +782,9 @@ const AdminSurvey = () => {
                         </div>
                     </div>
                 </>
-            ) : (
+            )}
+
+            {activeTab === 'questions' && (
                 /* Manage Questions Tab */
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Add / Edit Question Form */}
@@ -810,6 +908,191 @@ const AdminSurvey = () => {
                                     </div>
                                 ))
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'certificate' && (
+                /* Certificate Settings Tab */
+                <div className="space-y-6">
+                    <div className="bg-white p-6 rounded-3xl border border-gray-150 shadow-md space-y-6">
+                        <div>
+                            <h3 className="text-lg font-bold text-gray-800 tracking-tight">Certificate Settings</h3>
+                            <p className="text-xs text-gray-500 mt-1">Upload a custom certificate background image and click on it to position where the attendee's name should be rendered.</p>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                            {/* Customization Controls */}
+                            <div className="space-y-4">
+                                {/* Upload Image */}
+                                <div className="space-y-1.5">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest pl-0.5">Upload Background Template</label>
+                                    <input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={handleTemplateUpload}
+                                        className="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none font-semibold shadow-sm"
+                                    />
+                                    {certTemplate && (
+                                        <button
+                                            type="button"
+                                            onClick={() => setCertTemplate('')}
+                                            className="text-xs text-red-500 font-bold hover:underline mt-1 block"
+                                        >
+                                            Reset to Default Certificate
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* Font Size slider */}
+                                <div className="space-y-1.5">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest pl-0.5">Font Size ({certTextSize}px)</label>
+                                    <input 
+                                        type="range" 
+                                        min="16" 
+                                        max="80" 
+                                        value={certTextSize}
+                                        onChange={(e) => setCertTextSize(Number(e.target.value))}
+                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                    />
+                                </div>
+
+                                {/* Color picker */}
+                                <div className="space-y-1.5">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest pl-0.5">Text Color</label>
+                                    <div className="flex items-center gap-2">
+                                        <div className="relative w-9 h-9 shrink-0 rounded-xl border border-gray-300 overflow-hidden shadow-sm cursor-pointer" style={{ backgroundColor: certTextColor }}>
+                                            <input 
+                                                type="color" 
+                                                value={certTextColor}
+                                                onChange={(e) => setCertTextColor(e.target.value)}
+                                                className="opacity-0 absolute inset-0 w-full h-full cursor-pointer"
+                                                title="Choose color"
+                                            />
+                                        </div>
+                                        <input 
+                                            type="text" 
+                                            value={certTextColor}
+                                            onChange={(e) => setCertTextColor(e.target.value)}
+                                            className="flex-1 bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-bold text-gray-800 uppercase focus:outline-none focus:border-blue-500"
+                                            placeholder="#000000"
+                                        />
+                                    </div>
+                                    <div className="flex gap-1.5 pt-1">
+                                        {['#000000', '#1E3A8A', '#047857', '#B91C1C', '#D97706', '#4B5563'].map(color => (
+                                            <button
+                                                key={color}
+                                                type="button"
+                                                onClick={() => setCertTextColor(color)}
+                                                className={`w-6 h-6 rounded-full border transition-transform hover:scale-110 cursor-pointer ${certTextColor.toLowerCase() === color.toLowerCase() ? 'ring-2 ring-blue-500 ring-offset-1 border-white' : 'border-gray-200'}`}
+                                                style={{ backgroundColor: color }}
+                                                title={color}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Font Weight */}
+                                <div className="space-y-1.5">
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest pl-0.5">Font Weight</label>
+                                    <select
+                                        value={certTextWeight}
+                                        onChange={(e) => setCertTextWeight(e.target.value)}
+                                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-xs text-gray-800 focus:outline-none font-semibold shadow-sm cursor-pointer"
+                                    >
+                                        <option value="normal">Normal</option>
+                                        <option value="bold">Bold</option>
+                                        <option value="bolder">Bolder</option>
+                                    </select>
+                                </div>
+
+                                {/* Manual coordinate inputs */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest pl-0.5">X Position (%)</label>
+                                        <input 
+                                            type="number" 
+                                            min="0" 
+                                            max="100" 
+                                            value={Math.round(certTextX)}
+                                            onChange={(e) => setCertTextX(Math.max(0, Math.min(100, Number(e.target.value))))}
+                                            className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold text-gray-800"
+                                        />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest pl-0.5">Y Position (%)</label>
+                                        <input 
+                                            type="number" 
+                                            min="0" 
+                                            max="100" 
+                                            value={Math.round(certTextY)}
+                                            onChange={(e) => setCertTextY(Math.max(0, Math.min(100, Number(e.target.value))))}
+                                            className="w-full bg-white border border-gray-200 rounded-xl px-3 py-2 text-xs font-semibold text-gray-800"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Save Settings */}
+                                <button
+                                    onClick={handleSaveCertificateSettings}
+                                    disabled={savingCert}
+                                    className="w-full py-3 bg-[#295ce8] hover:bg-blue-700 text-white rounded-2xl font-bold text-xs uppercase tracking-wider shadow-md transition-all cursor-pointer disabled:opacity-50 mt-4"
+                                >
+                                    {savingCert ? 'Saving Settings...' : 'Save Certificate Settings'}
+                                </button>
+                            </div>
+
+                            {/* Live Interactive Preview */}
+                            <div className="lg:col-span-2 space-y-4">
+                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest pl-0.5">Interactive Preview (Click template to position name)</label>
+                                
+                                {certTemplate ? (
+                                    <div className="border border-gray-200 rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center p-2 relative shadow-inner">
+                                        <div 
+                                            ref={previewRef}
+                                            className="relative w-full aspect-[1.414/1] bg-white rounded overflow-hidden select-none border border-gray-300 cursor-crosshair"
+                                            onClick={(e) => {
+                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                const x = ((e.clientX - rect.left) / rect.width) * 100;
+                                                const y = ((e.clientY - rect.top) / rect.height) * 100;
+                                                setCertTextX(x);
+                                                setCertTextY(y);
+                                            }}
+                                        >
+                                            <img 
+                                                src={certTemplate} 
+                                                alt="Certificate Template Preview" 
+                                                className="w-full h-full object-contain pointer-events-none"
+                                            />
+                                            {/* Floating dynamic name preview */}
+                                            <div 
+                                                style={{
+                                                    position: 'absolute',
+                                                    left: `${certTextX}%`,
+                                                    top: `${certTextY}%`,
+                                                    transform: 'translate(-50%, -50%)',
+                                                    color: certTextColor,
+                                                    fontSize: `${certTextSize * (previewWidth / 800)}px`,
+                                                    fontWeight: certTextWeight,
+                                                    textAlign: 'center',
+                                                    whiteSpace: 'nowrap',
+                                                    fontFamily: "'Outfit', 'Inter', sans-serif",
+                                                    pointerEvents: 'none',
+                                                    textShadow: '0 0 2px rgba(255,255,255,0.8), 0 0 5px rgba(255,255,255,0.5)'
+                                                }}
+                                            >
+                                                John Doe
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="border-2 border-dashed border-gray-300 rounded-2xl p-12 text-center text-gray-400 text-xs font-semibold bg-gray-50/50 flex flex-col items-center justify-center gap-2 h-[300px]">
+                                        <span>No custom background template uploaded yet.</span>
+                                        <span className="text-[10px] text-gray-400 font-normal">If saved, the event will use the default HTML certificate template.</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
