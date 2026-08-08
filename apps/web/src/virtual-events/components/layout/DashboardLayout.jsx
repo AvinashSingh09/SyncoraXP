@@ -12,7 +12,7 @@ import { BOOTH_ADMINS } from '../../config/boothAdmins';
 import UserDashboardModal from '../UserDashboardModal';
 
 const DashboardLayout = () => {
-    const { user, logout } = useAuth();
+    const { user, logout, updateUser } = useAuth();
     const navigate = useNavigate();
     const isBoothAdmin = user && (
         BOOTH_ADMINS[user.email?.toLowerCase().trim()] ||
@@ -23,7 +23,22 @@ const DashboardLayout = () => {
     const [showChat, setShowChat] = useState(isBoothAdmin);
     const [requestedRoomName, setRequestedRoomName] = useState(null);
     const [requestedUser, setRequestedUser] = useState(null);
-    const [notifications, setNotifications] = useState([]);
+    const [notifications, setNotifications] = useState(() => {
+        try {
+            const saved = localStorage.getItem(`ve_notifications_${user?.id || user?._id || 'guest'}`);
+            return saved ? JSON.parse(saved) : [];
+        } catch (e) {
+            return [];
+        }
+    });
+
+    React.useEffect(() => {
+        if (user) {
+            try {
+                localStorage.setItem(`ve_notifications_${user.id || user._id}`, JSON.stringify(notifications.slice(0, 30)));
+            } catch (e) {}
+        }
+    }, [notifications, user]);
     const [showNotifications, setShowNotifications] = useState(false);
     const [usersList, setUsersList] = useState([]);
     const [showAttendees, setShowAttendees] = useState(false);
@@ -31,11 +46,13 @@ const DashboardLayout = () => {
     const [showLeaderboard, setShowLeaderboard] = useState(false);
     const [leaderboardData, setLeaderboardData] = useState([]);
     const [loadingLeaderboard, setLoadingLeaderboard] = useState(false);
+    const [leaderboardTab, setLeaderboardTab] = useState('overall'); // 'overall' | 'expo' | 'arcade'
     const [showUserDashboard, setShowUserDashboard] = useState(false);
     const [isNavHovered, setIsNavHovered] = useState(false);
     const [layoutConfigs, setLayoutConfigs] = useState({});
     const [showBagModal, setShowBagModal] = useState(false);
     const [bagItems, setBagItems] = useState(() => getUserBagItems());
+    const [liveAnnouncement, setLiveAnnouncement] = useState(null); // { message: string, type: string }
 
     React.useEffect(() => {
         const syncBag = () => {
@@ -132,43 +149,10 @@ const DashboardLayout = () => {
                 else if (Array.isArray(res.data.users)) list = res.data.users;
                 else if (Array.isArray(res.data.leaderboard)) list = res.data.leaderboard;
             }
-
-            // Ensure user points from active context/user state are included if missing
-            if (user && (user.points || 0) > 0) {
-                const userId = (user._id || user.id)?.toString();
-                const exists = list.some(u => (u._id || u.id)?.toString() === userId);
-                if (!exists) {
-                    list.push({
-                        _id: user._id || user.id || 'me',
-                        firstName: user.firstName || 'You',
-                        lastName: user.lastName || '',
-                        company: user.company || 'Attendee',
-                        points: user.points
-                    });
-                } else {
-                    // Update user's points in the list if higher in context
-                    list = list.map(u => {
-                        if ((u._id || u.id)?.toString() === userId) {
-                            return { ...u, points: Math.max(u.points || 0, user.points || 0) };
-                        }
-                        return u;
-                    });
-                }
-            }
-
-            list.sort((a, b) => (b.points || 0) - (a.points || 0));
             setLeaderboardData(list);
         } catch (err) {
             console.error('Failed to load leaderboard', err);
-            if (user && (user.points || 0) > 0) {
-                setLeaderboardData([{
-                    _id: user._id || user.id || 'me',
-                    firstName: user.firstName || 'You',
-                    lastName: user.lastName || '',
-                    company: user.company || 'Attendee',
-                    points: user.points
-                }]);
-            }
+            setLeaderboardData([]);
         } finally {
             setLoadingLeaderboard(false);
         }
@@ -260,10 +244,46 @@ const DashboardLayout = () => {
             }
         };
 
+        const handleAnnouncementPushed = (data) => {
+            if (data && data.message) {
+                setLiveAnnouncement(data);
+                setTimeout(() => {
+                    setLiveAnnouncement(null);
+                }, 8000);
+
+                setNotifications(prev => [
+                    {
+                        id: 'announcement-' + Date.now(),
+                        isAnnouncement: true,
+                        senderName: 'Organizer Announcement',
+                        text: data.message,
+                        createdAt: new Date().toISOString(),
+                        read: false
+                    },
+                    ...prev
+                ]);
+            }
+        };
+
+        const handlePointsReset = () => {
+            // Reset local user points in AuthContext & localStorage
+            if (user) {
+                const updated = { ...user, points: 0, boothPoints: 0, gamePoints: 0 };
+                if (updateUser) {
+                    updateUser(updated);
+                }
+            }
+            fetchLeaderboard();
+        };
+
         socket.on('global-new-message', handleGlobalNewMessage);
+        socket.on('announcement-pushed', handleAnnouncementPushed);
+        socket.on('points-reset', handlePointsReset);
 
         return () => {
             socket.off('global-new-message', handleGlobalNewMessage);
+            socket.off('announcement-pushed', handleAnnouncementPushed);
+            socket.off('points-reset', handlePointsReset);
         };
     }, [user]);
 
@@ -370,6 +390,29 @@ const DashboardLayout = () => {
 
     return (
         <div className="h-screen w-full flex flex-col bg-gray-50 overflow-hidden font-sans relative">
+            {/* Live Announcement Toast Popup */}
+            {liveAnnouncement && (
+                <div className="fixed top-24 right-6 z-[9999] max-w-md w-full bg-slate-900 text-white p-4 rounded-2xl shadow-2xl border border-slate-700/80 flex items-start gap-3.5 animate-bounce-short transition-all">
+                    <div className="p-2.5 bg-blue-600/30 text-blue-400 rounded-xl border border-blue-500/40 text-lg shrink-0">
+                        📢
+                    </div>
+                    <div className="flex-1 min-w-0 pr-2">
+                        <div className="flex items-center justify-between gap-2 mb-0.5">
+                            <span className="text-[10px] font-black uppercase tracking-wider text-blue-400">Live Announcement</span>
+                            <span className="text-[9px] font-bold text-slate-400">Just now</span>
+                        </div>
+                        <p className="text-xs font-bold leading-relaxed text-slate-100">{liveAnnouncement.message}</p>
+                    </div>
+                    <button 
+                        onClick={() => setLiveAnnouncement(null)} 
+                        className="text-slate-400 hover:text-white font-black text-sm p-1 cursor-pointer"
+                        title="Dismiss"
+                    >
+                        ✕
+                    </button>
+                </div>
+            )}
+
             {/* Top Hover Trigger Area (only needed in hover mode) */}
             {!isStickyMode && (
                 <div
@@ -510,25 +553,51 @@ const DashboardLayout = () => {
                                         No new notifications
                                     </div>
                                 ) : (
-                                    notifications.map(n => (
-                                        <button
-                                            key={n.id}
-                                            onClick={() => {
-                                                n.read = true;
-                                                setShowNotifications(false);
-                                                window.dispatchEvent(new CustomEvent('open-chat', { detail: { roomName: n.roomName } }));
-                                            }}
-                                            className="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-start gap-3 border-b border-gray-100 transition-colors cursor-pointer"
-                                        >
-                                            <div className="w-8 h-8 rounded-full bg-[#1e70e9] text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-inner">
-                                                {n.senderName ? n.senderName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'SS'}
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-bold text-gray-800">{n.senderName}</p>
-                                                <p className="text-[11px] text-gray-500 font-semibold mt-0.5">{n.text || 'sent you a Message'}</p>
-                                            </div>
-                                        </button>
-                                    ))
+                                    notifications.map(n => {
+                                        const getTimeAgo = (dateStr) => {
+                                            if (!dateStr) return 'Just now';
+                                            const seconds = Math.max(0, Math.floor((new Date() - new Date(dateStr)) / 1000));
+                                            if (seconds < 45) return 'Just now';
+                                            const minutes = Math.floor(seconds / 60);
+                                            if (minutes < 60) return `${minutes}m ago`;
+                                            const hours = Math.floor(minutes / 60);
+                                            if (hours < 24) return `${hours}h ago`;
+                                            return `${Math.floor(hours / 24)}d ago`;
+                                        };
+
+                                        return (
+                                            <button
+                                                key={n.id}
+                                                onClick={() => {
+                                                    n.read = true;
+                                                    setShowNotifications(false);
+                                                    if (!n.isAnnouncement) {
+                                                        window.dispatchEvent(new CustomEvent('open-chat', { detail: { roomName: n.roomName } }));
+                                                    }
+                                                }}
+                                                className={`w-full text-left px-4 py-3 hover:bg-gray-50 flex items-start gap-3 border-b border-gray-100 transition-colors cursor-pointer ${!n.read ? 'bg-blue-50/40' : ''}`}
+                                            >
+                                                {n.isAnnouncement ? (
+                                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-md">
+                                                        📢
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded-full bg-[#1e70e9] text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-inner">
+                                                        {n.senderName ? n.senderName.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'SS'}
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-1">
+                                                        <p className="text-xs font-black text-gray-800 flex items-center gap-1">
+                                                            {n.isAnnouncement ? '📢 Announcement' : n.senderName}
+                                                        </p>
+                                                        <span className="text-[9px] font-bold text-gray-400 shrink-0">{getTimeAgo(n.createdAt)}</span>
+                                                    </div>
+                                                    <p className="text-[11px] text-gray-600 font-semibold mt-0.5 leading-snug line-clamp-2">{n.text || 'sent you a Message'}</p>
+                                                </div>
+                                            </button>
+                                        );
+                                    })
                                 )}
                             </div>
                         )}
@@ -737,6 +806,27 @@ const DashboardLayout = () => {
                             </button>
                         </div>
 
+                        {/* Category Tabs */}
+                        <div className="flex gap-1 px-4 pt-3 pb-1 bg-white border-b border-gray-100">
+                            {[
+                                { key: 'overall', label: '🏆 Overall', field: 'points' },
+                                { key: 'expo',    label: '🏢 Expo Hall', field: 'boothPoints' },
+                                { key: 'arcade',  label: '🎮 Arcade', field: 'gamePoints' },
+                            ].map(tab => (
+                                <button
+                                    key={tab.key}
+                                    onClick={() => setLeaderboardTab(tab.key)}
+                                    className={`flex-1 py-1.5 rounded-lg text-[11px] font-black transition-all cursor-pointer ${
+                                        leaderboardTab === tab.key
+                                            ? 'bg-amber-500 text-white shadow'
+                                            : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+
                         {/* List */}
                         <div className="flex-1 overflow-y-auto p-4 bg-gray-50/50">
                             {loadingLeaderboard ? (
@@ -750,41 +840,67 @@ const DashboardLayout = () => {
                                 </div>
                             ) : (
                                 <div className="flex flex-col gap-2.5">
-                                    {leaderboardData.map((player, index) => {
-                                        const rank = index + 1;
-                                        const isMe = (player._id || player.id) === (user?._id || user?.id);
-                                        let rankBadge = rank;
-                                        if (rank === 1) rankBadge = '🥇';
-                                        if (rank === 2) rankBadge = '🥈';
-                                        if (rank === 3) rankBadge = '🥉';
+                                    {(() => {
+                                        const list = [...leaderboardData]
+                                            .map(player => {
+                                                let val = player.points || 0;
+                                                if (leaderboardTab === 'expo') {
+                                                    val = player.boothPoints || 0;
+                                                } else if (leaderboardTab === 'arcade') {
+                                                    val = player.gamePoints || 0;
+                                                }
+                                                return { ...player, displayPoints: val };
+                                            })
+                                            .filter(player => player.displayPoints > 0)
+                                            .sort((a, b) => b.displayPoints - a.displayPoints);
 
-                                        return (
-                                            <div
-                                                key={player._id || player.id || index}
-                                                className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${isMe
-                                                    ? 'bg-amber-50/90 border-amber-300 shadow-md ring-2 ring-amber-400/50 scale-[1.02]'
-                                                    : 'bg-white border-gray-100 shadow-sm hover:border-gray-200'
-                                                    }`}
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    <span className="text-lg font-black w-8 text-center">{rankBadge}</span>
-                                                    <div className="w-9 h-9 rounded-full bg-[#3b60f6] text-white font-bold flex items-center justify-center text-xs shadow-inner">
-                                                        {getInitials(player.firstName, player.lastName)}
+                                        if (list.length === 0) {
+                                            return (
+                                                <div className="text-center text-gray-400 text-xs py-10 italic font-semibold">
+                                                    {leaderboardTab === 'expo' ? 'No Expo Hall points recorded yet. Visit sponsor booths!' : leaderboardTab === 'arcade' ? 'No Arcade points recorded yet. Play games in Engage zone!' : 'No points recorded yet.'}
+                                                </div>
+                                            );
+                                        }
+
+                                        return list.map((player, index) => {
+                                            const rank = index + 1;
+                                            const isMe = (player._id || player.id) === (user?._id || user?.id);
+                                            let rankBadge = rank;
+                                            if (rank === 1) rankBadge = '🥇';
+                                            if (rank === 2) rankBadge = '🥈';
+                                            if (rank === 3) rankBadge = '🥉';
+
+                                            return (
+                                                <div
+                                                    key={player._id || player.id || index}
+                                                    className={`flex items-center justify-between p-3.5 rounded-xl border transition-all ${isMe
+                                                        ? 'bg-amber-50/90 border-amber-300 shadow-md ring-2 ring-amber-400/50 scale-[1.02]'
+                                                        : 'bg-white border-gray-100 shadow-sm hover:border-gray-200'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <span className="text-lg font-black w-8 text-center">{rankBadge}</span>
+                                                        <div className="w-9 h-9 rounded-full bg-[#3b60f6] text-white font-bold flex items-center justify-center text-xs shadow-inner">
+                                                            {getInitials(player.firstName, player.lastName)}
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs font-black text-gray-800 flex items-center gap-1.5">
+                                                                {player.firstName} {player.lastName}
+                                                                {isMe && <span className="bg-amber-200 text-amber-800 text-[9px] font-black px-1.5 py-0.5 rounded uppercase font-sans">You</span>}
+                                                            </p>
+                                                            <p className="text-[10px] text-gray-400 font-semibold">{player.company || 'Attendee'}</p>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <p className="text-xs font-black text-gray-800 flex items-center gap-1.5">
-                                                            {player.firstName} {player.lastName}
-                                                            {isMe && <span className="bg-amber-200 text-amber-800 text-[9px] font-black px-1.5 py-0.5 rounded uppercase font-sans">You</span>}
-                                                        </p>
-                                                        <p className="text-[10px] text-gray-400 font-semibold">{player.company || 'Attendee'}</p>
+                                                    <div className="text-right">
+                                                        <p className="text-xs font-black text-amber-600">{player.displayPoints} pts</p>
+                                                        {leaderboardTab === 'overall' && (player.boothPoints || player.gamePoints) ? (
+                                                            <p className="text-[9px] text-gray-400 font-semibold">🏢 {player.boothPoints || 0} · 🎮 {player.gamePoints || 0}</p>
+                                                        ) : null}
                                                     </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <p className="text-xs font-black text-amber-600">{player.points || 0} pts</p>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
+                                            );
+                                        });
+                                    })()}
                                 </div>
                             )}
                         </div>

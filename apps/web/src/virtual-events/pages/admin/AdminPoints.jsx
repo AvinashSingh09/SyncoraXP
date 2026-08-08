@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { FiSettings, FiSave, FiInfo } from 'react-icons/fi';
-import { configService } from '../../services/api';
+import { FiSettings, FiSave, FiInfo, FiAlertTriangle } from 'react-icons/fi';
+import { configService, authService } from '../../services/api';
 
 const AdminPoints = () => {
     const [boothRewardEnabled, setBoothRewardEnabled] = useState(true);
@@ -304,6 +304,29 @@ const AdminPoints = () => {
             setMessage({ type: 'error', text: 'Failed to save configurations. Please try again.' });
         } finally {
             setSaving(false);
+        }
+    };
+
+    const [resetting, setResetting] = useState(false);
+    const [resetConfirm, setResetConfirm] = useState(false);
+
+    const handleResetPoints = async () => {
+        if (!resetConfirm) {
+            setResetConfirm(true);
+            setTimeout(() => setResetConfirm(false), 5000); // auto-cancel after 5s
+            return;
+        }
+        setResetting(true);
+        setResetConfirm(false);
+        try {
+            await authService.resetPoints();
+            setMessage({ type: 'success', text: 'All attendee points have been reset to zero.' });
+            setTimeout(() => setMessage(null), 4000);
+        } catch (err) {
+            setMessage({ type: 'error', text: 'Failed to reset points. Please try again.' });
+            setTimeout(() => setMessage(null), 4000);
+        } finally {
+            setResetting(false);
         }
     };
 
@@ -682,6 +705,32 @@ const AdminPoints = () => {
                     </button>
                 </div>
             </form>
+
+            {/* Danger Zone: Reset All Points */}
+            <div className="mt-6 border border-red-100 bg-red-50/60 rounded-2xl p-5">
+                <div className="flex items-start gap-3 mb-3">
+                    <div className="p-2 bg-red-100 rounded-lg text-red-600">
+                        <FiAlertTriangle className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-black text-red-700">Danger Zone — Reset All Points</h3>
+                        <p className="text-xs text-red-500 mt-0.5">This will set every attendee's total, expo, and game points back to zero and clear their booth visit history. This cannot be undone.</p>
+                    </div>
+                </div>
+                <button
+                    type="button"
+                    onClick={handleResetPoints}
+                    disabled={resetting}
+                    className={`flex items-center gap-2 text-xs font-black px-5 py-2.5 rounded-xl transition-all cursor-pointer disabled:opacity-50 ${
+                        resetConfirm
+                            ? 'bg-red-600 text-white animate-pulse shadow-lg shadow-red-200'
+                            : 'bg-white border-2 border-red-300 text-red-600 hover:bg-red-600 hover:text-white hover:border-red-600'
+                    }`}
+                >
+                    <FiAlertTriangle className="w-3.5 h-3.5" />
+                    {resetting ? 'Resetting...' : resetConfirm ? '⚠️ Click again to CONFIRM reset' : 'Reset All Attendee Points'}
+                </button>
+            </div>
         </div>
     );
 };

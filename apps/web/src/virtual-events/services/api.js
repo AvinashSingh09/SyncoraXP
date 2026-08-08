@@ -28,10 +28,13 @@ api.interceptors.response.use(
 export const authService = {
     register: (userData) => api.post('/auth/register', userData),
     login: (credentials) => api.post('/auth/login', credentials),
+    getProfile: () => api.get('/auth/me'),
     getUsersStats: () => api.get('/auth/users'),
     visitBooth: (boothId) => api.post(`/auth/visit-booth/${boothId}`),
     getLeaderboard: () => api.get('/auth/leaderboard'),
     addPoints: (points, category) => api.post('/auth/add-points', { points, category }),
+    resetPoints: () => api.post('/auth/admin/reset-points'),
+    sendAnnouncement: (message, type) => api.post('/admin/announce', { message, type }),
 };
 
 const configCache = {};
@@ -145,17 +148,20 @@ export const qnaService = {
 };
 
 export const pollService = {
-    getPolls: () => api.get('/polls'),
+    getPolls: (type) => api.get(`/polls${type ? `?type=${type}` : ''}`),
     createPoll: (data) => api.post('/polls', data),
+    updatePoll: (id, data) => api.patch(`/polls/${id}`, data),
     votePoll: (pollId, optionId) => api.post(`/polls/${pollId}/vote`, { optionId }),
-    togglePoll: (pollId, isActive) => api.patch(`/polls/${pollId}/toggle`, { isActive }),
+    togglePoll: (pollId, isActive, chartType) => api.patch(`/polls/${pollId}/toggle`, { isActive, chartType }),
+    updateChartType: (pollId, chartType) => api.patch(`/polls/${pollId}/toggle`, { chartType }),
     deletePoll: (pollId) => api.delete(`/polls/${pollId}`),
     clearPolls: () => api.delete('/polls/clear'),
 };
 
 export const quizService = {
-    getQuizzes: () => api.get('/quizzes'),
+    getQuizzes: (type) => api.get(`/quizzes${type ? `?type=${type}` : ''}`),
     createQuiz: (data) => api.post('/quizzes', data),
+    updateQuiz: (id, data) => api.patch('/quizzes/' + id, data),
     submitAnswer: (quizId, optionId) => api.post(`/quizzes/${quizId}/submit`, { optionId }),
     toggleQuiz: (quizId, isActive) => api.patch(`/quizzes/${quizId}/toggle`, { isActive }),
     deleteQuiz: (quizId) => api.delete(`/quizzes/${quizId}`),

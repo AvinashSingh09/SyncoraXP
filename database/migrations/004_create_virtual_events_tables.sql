@@ -96,6 +96,7 @@ CREATE TABLE IF NOT EXISTS ve_polls (
     question TEXT NOT NULL,
     options JSONB NOT NULL,
     is_active BOOLEAN DEFAULT true,
+    type VARCHAR(50) DEFAULT 'auditorium',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -26,7 +26,7 @@ function mapUser(row: UserRow): StoredUser {
 }
 
 export class PostgresAuthRepository implements AuthRepository {
-  constructor(private readonly pool: Pool) {}
+  constructor(private readonly pool: Pool) { }
 
   async createUser(record: NewUserRecord): Promise<StoredUser> {
     try {
